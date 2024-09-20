@@ -36,13 +36,14 @@ pros::Optical& opticalRef = optical;
 
 // Recording
 Recording recording;
+Recording& recordingRef = recording;
 
 // Recorder
-Recorder recorder(masterRef, recording);
+Recorder recorder(masterRef, recordingRef);
 
 
 // Player
-Player player(recording);
+Player player(recordingRef);
 
 // Dummy Controller for playing autons
 DummyController dummy(pros::E_CONTROLLER_MASTER, true, &player);

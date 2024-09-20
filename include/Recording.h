@@ -43,26 +43,44 @@ public:
 
     //Getters
     int getAnalogLeftYValue(int index) {
+        if (index >= analogLeftYValues.size()) {
+            return 0;
+        }
         return analogLeftYValues[index];
     }
 
     int getAnalogRightYValue(int index) {
+        if (index >= analogRightYValues.size()) {
+            return 0;
+        }
         return analogRightYValues[index];
     }
 
     int getDigitalL1Value(int index) {
+        if (index >= digitalL1Values.size()) {
+            return 0;
+        }
         return digitalL1Values[index];
     }
 
     int getDigitalL2Value(int index) {
+        if (index >= digitalL2Values.size()) {
+            return 0;
+        }
         return digitalL2Values[index];
     }
 
     int getDigitalR1Value(int index) {
+        if (index >= digitalR1Values.size()) {
+            return 0;
+        }
         return digitalR1Values[index];
     }
 
     int getDigitalR2Value(int index) {
+        if (index >= digitalR2Values.size()) {
+            return 0;
+        }
         return digitalR2Values[index];
     }
 
