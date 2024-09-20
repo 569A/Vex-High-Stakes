@@ -1,11 +1,19 @@
 #pragma once
 #include "main.h"
+#include "ControllerBase.h" 
+#include "DummyController.h"
 
 class Autonomous
 {
 private:
-    /* data */
+    DummyController &master;
+    pros::MotorGroup &leftDrive;
+    pros::MotorGroup &rightDrive;
+    pros::MotorGroup &intake;
+    pros::ADIDigitalOut &pistonA;
+    pros::ADIDigitalOut &pistonB;
+    pros::Optical &optical;
 public:
-    Autonomous(ControllerBase& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::MotorGroup& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical);
+    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::MotorGroup &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical);
     void run();
 };

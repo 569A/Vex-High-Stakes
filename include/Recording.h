@@ -13,9 +13,6 @@ private:
     std::vector<int> digitalR1Values;
     std::vector<int> digitalR2Values;
 public:
-    Recording() {
-    }
-
     void serializeToFile(std::string filename);
     void deserializeFromFile(std::string filename);
 

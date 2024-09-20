@@ -1,10 +1,9 @@
+#pragma once
 #include "main.h"
 #include "ControllerBase.h"
+#include "Recording.h"
 #include <vector>
 #include <fstream>
-#include "Recording.h"
-#pragma once
-
 
 using namespace std;
 
@@ -36,13 +35,7 @@ private:
     // pros::Optical &optical;
 
     vector<int> timestamps;
-    // vector<int> leftDriveVelocities;
-    // vector<int> rightDriveVelocities;
-    // vector<int> intakeVelocities;
-    // vector<int> pistonAStates;
-    // vector<int> pistonBStates;
-    // vector<int> opticalValues;
-
+    
     vector<int> analogLeftYValues;
     vector<int> analogRightYValues;
 
@@ -62,76 +55,13 @@ public:
     //     pistonBState = false;
 
     // }
-    Recorder(ControllerBase& controller, Recording& recording) : controller(controller), recording(recording) {
-        // Initialize the recorder
-        pistonAState = false;
-        pistonBState = false;
-    }
+    Recorder(ControllerBase& controller, Recording& recording);
 
-    void recordUpdate() {
-        int time = 0;
-        // Record the current state of the robot
-            timestamps.push_back(time);
+    void recordUpdate();
 
-            recording.addAnalogLeftYValue(controller.get_analog(ANALOG_LEFT_Y));
-            recording.addAnalogRightYValue(controller.get_analog(ANALOG_RIGHT_Y));
+    void stop();
 
-            recording.addDigitalL1Value(controller.get_digital(DIGITAL_L1));
-            recording.addDigitalL2Value(controller.get_digital(DIGITAL_L2));
+    Recording& getRecording();
 
-            recording.addDigitalR1Value(controller.get_digital(DIGITAL_R1));
-            recording.addDigitalR2Value(controller.get_digital(DIGITAL_R2));
-            
-            // pros::delay(20);
-            time += 20;
-    }
-
-    void stop() {
-        // Stop the recording
-    }
-
-    Recording& getRecording() {
-        // Return the recording
-        return recording;
-    }
-
-    void saveRecording() {
-        // Save the recording to a file
-        recording.serializeToFile("Rerun.569A");
-    }
-    // void deserializeFromFile(string filename) {
-    //     // Deserializes controller history from SD card.
-    //     ifstream file(filename);
-    //     if (file.is_open()) {
-    //         string line;
-    //         while (getline(file, line)) {
-    //             // Parse and store into vectors
-    //             stringstream ss(line);
-    //             string token;
-    //             vector<int> values;
-    //             while (getline(ss, token, ',')) {
-    //                 values.push_back(stoi(token));
-    //             }
-    //             if (values.size() == 7) {
-    //                 timestamps.push_back(values[0]);
-    //                 analogLeftYValues.push_back(values[1]);
-    //                 analogRightYValues.push_back(values[2]);
-    //                 digitalL1Values.push_back(values[3]);
-    //                 digitalL2Values.push_back(values[4]);
-    //                 digitalR1Values.push_back(values[5]);
-    //                 digitalR2Values.push_back(values[6]);
-    //             }
-    //         }
-    //         file.close();
-    //     } else {
-    //         cout << "Unable to open file" << endl;
-    //     }
-    // }
-
-
-    // void listenerMOGO(bool newState) {
-    //     // Listen for the MOGO mechanism
-    //     pistonAState = newState;
-    //     pistonBState = newState;
-    // }
+    void saveRecording();
 };

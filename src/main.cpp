@@ -1,6 +1,7 @@
 #include "main.h"
 #include "DummyController.h"
 #include "Autonomous.h"
+#include "Recording.h"
 
 using namespace std;
 

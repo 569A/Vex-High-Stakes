@@ -2,18 +2,7 @@
 #include "DummyController.h"
 
 
-class Autonomous
-{
 
-private:
-    DummyController &master;
-    pros::MotorGroup &leftDrive;
-    pros::MotorGroup &rightDrive;
-    pros::MotorGroup &intake;
-    pros::ADIDigitalOut &pistonA;
-    pros::ADIDigitalOut &pistonB;
-    pros::Optical &optical;
-public:
 Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::MotorGroup& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical) 
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical){
     // Initialize the autonomous class
@@ -78,7 +67,6 @@ void Autonomous::run() {
 	// Optical
 }
 
-};
 
 
 
