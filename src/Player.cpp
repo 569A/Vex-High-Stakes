@@ -1,3 +1,10 @@
+/**
+ * @file Player.cpp
+ * @brief This file contains the implementation of the Player class.
+ * 
+ * This player prepares controller inputs for dummy controllers to then send to the
+ * autonomous program.
+ */
 #include "main.h"
 #include "Player.h"
 

@@ -1,3 +1,10 @@
+
+/**
+ * @brief Class for storing controller inputs.
+ * 
+ * This class provides functionality to write / read controller inputs to/from a file.
+ * It then stores them as variables.
+ */
 #include "Recording.h"
 #include <iostream>
 #include <fstream>

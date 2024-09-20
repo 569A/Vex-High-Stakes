@@ -1,3 +1,11 @@
+
+/**
+ * @brief The Autonomous class controls the autonomous behavior of the robot.
+ * 
+ * This is pretty much an exact copy of the driver control code, but
+ * the controller is not a real controller, but a virtual one that gives
+ * pre-recorded values at preset times.
+ */
 #include "Autonomous.h"
 #include "DummyController.h"
 
