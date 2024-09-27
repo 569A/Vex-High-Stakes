@@ -47,9 +47,10 @@ Player player(recordingRef);
 
 // Dummy Controller for playing autons
 DummyController dummy(pros::E_CONTROLLER_MASTER, true, &player);
+DummyController& dummyRef = dummy;
 
 // Autonomous
-Autonomous autonomousManager(dummy, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef);
+Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef);
 
 /**
  * A callback function for LLEMU's center button.
@@ -73,6 +74,8 @@ void initialize()
 	// Pros check if program exists on SD card
 	
 	pros::lcd::initialize();
+	pistonA.set_value(true);
+	pistonB.set_value(true);
 	
 	pros::lcd::set_text(1, "Initialized!");
 
