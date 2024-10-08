@@ -20,6 +20,4 @@ public:
 
     void waitTick();
     void startTick();
-
-    ~Ticker();
 };
