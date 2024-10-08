@@ -11,7 +11,7 @@
 #include "Ticker.h"
 
 
-Ticker driveTicker(20);
+Ticker autonTicker(20);
 int decreasedSensitivityFactor = 3;
 
 Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::MotorGroup& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical) 
@@ -25,7 +25,7 @@ void Autonomous::run() {
 
 	while (true)
 	{
-		driveTicker.startTick();
+		autonTicker.startTick();
         master.runUpdate();
 		
 		// Debug
@@ -76,7 +76,7 @@ void Autonomous::run() {
 			break;
 		}
 
-		driveTicker.waitTick();
+		autonTicker.waitTick();
 	}
 
 	// Optical
