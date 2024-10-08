@@ -2,6 +2,7 @@
 #include "DummyController.h"
 #include "Autonomous.h"
 #include "Recording.h"
+#include "Ticker.h"
 
 using namespace std;
 
@@ -51,6 +52,9 @@ DummyController& dummyRef = dummy;
 
 // Autonomous
 Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef);
+
+// Drive Loop Ticker
+Ticker driveTicker(20);
 
 /**
  * A callback function for LLEMU's center button.
@@ -150,6 +154,7 @@ void opcontrol()
 
 	while (true)
 	{
+		driveTicker.startTick();
 		master.runUpdate();
 		recorder.recordUpdate();
 		
@@ -199,7 +204,7 @@ void opcontrol()
 			pros::lcd::set_text(1, "Recording saved!");
 		}
 
-		pros::delay(20); // Never change this!
+		driveTicker.waitTick();
 	}
 
 	// Optical

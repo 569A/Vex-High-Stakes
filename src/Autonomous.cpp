@@ -8,8 +8,10 @@
  */
 #include "Autonomous.h"
 #include "DummyController.h"
+#include "Ticker.h"
 
 
+Ticker driveTicker(20);
 
 Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::MotorGroup& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical) 
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical){
@@ -22,6 +24,7 @@ void Autonomous::run() {
 
 	while (true)
 	{
+		driveTicker.startTick();
         master.runUpdate();
 		
 		// Debug
@@ -69,7 +72,7 @@ void Autonomous::run() {
 			break;
 		}
 
-		pros::delay(20); // Never change this!
+		driveTicker.waitTick();
 	}
 
 	// Optical
