@@ -3,6 +3,7 @@
 #include "Autonomous.h"
 #include "Recording.h"
 #include "Ticker.h"
+#include <cmath>
 
 using namespace std;
 
@@ -55,6 +56,9 @@ Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef,
 
 // Drive Loop Ticker
 Ticker driveTicker(20);
+
+// Decreased Sensitivity Factor (Must be an odd number)
+const int decreasedSensitivityFactor = 3;
 
 /**
  * A callback function for LLEMU's center button.
@@ -166,8 +170,23 @@ void opcontrol()
 		// Drive
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
-		leftMotors = left;
-		rightMotors = right;
+
+		// Cubic function (as of now), makes small joystick movements less sensitive, for easier maneuverability
+		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
+		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
+		/**
+		 * The above code is the raw voltage to apply to the motors.
+		 * However, I choose to use velocity instead of voltage to control the motors.
+		 * 	1 - This is because velocity is more consistent than voltage,
+		 * 		which is important when playing the auton
+		 * 	2 - Both sides will hopefully spin at the same speed for the same input,
+		 * 		something that is not guaranteed with voltage. This will make it
+		 * 		easier for the driver.
+		 */
+		
+		// Scale the voltage to the max velocity of the motor
+		leftMotors.move_velocity(rawVoltageOutputLeft / 127 * 600);
+		rightMotors.move_velocity(rawVoltageOutputRight / 127 * 600);
 
 		// Intake
 		if (master.get_digital(DIGITAL_L1))
