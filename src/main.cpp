@@ -173,11 +173,11 @@ void opcontrol()
 		if (master.get_digital(DIGITAL_L1))
 		{
 			// Velocity depends on gearset 
-			intake.move_velocity(200);
+			intake.move_velocity(600);
 		}
 		else if (master.get_digital(DIGITAL_L2))
 		{
-			intake.move_velocity(-200);
+			intake.move_velocity(-600);
 		}
 		else
 		{
