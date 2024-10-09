@@ -9,11 +9,11 @@ private:
     DummyController &master;
     pros::MotorGroup &leftDrive;
     pros::MotorGroup &rightDrive;
-    pros::MotorGroup &intake;
+    pros::Motor &intake;
     pros::ADIDigitalOut &pistonA;
     pros::ADIDigitalOut &pistonB;
     pros::Optical &optical;
 public:
-    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::MotorGroup &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical);
+    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical);
     void run();
 };

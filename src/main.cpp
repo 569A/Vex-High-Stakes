@@ -23,8 +23,8 @@ pros::MotorGroup rightMotors({18, -19, 20});
 pros::MotorGroup& rightMotorsRef = rightMotors;
 
 // Intake
-pros::MotorGroup intake({-1, 10});
-pros::MotorGroup& intakeRef = intake;
+pros::Motor intake(10);
+pros::Motor& intakeRef = intake;
 
 // Two way piston
 pros::ADIDigitalOut pistonA('A');
@@ -62,6 +62,9 @@ Ticker driveTicker(20);
 
 // Decreased Sensitivity Factor (Must be an odd number)
 const int decreasedSensitivityFactor = 3;
+
+// Intake Tracker
+bool intakeAvailable = true;
 
 /**
  * A callback function for LLEMU's center button.
@@ -120,7 +123,7 @@ void competition_initialize() {}
  *
  * If the robot is disabled or communications is lost, the autonomous task
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
- * from where it left off.
+ * from where it left off._absolute(1000, 600);
  */
 void autonomous()
 {
@@ -157,7 +160,7 @@ void autonomous()
 void opcontrol()
 {
 
-
+	intake.move_relative(1000, 100);
 
 	while (true)
 	{
@@ -226,8 +229,23 @@ void opcontrol()
 			pros::lcd::set_text(1, "Recording saved!");
 		}
 
+		if (distanceSensor.get() < 100)
+		{
+			if (intakeAvailable)
+			{
+				intake.move_relative(10000, 100);
+				intakeAvailable = false;
+			} else {
+				if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+				{
+					intakeAvailable = true;
+				}
+			}
+		}
+
 		// Get data for distance sensor
 		pros::lcd::set_text(1, to_string(distanceSensor.get()));
+		pros::lcd::set_text(2, to_string(intake.get_position()));
 		driveTicker.waitTick();
 	}
 
