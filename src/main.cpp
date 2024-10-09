@@ -36,6 +36,9 @@ pros::ADIDigitalOut& pistonBRef = pistonB;
 pros::Optical optical(15);
 pros::Optical& opticalRef = optical;
 
+pros::Distance distanceSensor(9);
+pros::Distance& distanceRef = distanceSensor;
+
 // Recording
 Recording recording;
 Recording& recordingRef = recording;
@@ -226,6 +229,6 @@ void opcontrol()
 		driveTicker.waitTick();
 	}
 
-	// Optical
-	pros::lcd::set_text(1, to_string(optical.get_hue()));
+	// Get data for distance sensor
+	pros::lcd::set_text(1, to_string(distanceSensor.get()));
 }
