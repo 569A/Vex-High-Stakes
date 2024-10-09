@@ -226,9 +226,10 @@ void opcontrol()
 			pros::lcd::set_text(1, "Recording saved!");
 		}
 
+		// Get data for distance sensor
+		pros::lcd::set_text(1, to_string(distanceSensor.get()));
 		driveTicker.waitTick();
 	}
 
-	// Get data for distance sensor
-	pros::lcd::set_text(1, to_string(distanceSensor.get()));
+
 }
