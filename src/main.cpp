@@ -160,8 +160,6 @@ void autonomous()
 void opcontrol()
 {
 
-	intake.move_relative(1000, 100);
-
 	while (true)
 	{
 		driveTicker.startTick();
@@ -204,7 +202,7 @@ void opcontrol()
 		{
 			intake.move_velocity(-600);
 		}
-		else
+		else if (intakeAvailable)
 		{
 			intake.move_velocity(0);
 		}
