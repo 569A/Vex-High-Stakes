@@ -63,7 +63,7 @@ Ticker driveTicker(20);
 // Decreased Sensitivity Factor (Must be an odd number)
 const int decreasedSensitivityFactor = 3;
 
-// Intake Tracker
+// Intake Tracker - keeps track of whether intake is in the process of scoring or not.
 bool intakeAvailable = true;
 
 /**
@@ -192,7 +192,7 @@ void opcontrol()
 		leftMotors.move_velocity(rawVoltageOutputLeft / 127 * 600);
 		rightMotors.move_velocity(rawVoltageOutputRight / 127 * 600);
 
-		// Intake
+		// Intake - manual control
 		if (master.get_digital(DIGITAL_L1))
 		{
 			// Velocity depends on gearset 
@@ -202,7 +202,7 @@ void opcontrol()
 		{
 			intake.move_velocity(-600);
 		}
-		else if (intakeAvailable)
+		else if (intakeAvailable) // If intake is automatically scoring, don't allow manual control
 		{
 			intake.move_velocity(0);
 		}
@@ -227,8 +227,11 @@ void opcontrol()
 			pros::lcd::set_text(1, "Recording saved!");
 		}
 
+		// Automatic intake scoring
+		// TODO: move to autonomous as well
 		if (distanceSensor.get() < 100)
 		{
+			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
 			if (intakeAvailable)
 			{
 				intake.move_relative(-2702, 600);
@@ -241,7 +244,7 @@ void opcontrol()
 			}
 		}
 
-		// Get data for distance sensor
+		// Get data for distance sensor for testing purposes
 		pros::lcd::set_text(1, to_string(distanceSensor.get()));
 		pros::lcd::set_text(2, to_string(intake.get_position()));
 		driveTicker.waitTick();
