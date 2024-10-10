@@ -231,7 +231,7 @@ void opcontrol()
 		{
 			if (intakeAvailable)
 			{
-				intake.move_relative(10000, 100);
+				intake.move_relative(-2702, 600);
 				intakeAvailable = false;
 			} else {
 				if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
