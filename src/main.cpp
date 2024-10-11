@@ -234,7 +234,7 @@ void opcontrol()
 			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
 			if (intakeAvailable)
 			{
-				intake.move_relative(-3702, 600);
+				intake.move_relative(-3698, 600);
 				intakeAvailable = false;
 			} else {
 				if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
