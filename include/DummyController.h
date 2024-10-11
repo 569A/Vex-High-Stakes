@@ -10,12 +10,13 @@ private:
     int twentyMsecIter = 0;
     // # of times has been iterated at 20 msec intervals.
 
-    Player* player;
 
 
 
     bool isPlaying = true;
 public:
+    Player* player;
+
     DummyController(pros::controller_id_e_t id, bool isPlaying, Player* player);
 
     int32_t get_analog(pros::controller_analog_e_t channel);

@@ -13,9 +13,9 @@ private:
     int32_t nextDigitalR1 = 0;
     int32_t nextDigitalR2 = 0;
 
-    Recording& recording;
     int index = 0;
 public:
+    Recording& recording;
 
     Player(Recording& recording);
 

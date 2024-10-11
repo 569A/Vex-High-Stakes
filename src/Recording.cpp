@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 
 void Recording::serializeToFile(std::string filename) {
@@ -18,6 +19,8 @@ void Recording::serializeToFile(std::string filename) {
 
     if (file != nullptr) {
         for (int i = 0; i < analogLeftYValues.size(); i++) {
+            std::string data = std::to_string(analogLeftYValues[i]) + "," + std::to_string(analogRightYValues[i]) + "," + std::to_string(digitalL1Values[i]) + "," + std::to_string(digitalL2Values[i]) + "," + std::to_string(digitalR1Values[i]) + "," + std::to_string(digitalR2Values[i]) + "\n";
+            pros::lcd::set_text(5, data);
             fprintf(file, "%d,", analogLeftYValues[i]);
             fprintf(file, "%d,", analogRightYValues[i]);
             fprintf(file, "%d,", digitalL1Values[i]);
@@ -34,8 +37,59 @@ void Recording::serializeToFile(std::string filename) {
 void Recording::deserializeFromFile(const std::string filename) {
     FILE* file = fopen(("/usd/" + filename).c_str(), "r");
     if (file == NULL) {
-        std::cout << "Unable to open file" << std::endl;
+        recordingValid = false;
         return;
+    }
+
+    char dataChunk[256];
+    int i = 0;
+
+    analogLeftYValues.clear();
+    analogRightYValues.clear();
+    digitalL1Values.clear();
+    digitalL2Values.clear();
+    digitalR1Values.clear();
+    digitalR2Values.clear();
+
+
+    while (fgets(dataChunk, 256, file) != NULL) {
+        pros::lcd::set_text(4, dataChunk);
+        // Extract data from string
+        std::string dataString = "";
+        /*
+            fprintf(file, "%d,", analogLeftYValues[i]);
+            fprintf(file, "%d,", analogRightYValues[i]);
+            fprintf(file, "%d,", digitalL1Values[i]);
+            fprintf(file, "%d,", digitalL2Values[i]);
+            fprintf(file, "%d,", digitalR1Values[i]);
+            fprintf(file, "%d\n", digitalR2Values[i]);
+        */
+       int inputIndex = 0;
+        while (dataChunk[i] != '\0') {
+            if (dataChunk[i] == ',') {
+                if (inputIndex == 0) {
+                    addAnalogLeftYValue(std::stoi(dataString));
+                } else if (inputIndex == 1) {
+                    addAnalogRightYValue(std::stoi(dataString));
+                } else if (inputIndex == 2) {
+                    addDigitalL1Value(std::stoi(dataString));
+                } else if (inputIndex == 3) {
+                    addDigitalL2Value(std::stoi(dataString));
+                } else if (inputIndex == 4) {
+                    addDigitalR1Value(std::stoi(dataString));
+                } else if (inputIndex == 5) {
+                    addDigitalR2Value(std::stoi(dataString));
+                    inputIndex = -1;
+                }
+                inputIndex++;
+                dataString.clear();
+            } else {
+                dataString += dataChunk[i];
+                
+            }
+            i++;
+        }
+        i = 0; 
     }
 
     fclose(file);

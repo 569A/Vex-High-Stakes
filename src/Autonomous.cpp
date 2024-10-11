@@ -21,21 +21,17 @@ Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive,
 
 void Autonomous::run() {
 
-
-
 	while (true)
 	{
 		autonTicker.startTick();
         master.runUpdate();
 		
 		// Debug
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-						 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-						 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
 		// Drive
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
+		pros::lcd::set_text(0, std::to_string(left));
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 

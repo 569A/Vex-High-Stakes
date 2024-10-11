@@ -66,6 +66,12 @@ const int decreasedSensitivityFactor = 3;
 // Intake Tracker - keeps track of whether intake is in the process of scoring or not.
 bool intakeAvailable = true;
 
+// Manual Control
+bool manual = true;
+
+// Controller Recording?
+bool recordingInput = false;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -164,7 +170,10 @@ void opcontrol()
 	{
 		driveTicker.startTick();
 		master.runUpdate();
-		recorder.recordUpdate();
+
+		if (recordingInput) {
+			recorder.recordUpdate();
+		}
 		
 		// Debug
 		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
@@ -193,6 +202,7 @@ void opcontrol()
 		rightMotors.move_velocity(rawVoltageOutputRight / 127 * 600);
 
 		// Intake - manual control
+		if (manual) {
 		if (master.get_digital(DIGITAL_L1))
 		{
 			// Velocity depends on gearset 
@@ -205,6 +215,7 @@ void opcontrol()
 		else if (intakeAvailable) // If intake is automatically scoring, don't allow manual control
 		{
 			intake.move_velocity(0);
+		}
 		}
 
 		// MOGO Mechanism
@@ -223,8 +234,18 @@ void opcontrol()
 
 		if (master.get_digital(DIGITAL_UP))
 		{
-			recorder.saveRecording();
-			pros::lcd::set_text(1, "Recording saved!");
+			if (recordingInput) {
+				recorder.saveRecording();
+				pros::lcd::set_text(6, "Recording saved!");
+			} else {
+				recordingInput = true;
+			}
+		}
+
+		if (master.get_digital(DIGITAL_DOWN))
+		{
+			recordingInput = true;
+			pros::lcd::set_text(6, "Recording started!");
 		}
 
 		// Automatic intake scoring
@@ -252,3 +273,4 @@ void opcontrol()
 
 
 }
+

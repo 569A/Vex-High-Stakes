@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include "main.h"
 
 class Recording {
 private:
@@ -13,6 +14,8 @@ private:
     std::vector<int> digitalR1Values;
     std::vector<int> digitalR2Values;
 public:
+    bool recordingValid = true;
+
     void serializeToFile(std::string filename);
     void deserializeFromFile(std::string filename);
 
@@ -44,7 +47,7 @@ public:
     //Getters
     int getAnalogLeftYValue(int index) {
         if (index >= analogLeftYValues.size()) {
-            return 0;
+            return -1;
         }
         return analogLeftYValues[index];
     }
