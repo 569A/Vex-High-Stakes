@@ -67,7 +67,7 @@ const int decreasedSensitivityFactor = 3;
 bool intakeAvailable = true;
 
 // Manual Control
-bool manual = true;
+bool manual = false;
 
 // Controller Recording?
 bool recordingInput = false;
