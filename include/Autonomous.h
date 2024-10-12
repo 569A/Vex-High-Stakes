@@ -13,7 +13,8 @@ private:
     pros::ADIDigitalOut &pistonA;
     pros::ADIDigitalOut &pistonB;
     pros::Optical &optical;
+    pros::Distance &distanceSensor;
 public:
-    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical);
+    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor);
     void run();
 };

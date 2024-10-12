@@ -55,7 +55,7 @@ DummyController dummy(pros::E_CONTROLLER_MASTER, true, &player);
 DummyController& dummyRef = dummy;
 
 // Autonomous
-Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef);
+Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef);
 
 // Drive Loop Ticker
 Ticker driveTicker(20);

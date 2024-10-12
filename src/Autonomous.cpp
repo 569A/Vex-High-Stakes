@@ -13,9 +13,15 @@
 
 Ticker autonTicker(20);
 int decreasedSensitivityFactor = 3;
+bool manual = false;
 
-Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical) 
-: master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical) {
+int ticksSinceIntakeCandidateDetected = 0;
+bool intakeCandidateDetected = false;
+bool intakeAvailable = true;
+
+
+Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
+: master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
     // Initialize the autonomous class
 }
 
@@ -39,18 +45,21 @@ void Autonomous::run() {
 		rightDrive.move_velocity(rawVoltageOutputRight / 127 * 600);
 
 		// Intake
-		if (master.get_digital(DIGITAL_L1))
+		if (manual)
 		{
-			// Velocity depends on gearset 
-			intake.move_velocity(600);
-		}
-		else if (master.get_digital(DIGITAL_L2))
-		{
-			intake.move_velocity(-600);
-		}
-		else
-		{
-			intake.move_velocity(0);
+			if (master.get_digital(DIGITAL_L1))
+			{
+				// Velocity depends on gearset 
+				intake.move_velocity(600);
+			}
+			else if (master.get_digital(DIGITAL_L2))
+			{
+				intake.move_velocity(-600);
+			}
+			else if (intakeAvailable) // If intake is automatically scoring, don't allow manual control
+			{
+				intake.move_velocity(0);
+			}
 		}
 
 		// MOGO Mechanism
@@ -72,6 +81,28 @@ void Autonomous::run() {
 			break;
 		}
 
+		if (distanceSensor.get() < 100)
+		{
+			if (ticksSinceIntakeCandidateDetected > 3) {
+				if (intakeAvailable)
+				{
+					intake.move_relative(-3695, 600);
+					intakeAvailable = false;
+				} else {
+					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+					{
+						intakeCandidateDetected = false;
+						intakeAvailable = true;
+					}
+				}
+			} else {
+				if (!intakeCandidateDetected) {
+					intakeCandidateDetected = true;
+					ticksSinceIntakeCandidateDetected = 0;
+				}
+				ticksSinceIntakeCandidateDetected++;
+			}	
+		}
 		autonTicker.waitTick();
 	}
 
