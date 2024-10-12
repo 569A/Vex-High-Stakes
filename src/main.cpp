@@ -72,6 +72,11 @@ bool manual = false;
 // Controller Recording?
 bool recordingInput = false;
 
+// Less abrupt intaking
+int ticksPerIntakeCheck = 2;
+bool intakeCandidateDetected = false;
+int ticksSinceIntakeCandidateDetected = 0;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -253,21 +258,30 @@ void opcontrol()
 		if (distanceSensor.get() < 100)
 		{
 			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
-			if (intakeAvailable)
-			{
-				intake.move_relative(-3698, 600);
-				intakeAvailable = false;
-			} else {
-				if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+			if (ticksSinceIntakeCandidateDetected > 3) {
+				if (intakeAvailable)
 				{
-					intakeAvailable = true;
+					intake.move_relative(-3695, 600);
+					intakeAvailable = false;
+				} else {
+					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+					{
+						intakeCandidateDetected = false;
+						intakeAvailable = true;
+					}
 				}
+			} else {
+				if (!intakeCandidateDetected) {
+					intakeCandidateDetected = true;
+					ticksSinceIntakeCandidateDetected = 0;
+				}
+				ticksSinceIntakeCandidateDetected++;
 			}
 		}
 
 		// Get data for distance sensor for testing purposes
-		pros::lcd::set_text(1, to_string(distanceSensor.get()));
-		pros::lcd::set_text(2, to_string(intake.get_position()));
+		// pros::lcd::set_text(1, to_string(distanceSensor.get()));
+		// pros::lcd::set_text(2, to_string(intake.get_position()));
 		driveTicker.waitTick();
 	}
 
