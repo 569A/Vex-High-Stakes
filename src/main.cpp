@@ -256,12 +256,13 @@ void opcontrol()
 			pros::lcd::set_text(6, "Recording started!");
 		}
 
-		// Automatic intake scoring
-		// TODO: move to autonomous as well
-		if (distanceSensor.get() < 100)
+		// Automatic intake scoring - currently works, but delay code not working yet
+		if (distanceSensor.get() < 100) // If distance sensor detects a ring
 		{
-			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
+			// Only start scoring if ring has been detected for a few ticks, to prevent knocking it away
 			if (ticksSinceIntakeCandidateDetected > ticksPerIntakeCheck) {
+
+				// This is to prevent the intake from initiating the scoring process multiple times for the same ring
 				if (intakeAvailable)
 				{
 					intake.move_relative(-3695, 600);
