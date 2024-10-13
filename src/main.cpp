@@ -73,7 +73,7 @@ bool manual = false;
 bool recordingInput = false;
 
 // Less abrupt intaking
-int ticksPerIntakeCheck = 2;
+int ticksPerIntakeCheck = 4;
 bool intakeCandidateDetected = false;
 int ticksSinceIntakeCandidateDetected = 0;
 
@@ -261,7 +261,7 @@ void opcontrol()
 		if (distanceSensor.get() < 100)
 		{
 			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
-			if (ticksSinceIntakeCandidateDetected > 3) {
+			if (ticksSinceIntakeCandidateDetected > ticksPerIntakeCheck) {
 				if (intakeAvailable)
 				{
 					intake.move_relative(-3695, 600);
