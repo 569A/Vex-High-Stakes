@@ -10,14 +10,14 @@
 #include "DummyController.h"
 #include "Ticker.h"
 
-
 Ticker autonTicker(20);
 int decreasedSensitivityFactor = 3;
-bool manual = false;
+bool autonManual = false;
 
-int ticksSinceIntakeCandidateDetected = 0;
-bool intakeCandidateDetected = false;
-bool intakeAvailable = true;
+int autonTicksSinceIntakeCandidateDetected = 0;
+bool autonIntakeCandidateDetected = false;
+bool autonIntakeAvailable = true;
+
 
 
 Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
@@ -45,7 +45,7 @@ void Autonomous::run() {
 		rightDrive.move_velocity(rawVoltageOutputRight / 127 * 600);
 
 		// Intake
-		if (manual)
+		if (autonManual)
 		{
 			if (master.get_digital(DIGITAL_L1))
 			{
@@ -56,7 +56,7 @@ void Autonomous::run() {
 			{
 				intake.move_velocity(-600);
 			}
-			else if (intakeAvailable) // If intake is automatically scoring, don't allow manual control
+			else if (autonIntakeAvailable) // If intake is automatically scoring, don't allow manual control
 			{
 				intake.move_velocity(0);
 			}
@@ -83,24 +83,25 @@ void Autonomous::run() {
 
 		if (distanceSensor.get() < 100)
 		{
-			if (ticksSinceIntakeCandidateDetected > 3) {
-				if (intakeAvailable)
+					// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
+			if (autonTicksSinceIntakeCandidateDetected > 3) {
+				if (autonIntakeAvailable)
 				{
 					intake.move_relative(-3695, 600);
-					intakeAvailable = false;
+					autonIntakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
 					{
-						intakeCandidateDetected = false;
-						intakeAvailable = true;
+						autonIntakeCandidateDetected = false;
+						autonIntakeAvailable = true;
 					}
 				}
 			} else {
-				if (!intakeCandidateDetected) {
-					intakeCandidateDetected = true;
-					ticksSinceIntakeCandidateDetected = 0;
+				if (!autonIntakeCandidateDetected) {
+					autonIntakeCandidateDetected = true;
+					autonTicksSinceIntakeCandidateDetected = 0;
 				}
-				ticksSinceIntakeCandidateDetected++;
+				autonTicksSinceIntakeCandidateDetected++;
 			}	
 		}
 		autonTicker.waitTick();
