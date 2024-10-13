@@ -101,6 +101,9 @@ void initialize()
 	pros::lcd::initialize();
 	pistonA.set_value(true);
 	pistonB.set_value(true);
+
+	leftMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
+	rightMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
 	
 	pros::lcd::set_text(1, "Initialized!");
 
