@@ -36,8 +36,13 @@ pros::ADIDigitalOut& pistonBRef = pistonB;
 pros::Optical optical(15);
 pros::Optical& opticalRef = optical;
 
+// Distance
 pros::Distance distanceSensor(9);
 pros::Distance& distanceRef = distanceSensor;
+
+// Inertial
+pros::IMU inertial(8);
+pros::IMU& inertialRef = inertial;
 
 // Recording
 Recording recording;
@@ -77,6 +82,12 @@ int ticksPerIntakeCheck = 4;
 bool intakeCandidateDetected = false;
 int ticksSinceIntakeCandidateDetected = 0;
 
+// Drivetrain Velocity
+int velocity = 600;
+
+// Button Timer
+int manualButtonUnpressableTicks = 0;
+int velocityButtonUnpressableTicks = 0;
 /**
  * A callback function for LLEMU's center button.
  *
@@ -102,10 +113,12 @@ void initialize()
 	pistonA.set_value(true);
 	pistonB.set_value(true);
 
-	leftMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
-	rightMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
+	// leftMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
+	// rightMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
 	
 	pros::lcd::set_text(1, "Initialized!");
+	master.print(0, 0, "Manual: %d", manual);
+	master.print(0, 1, "Velocity: %d", velocity);
 
 	pros::lcd::register_btn1_cb(on_center_button);
 }
@@ -192,6 +205,16 @@ void opcontrol()
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
 
+		// Prevent drift when idle
+		if (abs(left) < 10)
+		{
+			left = 0;
+		}
+		if (abs(right) < 10)
+		{
+			right = 0;
+		}
+
 		// Cubic function (as of now), makes small joystick movements less sensitive, for easier maneuverability
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
@@ -206,8 +229,27 @@ void opcontrol()
 		 */
 		
 		// Scale the voltage to the max velocity of the motor
-		leftMotors.move_velocity(rawVoltageOutputLeft / 127 * 600);
-		rightMotors.move_velocity(rawVoltageOutputRight / 127 * 600);
+		// double leftVelocity = rawVoltageOutputLeft / 127 * velocity;
+		// double rightVelocity = rawVoltageOutputRight / 127 * velocity;
+
+		// turning = abs(right) > 30;
+		// if (turning) {
+		// 	currentTurnDecrement *= turnDecrement;
+		// 	leftVelocity *= currentTurnDecrement;
+		// 	rightVelocity *= currentTurnDecrement;
+		// 	if (currentTurnDecrement < 0.1) {
+		// 		turning = false;
+		// 		currentTurnDecrement = 1;
+		// 	}
+		// } else {
+		// 	currentTurnDecrement = 1;
+		// }
+		// leftMotors.move_velocity(leftVelocity + rightVelocity);
+		// rightMotors.move_velocity(leftVelocity - rightVelocity);
+		leftMotors.move_velocity(rawVoltageOutputLeft / 127 * velocity);
+		rightMotors.move_velocity(rawVoltageOutputRight / 127 * velocity);
+		// leftMotors.move(left + right);
+		// rightMotors.move(left - right);
 
 		// Intake - manual control
 		if (manual) {
@@ -257,7 +299,7 @@ void opcontrol()
 		}
 
 		// Automatic intake scoring - currently works, but delay code not working yet
-		if (distanceSensor.get() < 100) // If distance sensor detects a ring
+		if (!manual && distanceSensor.get() < 100) // If distance sensor detects a ring
 		{
 			// Only start scoring if ring has been detected for a few ticks, to prevent knocking it away
 			if (ticksSinceIntakeCandidateDetected > ticksPerIntakeCheck) {
@@ -283,9 +325,32 @@ void opcontrol()
 			}
 		}
 
+		if (master.get_digital(DIGITAL_B) && manualButtonUnpressableTicks == 0)
+		{
+			manual = !manual;
+			master.print(0, 0, "Manual: %d", manual);
+			manualButtonUnpressableTicks = 10;
+		} else {
+			if (manualButtonUnpressableTicks > 0) {
+				manualButtonUnpressableTicks--;
+			}
+		}
+
+		if (master.get_digital(DIGITAL_A) && velocityButtonUnpressableTicks == 0)
+		{
+			velocity = (velocity == 600) ? 200 : 600;
+			master.print(1, 1, "Velocity: %d", velocity);
+			velocityButtonUnpressableTicks = 10;
+		} else {
+			if (velocityButtonUnpressableTicks > 0) {
+				velocityButtonUnpressableTicks--;
+			}
+		}
+
 		// Get data for distance sensor for testing purposes
-		// pros::lcd::set_text(1, to_string(distanceSensor.get()));
-		// pros::lcd::set_text(2, to_string(intake.get_position()));
+		pros::lcd::set_text(1, to_string(distanceSensor.get()));
+		pros::lcd::set_text(2, to_string(intake.get_position()));
+		pros::lcd::set_text(3, to_string(inertial.get_heading()));
 		driveTicker.waitTick();
 	}
 
