@@ -37,6 +37,14 @@ int32_t Player::get_analog(pros::controller_analog_e_t channel) {
         return nextAnalogLeftY;
     case ANALOG_RIGHT_Y:
         return nextAnalogRightY;
+    case DIGITAL_L1:
+        return nextDigitalL1;
+    case DIGITAL_L2:
+        return nextDigitalL2;
+    case DIGITAL_R1:
+        return nextDigitalR1;
+    case DIGITAL_R2:
+        return nextDigitalR2;
     default:
         return 0;
     }
