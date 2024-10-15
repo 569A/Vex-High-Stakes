@@ -88,6 +88,18 @@ int velocity = 600;
 // Button Timer
 int manualButtonUnpressableTicks = 0;
 int velocityButtonUnpressableTicks = 0;
+
+// Position tracking (EXPERIMENTAL)
+double x = 0;
+double y = 0;
+double z = 0;
+
+double lastXVelocity = 0;
+double lastYVelocity = 0;
+double lastZVelocity = 0;
+
+double theta = 0;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -141,6 +153,34 @@ void disabled() {}
  */
 void competition_initialize() {}
 
+
+// Prototype move to position function
+void moveToPosition(double absoluteX, double absoluteY, double absoluteTheta) {
+	double xdiff = absoluteX - x;
+	double ydiff = absoluteY - y;
+	
+	double combinedVector = sqrt(pow(xdiff, 2) + pow(ydiff, 2));
+	double angleInDegrees = atan2(ydiff, xdiff) * 180 / M_PI;
+
+	double diff = angleInDegrees - theta;
+
+	if (diff > 180) {
+		diff -= 360;
+	}
+
+	double distanceScaleFactor = combinedVector / 1000;
+	double turnScaleFactor = abs(diff) / 180;
+
+	if (diff < 0) {
+		leftMotors.move_velocity(-400 * turnScaleFactor + 200);
+		rightMotors.move_velocity(400 * turnScaleFactor + 200);
+	} else {
+		leftMotors.move_velocity(400 * turnScaleFactor + 200);
+		rightMotors.move_velocity(-400 * turnScaleFactor + 200);
+	}
+	
+}
+
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -168,7 +208,23 @@ void autonomous()
 	// // Test
 	// drive->setState({0_ft, 0_ft, 0_deg});
 	// drive->driveToPoint({1_ft, 1_ft});
-	autonomousManager.run();
+	// autonomousManager.run();
+	while (true) {
+		double xAccel = inertial.get_accel().x * 9.80665;
+		double yAccel = inertial.get_accel().y * 9.80665;
+		double zAccel = inertial.get_accel().z * 9.80665;
+		
+		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (20.0 / 1000.0));
+		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (20.0 / 1000.0));
+		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (20.0 / 1000.0));
+
+		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
+		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
+		lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
+
+		theta = inertial.get_heading();
+		moveToPosition(-1000, 1000, 0);
+	}
 }
 
 /**
@@ -186,20 +242,50 @@ void autonomous()
  */
 void opcontrol()
 {
+	inertial.tare();
 
 	while (true)
 	{
 		driveTicker.startTick();
+
+		/**
+		 * Acceleration is rate of change of velocity. The y values of an acceleration graph
+		 * are velocity values. This means area under the curve of an acceleration graph (integral)
+		 * is total velocity over time. The y values of a velocity graph are distance values. This means area under
+		 * the curve of a velocity graph (integral) is distance. 
+		 * 
+		 * Assuming constant acceleration, the equation
+		 * 
+		 * 		x = x0 + v0 * t + 1/2 * a * t^2 
+		 * 
+		 * is what this computes to get the new position of the robot.
+		 */
+		double xAccel = inertial.get_accel().x * 9.80665;
+		double yAccel = inertial.get_accel().y * 9.80665;
+		double zAccel = inertial.get_accel().z * 9.80665;
+		
+		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (20.0 / 1000.0));
+		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (20.0 / 1000.0));
+		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (20.0 / 1000.0));
+
+		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
+		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
+		lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
+
+		theta = inertial.get_heading();
+
+		pros::lcd::set_text(0, to_string(x) + " " + to_string(y) + " " + to_string(z) + " " + to_string(zAccel));
+
 		master.runUpdate();
 
 		if (recordingInput) {
 			recorder.recordUpdate();
 		}
 		
-		// Debug
-		pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-						 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-						 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
+		// // Debug
+		// pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
+		// 				 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
+		// 				 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
 
 		// Drive
 		int left = master.get_analog(ANALOG_LEFT_Y);
