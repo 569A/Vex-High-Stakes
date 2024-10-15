@@ -307,7 +307,7 @@ void opcontrol()
 				// This is to prevent the intake from initiating the scoring process multiple times for the same ring
 				if (intakeAvailable)
 				{
-					intake.move_relative(-3695, 600);
+					intake.move_relative(-3692, 600);
 					intakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
