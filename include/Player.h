@@ -13,8 +13,8 @@ private:
     int32_t nextDigitalR1 = 0;
     int32_t nextDigitalR2 = 0;
 
-    int index = 0;
 public:
+    int index = 0;
     Recording& recording;
 
     Player(Recording& recording);

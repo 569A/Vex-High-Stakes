@@ -47,7 +47,7 @@ public:
     //Getters
     int getAnalogLeftYValue(int index) {
         if (index >= analogLeftYValues.size()) {
-            return -1;
+            return 0;
         }
         return analogLeftYValues[index];
     }
@@ -87,6 +87,8 @@ public:
         return digitalR2Values[index];
     }
 
-    
+    bool isFinished(int index) {
+        return index >= analogLeftYValues.size();
+    }
 
 };

@@ -7,14 +7,14 @@ class Autonomous
 {
 private:
     DummyController &master;
-    pros::MotorGroup &leftDrive;
-    pros::MotorGroup &rightDrive;
+    okapi::MotorGroup &leftDrive;
+    okapi::MotorGroup &rightDrive;
     pros::Motor &intake;
     pros::ADIDigitalOut &pistonA;
     pros::ADIDigitalOut &pistonB;
     pros::Optical &optical;
     pros::Distance &distanceSensor;
 public:
-    Autonomous(DummyController &controller, pros::MotorGroup &leftDrive, pros::MotorGroup &rightDrive, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor);
+    Autonomous(DummyController &controller, okapi::MotorGroup &leftDrive, okapi::MotorGroup &rightDrive, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor);
     void run();
 };

@@ -20,7 +20,7 @@ bool autonIntakeAvailable = true;
 
 
 
-Autonomous::Autonomous(DummyController& controller, pros::MotorGroup& leftDrive, pros::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
+Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive, okapi::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
     // Initialize the autonomous class
 }
@@ -41,8 +41,8 @@ void Autonomous::run() {
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 
-		leftDrive.move_velocity(rawVoltageOutputLeft / 127 * 600);
-		rightDrive.move_velocity(rawVoltageOutputRight / 127 * 600);
+		leftDrive.moveVelocity(rawVoltageOutputLeft / 127 * 600);
+		rightDrive.moveVelocity(rawVoltageOutputRight / 127 * 600);
 
 		// Intake
 		if (autonManual)
@@ -103,6 +103,9 @@ void Autonomous::run() {
 				}
 				autonTicksSinceIntakeCandidateDetected++;
 			}	
+		}
+		if (master.player->recording.isFinished(master.player->index)) {
+			break;
 		}
 		autonTicker.waitTick();
 	}

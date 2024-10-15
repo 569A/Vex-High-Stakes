@@ -16,11 +16,11 @@ ControllerBase& masterRef = master;
 
 
 // Motor groups for drive
-pros::MotorGroup leftMotors({-11, 12, -13});
-pros::MotorGroup& leftMotorsRef = leftMotors;
+okapi::MotorGroup leftMotors({-11, 12, -13});
+okapi::MotorGroup& leftMotorsRef = leftMotors;
 
-pros::MotorGroup rightMotors({18, -19, 20});
-pros::MotorGroup& rightMotorsRef = rightMotors;
+okapi::MotorGroup rightMotors({18, -19, 20});
+okapi::MotorGroup& rightMotorsRef = rightMotors;
 
 // Intake
 pros::Motor intake(10);
@@ -155,31 +155,31 @@ void competition_initialize() {}
 
 
 // Prototype move to position function
-void moveToPosition(double absoluteX, double absoluteY, double absoluteTheta) {
-	double xdiff = absoluteX - x;
-	double ydiff = absoluteY - y;
+// void moveToPosition(double absoluteX, double absoluteY, double absoluteTheta) {
+// 	double xdiff = absoluteX - x;
+// 	double ydiff = absoluteY - y;
 	
-	double combinedVector = sqrt(pow(xdiff, 2) + pow(ydiff, 2));
-	double angleInDegrees = atan2(ydiff, xdiff) * 180 / M_PI;
+// 	double combinedVector = sqrt(pow(xdiff, 2) + pow(ydiff, 2));
+// 	double angleInDegrees = atan2(ydiff, xdiff) * 180 / M_PI;
 
-	double diff = angleInDegrees - theta;
+// 	double diff = angleInDegrees - theta;
 
-	if (diff > 180) {
-		diff -= 360;
-	}
+// 	if (diff > 180) {
+// 		diff -= 360;
+// 	}
 
-	double distanceScaleFactor = combinedVector / 1000;
-	double turnScaleFactor = abs(diff) / 180;
+// 	double distanceScaleFactor = combinedVector / 1000;
+// 	double turnScaleFactor = abs(diff) / 180;
 
-	if (diff < 0) {
-		leftMotors.move_velocity(-400 * turnScaleFactor + 200);
-		rightMotors.move_velocity(400 * turnScaleFactor + 200);
-	} else {
-		leftMotors.move_velocity(400 * turnScaleFactor + 200);
-		rightMotors.move_velocity(-400 * turnScaleFactor + 200);
-	}
+// 	if (diff < 0) {
+// 		leftMotors.move_velocity(-400 * turnScaleFactor + 200);
+// 		rightMotors.move_velocity(400 * turnScaleFactor + 200);
+// 	} else {
+// 		leftMotors.move_velocity(400 * turnScaleFactor + 200);
+// 		rightMotors.move_velocity(-400 * turnScaleFactor + 200);
+// 	}
 	
-}
+// }
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -196,35 +196,37 @@ void autonomous()
 {
 	// Incomplete
 	// Preferably with actual odom, but if it is accurate enough, we can use this
-	// auto drive = ChassisControllerBuilder()
-	// 				 .withMotors({11, -12, 13}, {-18, 19, -20})
-	// 				 .withDimensions(AbstractMotor::gearset::green, {{4_in * 0.75, 11.5_in, 2.5_in, 1.5_in}, imev5GreenTPR})
-	// 				 .withOdometry()
-	// 				 .buildOdometry();
-	// MotorGroup intake({-1, 10});
-	// pros::ADIDigitalOut pistonA('A');
-	// pros::ADIDigitalOut pistonB('B');
+	auto drive = ChassisControllerBuilder()
+					 .withMotors(leftMotors, rightMotors)
+					 .withDimensions(AbstractMotor::gearset::blue, {{3.25_in, 12.5625_in}, 300.0 * (48.0/36.0)})
+					 .withOdometry()
+					 .buildOdometry();
 
-	// // Test
+	// Test
 	// drive->setState({0_ft, 0_ft, 0_deg});
-	// drive->driveToPoint({1_ft, 1_ft});
-	// autonomousManager.run();
-	while (true) {
-		double xAccel = inertial.get_accel().x * 9.80665;
-		double yAccel = inertial.get_accel().y * 9.80665;
-		double zAccel = inertial.get_accel().z * 9.80665;
+	// drive->driveToPoint({.5_ft, 0_ft});
+	// 	drive->driveToPoint({4_ft, 2_ft});
+	autonomousManager.run();
+	drive->moveDistance(-1_ft);
+	pistonA.set_value(false);
+	pistonB.set_value(false);
+	intake.move_velocity(-600);
+	// while (true) {
+	// 	double xAccel = inertial.get_accel().x * 9.80665;
+	// 	double yAccel = inertial.get_accel().y * 9.80665;
+	// 	double zAccel = inertial.get_accel().z * 9.80665;
 		
-		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
-		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
-		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
+	// 	x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
+	// 	y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
+	// 	z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
 
-		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
-		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
-		lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
+	// 	lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
+	// 	lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
+	// 	lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
 
-		theta = inertial.get_heading(); 
-		moveToPosition(-1000, 1000, 0);
-	}
+	// 	theta = inertial.get_heading(); 
+	// 	moveToPosition(-1000, 1000, 0);
+	// }
 }
 
 /**
@@ -260,6 +262,9 @@ void opcontrol()
 		 * 
 		 * is what this computes to get the new position of the robot.
 		 */
+		if (!inertial.is_calibrating()) {
+			pros::lcd::set_text(0, "Calibrating");
+		
 		double xAccel = inertial.get_accel().x * 9.80665;
 		double yAccel = inertial.get_accel().y * 9.80665;
 		double zAccel = inertial.get_accel().z * 9.80665;
@@ -275,7 +280,7 @@ void opcontrol()
 		theta = inertial.get_heading();
 
 		pros::lcd::set_text(0, to_string(x) + " " + to_string(y) + " " + to_string(z) + " " + to_string(zAccel));
-
+		}
 		master.runUpdate();
 
 		if (recordingInput) {
@@ -332,8 +337,8 @@ void opcontrol()
 		// }
 		// leftMotors.move_velocity(leftVelocity + rightVelocity);
 		// rightMotors.move_velocity(leftVelocity - rightVelocity);
-		leftMotors.move_velocity(rawVoltageOutputLeft / 127 * velocity);
-		rightMotors.move_velocity(rawVoltageOutputRight / 127 * velocity);
+		leftMotors.moveVelocity(rawVoltageOutputLeft / 127 * velocity);
+		rightMotors.moveVelocity(rawVoltageOutputRight / 127 * velocity);
 		// leftMotors.move(left + right);
 		// rightMotors.move(left - right);
 
