@@ -214,15 +214,15 @@ void autonomous()
 		double yAccel = inertial.get_accel().y * 9.80665;
 		double zAccel = inertial.get_accel().z * 9.80665;
 		
-		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (20.0 / 1000.0));
-		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (20.0 / 1000.0));
-		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (20.0 / 1000.0));
+		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
+		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
+		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
 
 		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
 		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
 		lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
 
-		theta = inertial.get_heading();
+		theta = inertial.get_heading(); 
 		moveToPosition(-1000, 1000, 0);
 	}
 }
@@ -264,9 +264,9 @@ void opcontrol()
 		double yAccel = inertial.get_accel().y * 9.80665;
 		double zAccel = inertial.get_accel().z * 9.80665;
 		
-		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (20.0 / 1000.0));
-		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (20.0 / 1000.0));
-		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (20.0 / 1000.0));
+		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
+		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
+		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
 
 		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
 		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
