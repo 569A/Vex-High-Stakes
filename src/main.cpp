@@ -344,19 +344,20 @@ void opcontrol()
 
 		// Intake - manual control
 		if (manual) {
-		if (master.get_digital(DIGITAL_L1))
-		{
-			// Velocity depends on gearset 
-			intake.move_velocity(600);
-		}
-		else if (master.get_digital(DIGITAL_L2))
-		{
-			intake.move_velocity(-600);
-		}
-		else if (intakeAvailable) // If intake is automatically scoring, don't allow manual control
-		{
-			intake.move_velocity(0);
-		}
+			intakeAvailable = true;
+			if (master.get_digital(DIGITAL_L1))
+			{
+				// Velocity depends on gearset 
+				intake.move_velocity(600);
+			}
+			else if (master.get_digital(DIGITAL_L2))
+			{
+				intake.move_velocity(-600);
+			}
+			else
+			{
+				intake.move_velocity(0);
+			}
 		}
 
 		// MOGO Mechanism
