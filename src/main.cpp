@@ -207,10 +207,18 @@ void autonomous()
 	// drive->driveToPoint({.5_ft, 0_ft});
 	// 	drive->driveToPoint({4_ft, 2_ft});
 	autonomousManager.run();
-	drive->moveDistance(-1_ft);
-	pistonA.set_value(false);
-	pistonB.set_value(false);
-	intake.move_velocity(-600);
+	// drive->moveDistance(-1_ft);
+	// leftMotors.moveVelocity(-200);
+	// rightMotors.moveVelocity(-200);
+	// pros::delay(150);
+	// pistonA.set_value(false);
+	// pistonB.set_value(false);
+	// pros::delay(150);
+	intake.move_relative(-1876, 600);
+	// leftMotors.moveVelocity(0);
+	// rightMotors.moveVelocity(0);
+	// pistonA.set_value(true);
+	// pistonB.set_value(true);
 	// while (true) {
 	// 	double xAccel = inertial.get_accel().x * 9.80665;
 	// 	double yAccel = inertial.get_accel().y * 9.80665;

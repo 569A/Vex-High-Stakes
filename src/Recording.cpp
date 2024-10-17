@@ -26,7 +26,7 @@ void Recording::serializeToFile(std::string filename) {
             fprintf(file, "%d,", digitalL1Values[i]);
             fprintf(file, "%d,", digitalL2Values[i]);
             fprintf(file, "%d,", digitalR1Values[i]);
-            fprintf(file, "%d\n", digitalR2Values[i]);
+            fprintf(file, "%d,\n", digitalR2Values[i]);
         }
         fclose(file);
     } else {
