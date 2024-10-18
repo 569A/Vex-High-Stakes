@@ -37,6 +37,16 @@ void Autonomous::run() {
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
 
+		// Prevent drift when idle
+		if (abs(left) < 10)
+		{
+			left = 0;
+		}
+		if (abs(right) < 10)
+		{
+			right = 0;
+		}
+		
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 
