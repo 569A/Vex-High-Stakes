@@ -3,6 +3,7 @@
 #include "Autonomous.h"
 #include "Recording.h"
 #include "Ticker.h"
+#include "SlewRateController.h"
 #include <cmath>
 
 using namespace std;
@@ -99,6 +100,10 @@ double lastYVelocity = 0;
 double lastZVelocity = 0;
 
 double theta = 0;
+
+// Slew Rate Controller for Drive
+SlewRateController leftDriveSlewRateController(60);
+SlewRateController rightDriveSlewRateController(60);
 
 /**
  * A callback function for LLEMU's center button.
@@ -227,8 +232,10 @@ void opcontrol()
 		 * 		easier for the driver.
 		 */
 		
-		leftMotors.moveVelocity(rawVoltageOutputLeft / 127 * velocity);
-		rightMotors.moveVelocity(rawVoltageOutputRight / 127 * velocity);
+		int leftVelocity = rawVoltageOutputLeft / 127 * velocity;
+		int rightVelocity = rawVoltageOutputRight / 127 * velocity;
+		leftMotors.moveVelocity(leftDriveSlewRateController.calculate(leftVelocity));
+		rightMotors.moveVelocity(rightDriveSlewRateController.calculate(rightVelocity));
 
 		// Intake - manual control
 		if (manual) {

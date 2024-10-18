@@ -9,6 +9,7 @@
 #include "Autonomous.h"
 #include "DummyController.h"
 #include "Ticker.h"
+#include "SlewRateController.h"
 
 Ticker autonTicker(20);
 int decreasedSensitivityFactor = 3;
@@ -18,7 +19,8 @@ int autonTicksSinceIntakeCandidateDetected = 0;
 bool autonIntakeCandidateDetected = false;
 bool autonIntakeAvailable = true;
 
-
+SlewRateController autonLeftDriveSlewRateController(60);
+SlewRateController autonRightDriveSlewRateController(60);
 
 Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive, okapi::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
@@ -38,8 +40,11 @@ void Autonomous::run() {
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 
-		leftDrive.moveVelocity(rawVoltageOutputLeft / 127 * 600);
-		rightDrive.moveVelocity(rawVoltageOutputRight / 127 * 600);
+		int leftVelocity = rawVoltageOutputLeft / 127 * 600;
+		int rightVelocity = rawVoltageOutputRight / 127 * 600;
+
+		leftDrive.moveVelocity(autonLeftDriveSlewRateController.calculate(leftVelocity));
+		rightDrive.moveVelocity(autonRightDriveSlewRateController.calculate(rightVelocity));
 
 		// Intake
 		if (autonManual)
