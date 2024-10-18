@@ -118,15 +118,12 @@ void on_center_button()
  * to keep execution time for this mode under a few seconds.
  */
 void initialize()
-{
-	// Pros check if program exists on SD card
-	
+{	
 	pros::lcd::initialize();
+
+	// Mogo Mechanism open by default
 	pistonA.set_value(true);
 	pistonB.set_value(true);
-
-	// leftMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
-	// rightMotors.set_brake_modes(MOTOR_BRAKE_BRAKE);
 	
 	pros::lcd::set_text(1, "Initialized!");
 	master.print(0, 0, "Manual: %d", manual);
@@ -153,34 +150,6 @@ void disabled() {}
  */
 void competition_initialize() {}
 
-
-// Prototype move to position function
-// void moveToPosition(double absoluteX, double absoluteY, double absoluteTheta) {
-// 	double xdiff = absoluteX - x;
-// 	double ydiff = absoluteY - y;
-	
-// 	double combinedVector = sqrt(pow(xdiff, 2) + pow(ydiff, 2));
-// 	double angleInDegrees = atan2(ydiff, xdiff) * 180 / M_PI;
-
-// 	double diff = angleInDegrees - theta;
-
-// 	if (diff > 180) {
-// 		diff -= 360;
-// 	}
-
-// 	double distanceScaleFactor = combinedVector / 1000;
-// 	double turnScaleFactor = abs(diff) / 180;
-
-// 	if (diff < 0) {
-// 		leftMotors.move_velocity(-400 * turnScaleFactor + 200);
-// 		rightMotors.move_velocity(400 * turnScaleFactor + 200);
-// 	} else {
-// 		leftMotors.move_velocity(400 * turnScaleFactor + 200);
-// 		rightMotors.move_velocity(-400 * turnScaleFactor + 200);
-// 	}
-	
-// }
-
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -194,47 +163,17 @@ void competition_initialize() {}
  */
 void autonomous()
 {
+	// We will be using my rerun implementation this tournament.
+	autonomousManager.run();
+	intake.move_relative(-1876, 600);
 	// Incomplete
 	// Preferably with actual odom, but if it is accurate enough, we can use this
-	auto drive = ChassisControllerBuilder()
-					 .withMotors(leftMotors, rightMotors)
-					 .withDimensions(AbstractMotor::gearset::blue, {{3.25_in, 12.5625_in}, 300.0 * (48.0/36.0)})
-					 .withOdometry()
-					 .buildOdometry();
+	// auto drive = ChassisControllerBuilder()
+	// 				 .withMotors(leftMotors, rightMotors)
+	// 				 .withDimensions(AbstractMotor::gearset::blue, {{3.25_in, 12.5625_in}, 300.0 * (48.0/36.0)})
+	// 				 .withOdometry()
+	// 				 .buildOdometry();
 
-	// Test
-	// drive->setState({0_ft, 0_ft, 0_deg});
-	// drive->driveToPoint({.5_ft, 0_ft});
-	// 	drive->driveToPoint({4_ft, 2_ft});
-	autonomousManager.run();
-	// drive->moveDistance(-1_ft);
-	// leftMotors.moveVelocity(-200);
-	// rightMotors.moveVelocity(-200);
-	// pros::delay(150);
-	// pistonA.set_value(false);
-	// pistonB.set_value(false);
-	// pros::delay(150);
-	intake.move_relative(-1876, 600);
-	// leftMotors.moveVelocity(0);
-	// rightMotors.moveVelocity(0);
-	// pistonA.set_value(true);
-	// pistonB.set_value(true);
-	// while (true) {
-	// 	double xAccel = inertial.get_accel().x * 9.80665;
-	// 	double yAccel = inertial.get_accel().y * 9.80665;
-	// 	double zAccel = inertial.get_accel().z * 9.80665;
-		
-	// 	x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
-	// 	y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
-	// 	z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
-
-	// 	lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
-	// 	lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
-	// 	lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
-
-	// 	theta = inertial.get_heading(); 
-	// 	moveToPosition(-1000, 1000, 0);
-	// }
 }
 
 /**
@@ -252,54 +191,15 @@ void autonomous()
  */
 void opcontrol()
 {
-	inertial.tare();
-
 	while (true)
 	{
 		driveTicker.startTick();
-
-		/**
-		 * Acceleration is rate of change of velocity. The y values of an acceleration graph
-		 * are velocity values. This means area under the curve of an acceleration graph (integral)
-		 * is total velocity over time. The y values of a velocity graph are distance values. This means area under
-		 * the curve of a velocity graph (integral) is distance. 
-		 * 
-		 * Assuming constant acceleration, the equation
-		 * 
-		 * 		x = x0 + v0 * t + 1/2 * a * t^2 
-		 * 
-		 * is what this computes to get the new position of the robot.
-		 */
-		if (!inertial.is_calibrating()) {
-			pros::lcd::set_text(0, "Calibrating");
-		
-		double xAccel = inertial.get_accel().x * 9.80665;
-		double yAccel = inertial.get_accel().y * 9.80665;
-		double zAccel = inertial.get_accel().z * 9.80665;
-		
-		x = x + (lastXVelocity * 20.0) + (0.5 * xAccel * (pow(20.0, 2) / 1000.0));
-		y = y + (lastYVelocity * 20.0) + (0.5 * yAccel * (pow (20.0, 2) / 1000.0));
-		z = z + (lastZVelocity * 20.0) + (0.5 * zAccel * (pow(20.0, 2) / 1000.0));
-
-		lastXVelocity = lastXVelocity + xAccel * (20.0 / 1000.0);
-		lastYVelocity = lastYVelocity + yAccel * (20.0 / 1000.0);
-		lastZVelocity = lastZVelocity + zAccel * (20.0 / 1000.0);
-
-		theta = inertial.get_heading();
-
-		pros::lcd::set_text(0, to_string(x) + " " + to_string(y) + " " + to_string(z) + " " + to_string(zAccel));
-		}
 		master.runUpdate();
 
 		if (recordingInput) {
 			recorder.recordUpdate();
 		}
 		
-		// // Debug
-		// pros::lcd::print(0, "%d %d %d", (pros::lcd::read_buttons() & LCD_BTN_LEFT) >> 2,
-		// 				 (pros::lcd::read_buttons() & LCD_BTN_CENTER) >> 1,
-		// 				 (pros::lcd::read_buttons() & LCD_BTN_RIGHT) >> 0);
-
 		// Drive
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
@@ -327,28 +227,8 @@ void opcontrol()
 		 * 		easier for the driver.
 		 */
 		
-		// Scale the voltage to the max velocity of the motor
-		// double leftVelocity = rawVoltageOutputLeft / 127 * velocity;
-		// double rightVelocity = rawVoltageOutputRight / 127 * velocity;
-
-		// turning = abs(right) > 30;
-		// if (turning) {
-		// 	currentTurnDecrement *= turnDecrement;
-		// 	leftVelocity *= currentTurnDecrement;
-		// 	rightVelocity *= currentTurnDecrement;
-		// 	if (currentTurnDecrement < 0.1) {
-		// 		turning = false;
-		// 		currentTurnDecrement = 1;
-		// 	}
-		// } else {
-		// 	currentTurnDecrement = 1;
-		// }
-		// leftMotors.move_velocity(leftVelocity + rightVelocity);
-		// rightMotors.move_velocity(leftVelocity - rightVelocity);
 		leftMotors.moveVelocity(rawVoltageOutputLeft / 127 * velocity);
 		rightMotors.moveVelocity(rawVoltageOutputRight / 127 * velocity);
-		// leftMotors.move(left + right);
-		// rightMotors.move(left - right);
 
 		// Intake - manual control
 		if (manual) {

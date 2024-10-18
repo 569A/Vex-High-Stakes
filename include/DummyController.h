@@ -8,9 +8,6 @@
 class DummyController : public ControllerBase {
 private:
     int twentyMsecIter = 0;
-    // # of times has been iterated at 20 msec intervals.
-
-
 
 
     bool isPlaying = true;

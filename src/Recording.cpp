@@ -54,16 +54,8 @@ void Recording::deserializeFromFile(const std::string filename) {
 
     while (fgets(dataChunk, 256, file) != NULL) {
         pros::lcd::set_text(4, dataChunk);
-        // Extract data from string
         std::string dataString = "";
-        /*
-            fprintf(file, "%d,", analogLeftYValues[i]);
-            fprintf(file, "%d,", analogRightYValues[i]);
-            fprintf(file, "%d,", digitalL1Values[i]);
-            fprintf(file, "%d,", digitalL2Values[i]);
-            fprintf(file, "%d,", digitalR1Values[i]);
-            fprintf(file, "%d\n", digitalR2Values[i]);
-        */
+
        int inputIndex = 0;
         while (dataChunk[i] != '\0') {
             if (dataChunk[i] == ',') {
