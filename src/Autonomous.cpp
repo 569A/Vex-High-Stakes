@@ -22,7 +22,6 @@ bool autonIntakeAvailable = true;
 
 Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive, okapi::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
-    // Initialize the autonomous class
 }
 
 void Autonomous::run() {
@@ -32,12 +31,10 @@ void Autonomous::run() {
 		autonTicker.startTick();
         master.runUpdate();
 		
-		// Debug
-
 		// Drive
 		int left = master.get_analog(ANALOG_LEFT_Y);
 		int right = master.get_analog(ANALOG_RIGHT_Y);
-		pros::lcd::set_text(0, std::to_string(left));
+
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 
@@ -56,7 +53,7 @@ void Autonomous::run() {
 			{
 				intake.move_velocity(-600);
 			}
-			else if (autonIntakeAvailable) // If intake is automatically scoring, don't allow manual control
+			else
 			{
 				intake.move_velocity(0);
 			}
@@ -65,13 +62,11 @@ void Autonomous::run() {
 		// MOGO Mechanism
 		if (master.get_digital(DIGITAL_R1))
 		{
-			// recorder.listenerMOGO(true);
 			pistonA.set_value(true);
 			pistonB.set_value(true);
 		}
 		else if (master.get_digital(DIGITAL_R2))
 		{
-			// recorder.listenerMOGO(false);
 			pistonA.set_value(false);
 			pistonB.set_value(false);
 		}
@@ -81,13 +76,13 @@ void Autonomous::run() {
 			break;
 		}
 
-		if (distanceSensor.get() < 100)
+		if (!autonManual && distanceSensor.get() < 100)
 		{
-					// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
+			// intakeAvailable stops interference with intake after it has detected a ring and is starting to score
 			if (autonTicksSinceIntakeCandidateDetected > 3) {
 				if (autonIntakeAvailable)
 				{
-					intake.move_relative(-3695, 600);
+					intake.move_relative(-3692, 600);
 					autonIntakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
@@ -109,8 +104,6 @@ void Autonomous::run() {
 		}
 		autonTicker.waitTick();
 	}
-
-	// Optical
 }
 
 
