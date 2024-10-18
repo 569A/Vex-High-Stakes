@@ -234,8 +234,13 @@ void opcontrol()
 		
 		int leftVelocity = rawVoltageOutputLeft / 127 * velocity;
 		int rightVelocity = rawVoltageOutputRight / 127 * velocity;
-		leftMotors.moveVelocity(leftDriveSlewRateController.calculate(leftVelocity));
-		rightMotors.moveVelocity(rightDriveSlewRateController.calculate(rightVelocity));
+		if (recordingInput) {	
+			leftMotors.moveVelocity(leftDriveSlewRateController.calculate(leftVelocity));
+			rightMotors.moveVelocity(rightDriveSlewRateController.calculate(rightVelocity));
+		} else {
+			leftMotors.moveVelocity(leftVelocity);
+			rightMotors.moveVelocity(rightVelocity);
+		}
 
 		// Intake - manual control
 		if (manual) {

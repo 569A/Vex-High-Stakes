@@ -23,5 +23,6 @@ int SlewRateController::calculate(int value) {
         change = slewRate;
     }
     int newValue = lastValue + change;
+    lastValue = newValue;
     return newValue;
 }
