@@ -104,6 +104,9 @@ SlewRateController rightDriveSlewRateController(60);
 // Stage for recording
 int stage = 1;
 
+// Competition Mode
+bool competitionMode = false;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -152,8 +155,9 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
-
+void competition_initialize() {
+	competitionMode = true;
+}
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -292,7 +296,7 @@ void opcontrol()
 		}
 
 		// Saves recording
-		if (master.get_digital(DIGITAL_UP))
+		if (master.get_digital(DIGITAL_UP) && !competitionMode)
 		{
 			if (!digitalUpButtonHeld) {
 				digitalUpButtonHeld = true;
@@ -308,7 +312,7 @@ void opcontrol()
 		}
 
 		// Starts recording
-		if (master.get_digital(DIGITAL_DOWN))
+		if (master.get_digital(DIGITAL_DOWN) && !competitionMode)
 		{
 			if (!digitalDownButtonHeld) {
 				digitalDownButtonHeld = true;
@@ -320,20 +324,20 @@ void opcontrol()
 		}
 
 		// Selects which stage of auton to record (begins at 0, can record as many as you want)
-		if (master.get_digital(DIGITAL_LEFT))
+		if (master.get_digital(DIGITAL_LEFT) && !competitionMode)
 		{
 			if (!digitalLeftButtonHeld) {
 				digitalLeftButtonHeld = true;
 				// Stage cannot be less than 0
 				stage = (stage - 1 < 0) ? 0 : stage - 1;
-				master.print(1, 0, "Stage: %d", stage);
+				master.print(2, 0, "Stage: %d", stage);
 			}
 			
 		} else {
 			digitalLeftButtonHeld = false;
 
 		}
-		if (master.get_digital(DIGITAL_RIGHT))
+		if (master.get_digital(DIGITAL_RIGHT) && !competitionMode)
 		{
 			if (!digitalRightButtonHeld) {
 				digitalRightButtonHeld = true;
@@ -383,7 +387,7 @@ void opcontrol()
 			digitalBButtonHeld = false;
 		}
 
-		if (master.get_digital(DIGITAL_A))
+		if (master.get_digital(DIGITAL_A) && !competitionMode)
 		{
 			if (!digitalAButtonHeld) {
 				digitalAButtonHeld = true;
