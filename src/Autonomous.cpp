@@ -26,6 +26,8 @@ Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
 }
 
+// Readies the next stage of the autonomous program
+// This is in case we want to run a bit of manual code in between driver records. (Manual intake movement in this instance)
 void Autonomous::updateStage() {
 	stage++;
 	master.player->index = 0;

@@ -172,9 +172,17 @@ void competition_initialize() {}
 void autonomous()
 {
 	// We will be using my rerun implementation this tournament.
-	autonomousManager.run();
+	/**
+	 * Stage System:
+	 * 	Driver runs are stored in files on the sd card. Each file is a stage.
+	 * 	Each stage is a different part of the auton.
+	 *  Running autonomousManager.run() plays the next stage. Stages are determined by their
+	 *  file name on the sd card, and are read and saved as such.
+	 */
+	autonomousManager.run(); // Runs the first stage of the auton
 	intake.move_relative(-1876, 600);
-	autonomousManager.run();
+	autonomousManager.run(); // Runs the next stage of the auton
+
 	// Incomplete
 	// Preferably with actual odom, but if it is accurate enough, we can use this
 	// auto drive = ChassisControllerBuilder()
@@ -299,12 +307,12 @@ void opcontrol()
 			pros::lcd::set_text(6, "Recording started!");
 		}
 
-		// Selects which stage of auton to record
+		// Selects which stage of auton to record (begins at 0, can record as many as you want)
 		if (master.get_digital(DIGITAL_LEFT))
 		{
 			if (!digitalLeftButtonHeld) {
 				digitalLeftButtonHeld = true;
-				
+				// Stage cannot be less than 0
 				stage = (stage - 1 < 0) ? 0 : stage - 1;
 				master.print(1, 0, "Stage: %d", stage);
 			}
