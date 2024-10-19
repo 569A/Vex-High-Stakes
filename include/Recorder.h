@@ -63,5 +63,5 @@ public:
 
     Recording& getRecording();
 
-    void saveRecording();
+    void saveRecording(int stage);
 };

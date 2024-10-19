@@ -15,7 +15,6 @@ recording(recording) {
 
 void Player::runUpdate() {
     if (index == 0) {
-        recording.deserializeFromFile("Rerun.569A");
         pros::lcd::set_text(1, std::to_string(recording.recordingValid));
     }
     // Run the player update loop

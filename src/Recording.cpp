@@ -13,6 +13,7 @@
 
 
 void Recording::serializeToFile(std::string filename) {
+    this->filename = filename;
     // Serialize the recording to a file
     // /usd/ is needed for PROS to write to the SD card
     FILE* file = fopen(("/usd/" + filename).c_str(), "w");
@@ -35,6 +36,7 @@ void Recording::serializeToFile(std::string filename) {
 }
 
 void Recording::deserializeFromFile(const std::string filename) {
+    this->filename = filename;
     FILE* file = fopen(("/usd/" + filename).c_str(), "r");
     if (file == NULL) {
         recordingValid = false;
@@ -85,4 +87,8 @@ void Recording::deserializeFromFile(const std::string filename) {
     }
 
     fclose(file);
+}
+
+std::string Recording::getFileName() {
+    return filename;
 }

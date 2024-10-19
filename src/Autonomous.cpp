@@ -26,8 +26,16 @@ Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive
 : master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
 }
 
-void Autonomous::run() {
+void Autonomous::updateStage() {
+	stage++;
+	master.player->index = 0;
+	master.player->recording.deserializeFromFile(master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
+}
 
+void Autonomous::run() {
+	if (stage == 0) {
+		master.player->recording.deserializeFromFile("Rerun.569A");
+	}
 	while (true)
 	{
 		autonTicker.startTick();
@@ -119,6 +127,7 @@ void Autonomous::run() {
 		}
 		autonTicker.waitTick();
 	}
+	updateStage();
 }
 
 

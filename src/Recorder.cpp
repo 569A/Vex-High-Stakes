@@ -59,7 +59,12 @@ Recording& Recorder::getRecording() {
     return recording;
 }
 
-void Recorder::saveRecording() {
+void Recorder::saveRecording(int stage) {
     // Save the recording to a file
-    recording.serializeToFile("Rerun.569A");
+    if (stage == 0) {
+        // Backwards compatibility with old recordings before stages were implemented
+        recording.serializeToFile("Rerun.569A");
+        return;
+    }
+    recording.serializeToFile("Rerun.569A-stage-" + to_string(stage));
 }

@@ -105,6 +105,9 @@ double theta = 0;
 SlewRateController leftDriveSlewRateController(60);
 SlewRateController rightDriveSlewRateController(60);
 
+// Stage for recording
+int stage = 1;
+
 /**
  * A callback function for LLEMU's center button.
  *
@@ -171,6 +174,7 @@ void autonomous()
 	// We will be using my rerun implementation this tournament.
 	autonomousManager.run();
 	intake.move_relative(-1876, 600);
+	autonomousManager.run();
 	// Incomplete
 	// Preferably with actual odom, but if it is accurate enough, we can use this
 	// auto drive = ChassisControllerBuilder()
@@ -196,6 +200,9 @@ void autonomous()
  */
 void opcontrol()
 {
+	bool digitalLeftButtonHeld = false;
+	bool digitalRightButtonHeld = false;
+
 	while (true)
 	{
 		driveTicker.startTick();
@@ -274,20 +281,48 @@ void opcontrol()
 			pistonB.set_value(false);
 		}
 
+		// Saves recording
 		if (master.get_digital(DIGITAL_UP))
 		{
 			if (recordingInput) {
-				recorder.saveRecording();
+				recorder.saveRecording(stage);
 				pros::lcd::set_text(6, "Recording saved!");
 			} else {
 				recordingInput = true;
 			}
 		}
 
+		// Starts recording
 		if (master.get_digital(DIGITAL_DOWN))
 		{
 			recordingInput = true;
 			pros::lcd::set_text(6, "Recording started!");
+		}
+
+		// Selects which stage of auton to record
+		if (master.get_digital(DIGITAL_LEFT))
+		{
+			if (!digitalLeftButtonHeld) {
+				digitalLeftButtonHeld = true;
+				
+				stage = (stage - 1 < 0) ? 0 : stage - 1;
+				master.print(1, 0, "Stage: %d", stage);
+			}
+			
+		} else {
+			digitalLeftButtonHeld = false;
+
+		}
+		if (master.get_digital(DIGITAL_RIGHT))
+		{
+			if (!digitalRightButtonHeld) {
+				digitalRightButtonHeld = true;
+				
+				stage = (stage + 1 > 5) ? 5 : stage + 1;
+				master.print(1, 0, "Stage: %d", stage);
+			}
+		} else {
+			digitalRightButtonHeld = false;
 		}
 
 		// Automatic intake scoring - currently works, but delay code not working yet

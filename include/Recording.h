@@ -13,6 +13,8 @@ private:
 
     std::vector<int> digitalR1Values;
     std::vector<int> digitalR2Values;
+
+    std::string filename;
 public:
     bool recordingValid = true;
 
@@ -91,4 +93,14 @@ public:
         return index >= analogLeftYValues.size();
     }
 
+    void reset() {
+        analogLeftYValues.clear();
+        analogRightYValues.clear();
+        digitalL1Values.clear();
+        digitalL2Values.clear();
+        digitalR1Values.clear();
+        digitalR2Values.clear();
+    }
+
+    std::string getFileName();
 };
