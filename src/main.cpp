@@ -86,10 +86,6 @@ int ticksSinceIntakeCandidateDetected = 0;
 // Drivetrain Velocity
 int velocity = 600;
 
-// Button Timer
-int manualButtonUnpressableTicks = 0;
-int velocityButtonUnpressableTicks = 0;
-
 // Position tracking (EXPERIMENTAL)
 double x = 0;
 double y = 0;
@@ -208,8 +204,14 @@ void autonomous()
  */
 void opcontrol()
 {
+	bool digitalUpButtonHeld = false;
+	bool digitalDownButtonHeld = false;
+
 	bool digitalLeftButtonHeld = false;
 	bool digitalRightButtonHeld = false;
+
+	bool digitalBButtonHeld = false;
+	bool digitalAButtonHeld = false;
 
 	while (true)
 	{
@@ -292,19 +294,29 @@ void opcontrol()
 		// Saves recording
 		if (master.get_digital(DIGITAL_UP))
 		{
-			if (recordingInput) {
-				recorder.saveRecording(stage);
-				pros::lcd::set_text(6, "Recording saved!");
-			} else {
-				recordingInput = true;
-			}
+			if (!digitalUpButtonHeld) {
+				digitalUpButtonHeld = true;
+				if (recordingInput) {
+					recorder.saveRecording(stage);
+					pros::lcd::set_text(6, "Recording saved!");
+				} else {
+					recordingInput = true;
+				}
+			} 
+		} else {
+			digitalUpButtonHeld = false;
 		}
 
 		// Starts recording
 		if (master.get_digital(DIGITAL_DOWN))
 		{
-			recordingInput = true;
-			pros::lcd::set_text(6, "Recording started!");
+			if (!digitalDownButtonHeld) {
+				digitalDownButtonHeld = true;
+				recordingInput = true;
+				pros::lcd::set_text(6, "Recording started!");
+			}
+		} else {
+			digitalDownButtonHeld = false;
 		}
 
 		// Selects which stage of auton to record (begins at 0, can record as many as you want)
@@ -360,26 +372,26 @@ void opcontrol()
 			}
 		}
 
-		if (master.get_digital(DIGITAL_B) && manualButtonUnpressableTicks == 0)
+		if (master.get_digital(DIGITAL_B))
 		{
-			manual = !manual;
-			master.print(0, 0, "Manual: %d", manual);
-			manualButtonUnpressableTicks = 10;
-		} else {
-			if (manualButtonUnpressableTicks > 0) {
-				manualButtonUnpressableTicks--;
+			if (!digitalBButtonHeld) {
+				digitalBButtonHeld = true;
+				manual = !manual;
+				master.print(0, 0, "Manual: %d", manual);
 			}
+		} else {
+			digitalBButtonHeld = false;
 		}
 
-		if (master.get_digital(DIGITAL_A) && velocityButtonUnpressableTicks == 0)
+		if (master.get_digital(DIGITAL_A))
 		{
-			velocity = (velocity == 600) ? 200 : 600;
-			master.print(1, 1, "Velocity: %d", velocity);
-			velocityButtonUnpressableTicks = 10;
+			if (!digitalAButtonHeld) {
+				digitalAButtonHeld = true;
+				velocity = (velocity == 600) ? 200 : 600;
+				master.print(1, 1, "Velocity: %d", velocity);
+			}		
 		} else {
-			if (velocityButtonUnpressableTicks > 0) {
-				velocityButtonUnpressableTicks--;
-			}
+			digitalAButtonHeld = false;
 		}
 
 		// Get data for distance sensor for testing purposes
