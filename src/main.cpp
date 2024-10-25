@@ -180,7 +180,7 @@ void autonomous()
 	 *  file name on the sd card, and are read and saved as such.
 	 */
 	autonomousManager.run(); // Runs the first stage of the auton
-	intake.move_relative(-1876, 600);
+	intake.move_relative(-1896, 600);
 	autonomousManager.run(); // Runs the next stage of the auton
 
 	// Incomplete
@@ -358,7 +358,7 @@ void opcontrol()
 				// This is to prevent the intake from initiating the scoring process multiple times for the same ring
 				if (intakeAvailable)
 				{
-					intake.move_relative(-3692, 600);
+					intake.move_relative(2250, 600);
 					intakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
