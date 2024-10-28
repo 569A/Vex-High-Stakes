@@ -180,7 +180,7 @@ void autonomous()
 	 *  file name on the sd card, and are read and saved as such.
 	 */
 	autonomousManager.run(); // Runs the first stage of the auton
-	intake.move_relative(-1896, 600);
+	intake.move_relative(1200, 600);
 	autonomousManager.run(); // Runs the next stage of the auton
 
 	// Incomplete
@@ -343,7 +343,7 @@ void opcontrol()
 				digitalRightButtonHeld = true;
 				
 				stage = (stage + 1 > 5) ? 5 : stage + 1;
-				master.print(1, 0, "Stage: %d", stage);
+				master.print(2, 0, "Stage: %d", stage);
 			}
 		} else {
 			digitalRightButtonHeld = false;

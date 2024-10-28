@@ -88,7 +88,3 @@ void Recording::deserializeFromFile(const std::string filename) {
 
     fclose(file);
 }
-
-std::string Recording::getFileName() {
-    return filename;
-}

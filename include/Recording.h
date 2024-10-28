@@ -102,5 +102,7 @@ public:
         digitalR2Values.clear();
     }
 
-    std::string getFileName();
+    std::string getFileName() {
+        return "Rerun.569A";
+    }
 };
