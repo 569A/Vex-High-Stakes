@@ -1,7 +1,7 @@
 #include "DriverControl.h"
 
-DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, AutonSelector &autonSelector) :
-    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor), autonSelector(autonSelector) {
+DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder) :
+    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor), recorder(recorder) {
 
 
 }

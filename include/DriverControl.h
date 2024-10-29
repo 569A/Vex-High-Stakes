@@ -5,17 +5,13 @@
 #include "Recording.h"
 #include "Recorder.h"
 #include "SlewRateController.h"
-#include "AutonSelector.h"
 
 class DriverControl
 {
 private:
-    AutonSelector &autonSelector;
-
     Ticker driveTicker = Ticker(20);
     bool recordingInput = false;
-    Recording recording = Recording(autonSelector);
-    Recorder recorder = Recorder(master, recording);
+    Recorder &recorder;
     int decreasedSensitivityFactor = 3;
     int velocity = 600;
     SlewRateController leftDriveSlewRateController = SlewRateController(60);
@@ -37,7 +33,7 @@ private:
     pros::Optical &optical;
     pros::Distance &distanceSensor;
 public:
-    DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, AutonSelector &autonSelector);
+    DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder);
     void run();
     void setCompetitonMode(bool mode) {
         competitionMode = mode;

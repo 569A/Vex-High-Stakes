@@ -55,6 +55,7 @@ Recording& recordingRef = recording;
 
 // Recorder
 Recorder recorder(masterRef, recordingRef);
+Recorder &recorderRef = recorder;
 
 // Player
 Player player(recordingRef);
@@ -67,7 +68,7 @@ DummyController& dummyRef = dummy;
 Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef);
 
 // Driver Control
-DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef, autonSelectorRef);
+DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef, recorderRef);
 
 // Position tracking (EXPERIMENTAL)
 double x = 0;
