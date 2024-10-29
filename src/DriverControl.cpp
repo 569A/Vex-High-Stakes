@@ -1,7 +1,7 @@
 #include "DriverControl.h"
 
-DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor) :
-    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
+DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, AutonSelector &autonSelector) :
+    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor), autonSelector(autonSelector) {
 
 
 }
@@ -202,4 +202,5 @@ void DriverControl::run() {
 		pros::lcd::set_text(2, to_string(intake.get_position()));
 		// pros::lcd::set_text(3, to_string(inertial.get_heading()));
 		driveTicker.waitTick();
+	} 
 }

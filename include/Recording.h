@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include "main.h"
+#include "AutonSelector.h"
 
 class Recording {
 private:

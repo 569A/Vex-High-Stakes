@@ -67,7 +67,7 @@ DummyController& dummyRef = dummy;
 Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef);
 
 // Driver Control
-DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef);
+DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef, autonSelectorRef);
 
 // Position tracking (EXPERIMENTAL)
 double x = 0;
