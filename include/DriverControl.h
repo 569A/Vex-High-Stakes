@@ -19,7 +19,7 @@ private:
     bool manual = false;
     bool intakeAvailable = true;
     bool competitionMode = false;
-    int stage = 1;
+    int stage = 0;
     int ticksSinceIntakeCandidateDetected = 0;
     int ticksPerIntakeCheck = 4;
     bool intakeCandidateDetected = false;
