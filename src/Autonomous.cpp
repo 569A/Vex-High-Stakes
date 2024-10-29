@@ -36,7 +36,7 @@ void Autonomous::updateStage() {
 
 void Autonomous::run() {
 	if (stage == 0) {
-		master.player->recording.deserializeFromFile("Rerun.569A");
+		master.player->recording.deserializeFromFile(master.player->recording.getFileName());
 	}
 	while (true)
 	{

@@ -14,8 +14,9 @@ private:
     std::vector<int> digitalR1Values;
     std::vector<int> digitalR2Values;
 
-    std::string filename;
+    AutonSelector& autonSelector;
 public:
+    Recording(AutonSelector& autonSelector);
     bool recordingValid = true;
 
     void serializeToFile(std::string filename);
@@ -102,7 +103,5 @@ public:
         digitalR2Values.clear();
     }
 
-    std::string getFileName() {
-        return "Rerun.569A";
-    }
+    std::string getFileName(); 
 };

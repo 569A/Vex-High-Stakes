@@ -3,6 +3,7 @@
 #include "Autonomous.h"
 #include "Recording.h"
 #include "DriverControl.h"
+#include "AutonSelector.h"
 #include <cmath>
 
 using namespace std;
@@ -44,8 +45,12 @@ pros::Distance& distanceRef = distanceSensor;
 pros::IMU inertial(8);
 pros::IMU& inertialRef = inertial;
 
+// Auton Selector
+AutonSelector autonSelector;
+AutonSelector& autonSelectorRef = autonSelector;
+
 // Recording
-Recording recording;
+Recording recording(autonSelectorRef);
 Recording& recordingRef = recording;
 
 // Recorder
@@ -78,12 +83,12 @@ double theta = 0;
 /**
  * A callback function for LLEMU's center button.
  *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
+ * Toggles auton (Auton Selector)
  */
 void on_center_button()
 {
-	colorMode = (colorMode == "blue") ? "red" : "blue";
+	autonSelector.toggleAuton();
+	pros::lcd::set_text(4, autonSelector.getAuton());
 }
 
 /**
@@ -95,7 +100,8 @@ void on_center_button()
 void initialize()
 {	
 	pros::lcd::initialize();
-
+	pros::lcd::set_background_color(LV_COLOR_BLACK);
+	pros::lcd::set_text(4, autonSelector.getAuton());
 	// Mogo Mechanism open by default
 	pistonA.set_value(true);
 	pistonB.set_value(true);
