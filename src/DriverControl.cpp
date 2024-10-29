@@ -116,6 +116,7 @@ void DriverControl::run() {
 			if (!digitalDownButtonHeld) {
 				digitalDownButtonHeld = true;
 				recordingInput = true;
+				recorder.resetRecording();
 				pros::lcd::set_text(6, "Recording started!");
 			}
 		} else {
@@ -157,7 +158,7 @@ void DriverControl::run() {
 				// This is to prevent the intake from initiating the scoring process multiple times for the same ring
 				if (intakeAvailable)
 				{
-					intake.move_relative(2250, 600);
+					intake.move_relative(2242, 600);
 					intakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)

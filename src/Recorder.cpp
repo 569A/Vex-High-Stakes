@@ -61,10 +61,9 @@ Recording& Recorder::getRecording() {
 
 void Recorder::saveRecording(int stage) {
     // Save the recording to a file
-    if (stage == 0) {
-        // Backwards compatibility with old recordings before stages were implemented
-        recording.serializeToFile(recording.getFileName());
-        return;
-    }
     recording.serializeToFile(recording.getFileName() + "-stage-" + to_string(stage));
+}
+
+void Recorder::resetRecording() {
+    recording.reset();
 }

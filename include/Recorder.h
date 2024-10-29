@@ -64,4 +64,6 @@ public:
     Recording& getRecording();
 
     void saveRecording(int stage);
+
+    void resetRecording();
 };

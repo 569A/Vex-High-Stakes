@@ -36,7 +36,7 @@ void Autonomous::updateStage() {
 
 void Autonomous::run() {
 	if (stage == 0) {
-		master.player->recording.deserializeFromFile(master.player->recording.getFileName());
+		master.player->recording.deserializeFromFile(master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
 	}
 	while (true)
 	{
@@ -107,7 +107,7 @@ void Autonomous::run() {
 			if (autonTicksSinceIntakeCandidateDetected > 3) {
 				if (autonIntakeAvailable)
 				{
-					intake.move_relative(-3692, 600);
+					intake.move_relative(2242, 600);
 					autonIntakeAvailable = false;
 				} else {
 					if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
