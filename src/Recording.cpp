@@ -16,7 +16,7 @@ Recording::Recording(AutonSelector& autonSelector) : autonSelector(autonSelector
     
 }
 
-void Recording::serializeToFile(std::string filename) {
+void Recording::serializeToFile(std::string filename, bool invert) {
     // this->filename = filename;
     // Serialize the recording to a file
     // /usd/ is needed for PROS to write to the SD card
@@ -25,8 +25,13 @@ void Recording::serializeToFile(std::string filename) {
     if (file != nullptr) {
         for (int i = 0; i < analogLeftYValues.size(); i++) {
             std::string data = std::to_string(analogLeftYValues[i]) + "," + std::to_string(analogRightYValues[i]) + "," + std::to_string(digitalL1Values[i]) + "," + std::to_string(digitalL2Values[i]) + "," + std::to_string(digitalR1Values[i]) + "," + std::to_string(digitalR2Values[i]) + "\n";
-            fprintf(file, "%d,", analogLeftYValues[i]);
-            fprintf(file, "%d,", analogRightYValues[i]);
+            if (invert) {
+                fprintf(file, "%d,", analogRightYValues[i]);
+                fprintf(file, "%d,", analogLeftYValues[i]);
+            } else {
+                fprintf(file, "%d,", analogLeftYValues[i]);
+                fprintf(file, "%d,", analogRightYValues[i]);
+            }
             fprintf(file, "%d,", digitalL1Values[i]);
             fprintf(file, "%d,", digitalL2Values[i]);
             fprintf(file, "%d,", digitalR1Values[i]);

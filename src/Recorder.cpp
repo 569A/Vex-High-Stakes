@@ -61,7 +61,7 @@ Recording& Recorder::getRecording() {
 
 void Recorder::saveRecording(int stage) {
     // Save the recording to a file
-    recording.serializeToFile(recording.getFileName() + "-stage-" + to_string(stage));
+    recording.serializeToFile(recording.getFileName() + "-stage-" + to_string(stage), false);
 }
 
 void Recorder::resetRecording() {

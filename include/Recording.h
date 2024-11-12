@@ -20,7 +20,7 @@ public:
     Recording(AutonSelector& autonSelector);
     bool recordingValid = true;
 
-    void serializeToFile(std::string filename);
+    void serializeToFile(std::string filename, bool invert);
     void deserializeFromFile(std::string filename);
 
     void addAnalogLeftYValue(int value) {

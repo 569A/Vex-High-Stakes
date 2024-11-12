@@ -4,6 +4,7 @@
 #include "Recording.h"
 #include "DriverControl.h"
 #include "AutonSelector.h"
+#include "AutonControl.h"
 #include <cmath>
 
 using namespace std;
@@ -27,15 +28,22 @@ okapi::MotorGroup& rightMotorsRef = rightMotors;
 pros::Motor intake(10);
 pros::Motor& intakeRef = intake;
 
-// Two way piston
+// Two way piston - MOGO
 pros::ADIDigitalOut pistonA('A');
 pros::ADIDigitalOut& pistonARef = pistonA;
 pros::ADIDigitalOut pistonB('B');
 pros::ADIDigitalOut& pistonBRef = pistonB;
 
+// Doinker
+pros::ADIDigitalOut doinker('C');
+pros::ADIDigitalOut& doinkerRef = doinker;
+
 // Optical (Port TBD)
 pros::Optical optical(15);
 pros::Optical& opticalRef = optical;
+
+pros::Vision vision(1);
+pros::Vision& visionRef = vision;
 
 // Distance
 pros::Distance distanceSensor(9);
@@ -65,10 +73,10 @@ DummyController dummy(pros::E_CONTROLLER_MASTER, true, &player);
 DummyController& dummyRef = dummy;
 
 // Autonomous
-Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef);
+Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, doinkerRef, opticalRef, distanceRef);
 
 // Driver Control
-DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, opticalRef, distanceRef, recorderRef);
+DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, doinkerRef, opticalRef, distanceRef, recorderRef);
 
 // Position tracking (EXPERIMENTAL)
 double x = 0;
@@ -101,11 +109,13 @@ void on_center_button()
 void initialize()
 {	
 	pros::lcd::initialize();
-	pros::lcd::set_background_color(LV_COLOR_BLACK);
+	pros::lcd::set_background_color(LV_COLOR_RED);
 	pros::lcd::set_text(4, autonSelector.getAuton());
 	// Mogo Mechanism open by default
 	pistonA.set_value(true);
 	pistonB.set_value(true);
+
+	doinker.set_value(true);
 	
 	pros::lcd::set_text(1, "Initialized!");
 	// master.print(0, 0, "Manual: %d", manual);
@@ -146,6 +156,59 @@ void competition_initialize() {
  */
 void autonomous()
 {
+	// pros::vision_signature_s_t blueRing = vision.signature_from_utility(1, -3901, -2775, -3338, 3293, 5509, 4401, 3.000, 0);
+	// pros::vision_signature_s_t redRing = vision.signature_from_utility(2, 8043, 9741, 8892, -2259, -929, -1594, 3.000, 0);
+	// vision.set_signature(1, &blueRing);
+	// vision.set_signature(2, &redRing);
+	// pistonA.set_value(false);
+	// pistonB.set_value(false);
+	// bool intakeAvailable = true;
+	// while (true)
+	// {
+
+	// 	pros:: vision_object_s_t object = vision.get_by_sig(0, 2);
+	// 	pros::lcd::print(0, "X: %d", object.x_middle_coord);
+	// 	pros::lcd::print(1, "Y: %d", object.y_middle_coord);
+	// 	pros::lcd::print(3, "Angle: %d", object.angle);
+
+	// 	int screenCenterX = 158;
+	// 	int screenCenterY = 120;
+
+	// 	double rotationError = object.x_middle_coord - screenCenterX;
+	// 	pros::lcd::print(2, "Width: %d", object.width);
+
+	// 	double ratio = 100.0 / object.width;
+
+	// 	if (!object.width == 0)
+	// 	{
+
+	// 	if (distanceSensor.get() > 100)
+	// 	{
+	// 			if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+	// 			{
+	// 				intakeAvailable = true;
+	// 			}
+	// 			leftMotors.moveVelocity(rotationError * .15);
+	// 		rightMotors.moveVelocity(-rotationError * .15);
+	// 	} else {
+	// 		if (intakeAvailable)
+	// 		{
+	// 			intake.move_relative(2242, 600);
+	// 			intakeAvailable = false;
+	// 		} else {
+	// 			if (intake.get_position() > intake.get_target_position() - 20 && intake.get_position() < intake.get_target_position() + 20)
+	// 			{
+	// 				intakeAvailable = true;
+	// 			}
+	// 		}
+	// 		leftMotors.moveVelocity(0);
+	// 		rightMotors.moveVelocity(0);
+	// 	}
+	// 	}
+
+	// 	pros::delay(20);
+	// }
+	
 	// We will be using my rerun implementation this tournament.
 	/**
 	 * Stage System:
@@ -158,13 +221,41 @@ void autonomous()
 	intake.move_relative(1200, 600);
 	autonomousManager.run(); // Runs the next stage of the auton
 
+	// AutonControl autonControl = AutonControl(leftMotorsRef, rightMotorsRef, inertialRef);
+	// autonControl.turnFor(90);
+
 	// Incomplete
 	// Preferably with actual odom, but if it is accurate enough, we can use this
 	// auto drive = ChassisControllerBuilder()
 	// 				 .withMotors(leftMotors, rightMotors)
-	// 				 .withDimensions(AbstractMotor::gearset::blue, {{3.25_in, 12.5625_in}, 300.0 * (48.0/36.0)})
+	// 				 .withDimensions({AbstractMotor::gearset::blue, 48.0/36.0}, {{3.25_in, 13_in}, imev5BlueTPR})
+	// 				 .withMaxVelocity(200)
 	// 				 .withOdometry()
 	// 				 .buildOdometry();
+	// drive->getOdometry()->setState({0_ft, 0_ft, 0_deg});
+	// drive->moveDistanceAsync(1_ft);
+	// drive->waitUntilSettled();
+	// drive->turnAngle(90_deg);
+	// while (true) {
+	// 	pros::lcd::print(4, "X: %f", drive->getState().x);
+	// 	pros::lcd::print(5, "Y: %f", drive->getState().y);
+	// 	pros::lcd::print(6, "Theta: %f", drive->getState().theta);
+	// 	pros::delay(20);
+	// }
+	// std::shared_ptr<AsyncMotionProfileController> profileController = 
+	// AsyncMotionProfileControllerBuilder()
+	// 	.withLimits({
+	// 	1.0, // Maximum linear velocity of the Chassis in m/s
+	// 	2.0, // Maximum linear acceleration of the Chassis in m/s/s
+	// 	7.0 // Maximum linear jerk of the Chassis in m/s/s/s
+	// 	})
+	// 	.withOutput(drive)
+	// 	.buildMotionProfileController();
+	// profileController->generatePath({
+	// 	{1_ft, 0_ft, 0_deg}
+	// }, "A");
+	// profileController->setTarget("A");
+	// profileController->waitUntilSettled();
 
 }
 

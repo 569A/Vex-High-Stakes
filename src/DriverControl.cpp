@@ -1,7 +1,7 @@
 #include "DriverControl.h"
 
-DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder) :
-    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor), recorder(recorder) {
+DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::ADIDigitalOut &doinker, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder) :
+    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), doinker(doinker), optical(optical), distanceSensor(distanceSensor), recorder(recorder) {
 
 
 }
@@ -15,6 +15,9 @@ void DriverControl::run() {
 
 	bool digitalBButtonHeld = false;
 	bool digitalAButtonHeld = false;
+	bool digitalXButtonHeld = false;
+
+	bool doinkerValue = true;
 
 	while (true)
 	{
@@ -196,6 +199,16 @@ void DriverControl::run() {
 			}		
 		} else {
 			digitalAButtonHeld = false;
+		}
+
+		if (master.get_digital(DIGITAL_X)) {
+			if (!digitalXButtonHeld) {
+				digitalXButtonHeld = true;
+				doinkerValue = !doinkerValue;
+				doinker.set_value(doinkerValue);
+			}
+		} else {
+			digitalXButtonHeld = false;
 		}
 
 		// Get data for distance sensor for testing purposes

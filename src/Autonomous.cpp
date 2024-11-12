@@ -22,8 +22,10 @@ bool autonIntakeAvailable = true;
 SlewRateController autonLeftDriveSlewRateController(60);
 SlewRateController autonRightDriveSlewRateController(60);
 
-Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive, okapi::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::Optical& optical, pros::Distance& distanceSensor) 
-: master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), optical(optical), distanceSensor(distanceSensor) {
+bool copyOpposite = false;
+
+Autonomous::Autonomous(DummyController& controller, okapi::MotorGroup& leftDrive, okapi::MotorGroup& rightDrive, pros::Motor& intake, pros::ADIDigitalOut& pistonA, pros::ADIDigitalOut& pistonB, pros::ADIDigitalOut& doinker, pros::Optical& optical, pros::Distance& distanceSensor) 
+: master(controller), leftDrive(leftDrive), rightDrive(rightDrive), intake(intake), pistonA(pistonA), pistonB(pistonB), doinker(doinker), optical(optical), distanceSensor(distanceSensor) {
 }
 
 // Readies the next stage of the autonomous program
@@ -32,11 +34,37 @@ void Autonomous::updateStage() {
 	stage++;
 	master.player->index = 0;
 	master.player->recording.deserializeFromFile(master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
+	if (copyOpposite) {			
+		string autonName = (master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
+		size_t red = autonName.find("Red");
+		size_t blue = autonName.find("Blue");
+
+		if (red != string::npos) {
+			autonName.replace(red, 3, "Blue");
+		}
+		if (blue != string::npos) {
+			autonName.replace(blue, 4, "Red");
+		}
+		master.player->recording.serializeToFile(autonName, true);
+	}
 }
 
 void Autonomous::run() {
 	if (stage == 0) {
 		master.player->recording.deserializeFromFile(master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
+		if (copyOpposite) {			
+			string autonName = (master.player->recording.getFileName() + "-stage-" + std::to_string(stage));
+			size_t red = autonName.find("Red");
+			size_t blue = autonName.find("Blue");
+
+			if (red != string::npos) {
+				autonName.replace(red, 3, "Blue");
+			}
+			if (blue != string::npos) {
+				autonName.replace(blue, 4, "Red");
+			}
+			master.player->recording.serializeToFile(autonName, true);
+		}
 	}
 	while (true)
 	{
