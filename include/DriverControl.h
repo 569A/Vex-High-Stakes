@@ -28,13 +28,15 @@ private:
     okapi::MotorGroup &leftMotors;
     okapi::MotorGroup &rightMotors;
     pros::Motor &intake;
+    pros::Motor &flexWheelIntake;
+    pros::Motor &arm;
     pros::ADIDigitalOut &pistonA;
     pros::ADIDigitalOut &pistonB;
     pros::ADIDigitalOut &doinker;
     pros::Optical &optical;
     pros::Distance &distanceSensor;
 public:
-    DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &doinker, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder);
+    DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::Motor &flexWheelIntake, pros::Motor &arm, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &doinker, pros::ADIDigitalOut &pistonB, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder);
     void run();
     void setCompetitonMode(bool mode) {
         competitionMode = mode;

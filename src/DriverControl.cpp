@@ -1,7 +1,7 @@
 #include "DriverControl.h"
 
-DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::ADIDigitalOut &doinker, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder) :
-    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), pistonA(pistonA), pistonB(pistonB), doinker(doinker), optical(optical), distanceSensor(distanceSensor), recorder(recorder) {
+DriverControl::DriverControl(ControllerBase &controller, okapi::MotorGroup &leftMotors, okapi::MotorGroup &rightMotors, pros::Motor &intake, pros::Motor &flexWheelIntake, pros::Motor &arm, pros::ADIDigitalOut &pistonA, pros::ADIDigitalOut &pistonB, pros::ADIDigitalOut &doinker, pros::Optical &optical, pros::Distance &distanceSensor, Recorder &recorder) :
+    master(controller), leftMotors(leftMotors), rightMotors(rightMotors), intake(intake), flexWheelIntake(flexWheelIntake), arm(arm), pistonA(pistonA), pistonB(pistonB), doinker(doinker), optical(optical), distanceSensor(distanceSensor), recorder(recorder) {
 
 
 }
@@ -17,7 +17,7 @@ void DriverControl::run() {
 	bool digitalAButtonHeld = false;
 	bool digitalXButtonHeld = false;
 
-	bool doinkerValue = true;
+	bool doinkerValue = false;
 
 	while (true)
 	{
@@ -46,7 +46,7 @@ void DriverControl::run() {
 		double rawVoltageOutputLeft = pow(left, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		double rawVoltageOutputRight = pow(right, decreasedSensitivityFactor) / pow(127, (decreasedSensitivityFactor - 1));
 		/**
-		 * The above code is the raw voltage to apply to the motors.
+		 * The above code is the raw voltage to aphhply to the motors.
 		 * However, I choose to use velocity instead of voltage to control the motors.
 		 * 	1 - This is because velocity is more consistent than voltage,
 		 * 		which is important when playing the auton
@@ -95,6 +95,31 @@ void DriverControl::run() {
 			// recorder.listenerMOGO(false);
 			pistonA.set_value(false);
 			pistonB.set_value(false);
+		}
+
+		if (master.get_digital(DIGITAL_Y))
+		{
+			arm.move_velocity(200);
+		}
+		else if (master.get_digital(DIGITAL_A))
+		{
+			arm.move_velocity(-200);
+		}
+		else
+		{
+			arm.move_velocity(0);
+ 		}
+		if (master.get_digital(DIGITAL_LEFT))
+		{
+			flexWheelIntake.move_velocity(200);
+		}
+		else if (master.get_digital(DIGITAL_RIGHT))
+		{
+			flexWheelIntake.move_velocity(-200);
+		}
+		else
+		{
+			flexWheelIntake.move_velocity(0);
 		}
 
 		// Saves recording

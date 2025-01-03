@@ -25,8 +25,17 @@ okapi::MotorGroup rightMotors({18, -19, 20});
 okapi::MotorGroup& rightMotorsRef = rightMotors;
 
 // Intake
-pros::Motor intake(10);
+pros::Motor intake(9);
 pros::Motor& intakeRef = intake;
+
+// Intake 2a
+pros::Motor flexWheelIntake(10);
+pros::Motor& flexWheelIntakeRef = flexWheelIntake;
+
+// Arm
+
+pros::Motor arm(3);
+pros::Motor& armRef = arm;
 
 // Two way piston - MOGO
 pros::ADIDigitalOut pistonA('A');
@@ -76,7 +85,7 @@ DummyController& dummyRef = dummy;
 Autonomous autonomousManager(dummyRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, doinkerRef, opticalRef, distanceRef);
 
 // Driver Control
-DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, pistonARef, pistonBRef, doinkerRef, opticalRef, distanceRef, recorderRef);
+DriverControl driverControl(masterRef, leftMotorsRef, rightMotorsRef, intakeRef, flexWheelIntakeRef, armRef, pistonARef, pistonBRef, doinkerRef, opticalRef, distanceRef, recorderRef);
 
 // Position tracking (EXPERIMENTAL)
 double x = 0;
@@ -114,12 +123,11 @@ void initialize()
 	// Mogo Mechanism open by default
 	pistonA.set_value(true);
 	pistonB.set_value(true);
-
-	doinker.set_value(true);
 	
 	pros::lcd::set_text(1, "Initialized!");
 	// master.print(0, 0, "Manual: %d", manual);
 	// master.print(0, 1, "Velocity: %d", velocity);
+	arm.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
 
 	pros::lcd::register_btn1_cb(on_center_button);
 }
@@ -141,7 +149,7 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {
-	driverControl.setCompetitonMode(true);
+	// driverControl.setCompetitonMode(true);
 }
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -217,9 +225,12 @@ void autonomous()
 	 *  Running autonomousManager.run() plays the next stage. Stages are determined by their
 	 *  file name on the sd card, and are read and saved as such.
 	 */
-	autonomousManager.run(); // Runs the first stage of the auton
-	intake.move_relative(1200, 600);
+	autonomousManager.run(); // Runs the first stage of the auton - should clamp MOGO
+	intake.move_relative(1200, 600); // Scores preload
 	autonomousManager.run(); // Runs the next stage of the auton
+	autonomousManager.run();
+	// autonomousManager.run();
+	// autonomousManager.run();
 
 	// AutonControl autonControl = AutonControl(leftMotorsRef, rightMotorsRef, inertialRef);
 	// autonControl.turnFor(90);
