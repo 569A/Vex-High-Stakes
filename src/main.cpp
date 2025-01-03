@@ -1,4 +1,5 @@
 #include "main.h"
+#include "lemlib/api.hpp" // IWYU pragma: keep
 #include "DummyController.h"
 #include "Autonomous.h"
 #include "Recording.h"
