@@ -362,6 +362,8 @@ void opcontrol() {
     std::string current_ring_color = "none";
     bool return_flag = false;
 
+    bool should_run_intake = false;
+
     int arm_state = 0;
     // 0 = resting, 1 = ready to intake for wall stakes, 2 = ready to score on wall stakes
 
@@ -510,13 +512,18 @@ void opcontrol() {
             }
             if (wait_ticks == 0) {
                 // Repower the intake
-                hook_intake.move(126);
+                if (should_run_intake) {
+                    hook_intake.move(126);
+                }
             }
 
             if (next_ring_must_reverse) {
                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
                     hook_intake.move_relative(-400, 200);
+                    should_run_intake = false;
                 }
+            } else {
+                should_run_intake = true;
             }
         } else if (arm_state == 1 && arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) { // This contains a position check of the arm motor to make sure it is at the target position before the hook intake is moved to the right spot
             if (!ready_to_score) {      
