@@ -593,7 +593,7 @@ void opcontrol() {
                 arm_state++;
             } else if (arm_state == 1) {
                 hook_intake.move_relative(-500, 200);
-                arm_motor.move_absolute(2470, 50);
+                arm_motor.move_absolute(2770, 50);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
