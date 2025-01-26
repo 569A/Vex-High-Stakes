@@ -412,29 +412,45 @@ void opcontrol() {
             flex_wheel_running = false;
         }    
 
+        /**
+        The intake control logic is different based on what we are trying to do. For example, here, in state 0 (resting position) 
+        we try to score rings on mogos and color sort appropriately.
+        In state 1 (intaking rings to score on wall stakes), the intake is stopped and activates to pull the ring in once the driver pushes a button.
+        In state 2 (ready to score on wall stakes), the intake is stopped and the rings should be ready to flip onto the stake.
+        At this point, the driver can push a button to score the rings.
+         */
         if (arm_state == 0) {
             ready_to_score = false;
+            // Manual control in case of emergency to reverse/turn back on the intake (ring gets stuck, etc.)
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
                 hook_intake.move(126);
             } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
                 hook_intake.move(-126);
             }
-
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
                 hook_intake.move(0);
             }
+
+            /**
+            Here we use the distance sensor to check if the mogo has 5 rings, which can then determine if the next ring is the 6th ring.
+            The hook gets caught on it after scoring it, which isn't good, so we reverse the intake after scoring it to prevent this from happening.
+            Setting this value to true will reverse the intake on scoring the 6th ring. (later in the code)
+            */
             if (distance.get() < 200) {
                 next_ring_must_reverse = true;
             } else {
                 next_ring_must_reverse = false;
             }
             // Hook intake
-            if (optical.get_proximity() > 230 ) { //&& !intake_running && !ready_to_score) {
+            if (optical.get_proximity() > 230 ) {
+                // TODO, if intake is already scoring a ring that we want, but then a ring comes in that is the wrong
+                // color, we should throw the good ring out.
                 if (intake_running) {
 
                 }
                 intake_running = true;
-                // Check color of ring
+
+                // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
                 if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
                     current_ring_color = "red";
                 }
@@ -443,23 +459,6 @@ void opcontrol() {
                     current_ring_color = "blue";
                 }
                 ticks_since_intake = 0;
-                    // End
-
-                // if (arm_state == 0 && mogo_clamped) {
-                //     hook_intake.move_absolute(last_target + 2955, 600);
-                //     ticks_since_intake = 0;
-
-                //     last_target = last_target + 2955;
-                //     intake_running = true;
-                //} else
-                // if (arm_state == 1) {
-                //     hook_intake.move_absolute(last_target - 400, 600);
-                //     ticks_since_intake = 0;
-                //     get_arm_ready_to_score = true;
-                //     last_target = last_target + 2955;
-                //     ready_to_score = true;
-                
-                // }
 
             } else {
                 if (flex_wheel_running) {
@@ -467,17 +466,50 @@ void opcontrol() {
                 }
             }
 
+            // We use this to track the amount of time since we intaked in order to know when to color sort.
             ticks_since_intake++;
+
+            /**
+            This is probably the most unique part of our code. To color sort, we have to either add a mechanism that
+            makes the ring not score on the mogo or do it in code so that the ring flies off on its own. A mechanism would
+            be complex and would just add more weight to the robot, so we decided to do it in code. This is based on physics
+            and how objects in motion tend to stay in motion. If the ring is being moved upwards, but at the moment it is flipped
+            the intake stops, the ring will continue to move upwards and fly off instead of going on the mogo.
+
+            The first issue with implementation was that stopping the color sorting just a couple degrees of the motor too late or too early would not be
+            sudden enough to make the ring fly off.
+
+            The first attempt included stopping the intake once it reached a certain range of about where the intake should stop
+            to throw the ring off, but this introduced multiple problems. If we ran multiple hooks on our intake, we would have no idea
+            which one the ring would be on and thus we would have no idea when to shoot the ring off. Additionally, if the robot started
+            with the hook just a little bit off from where it should have started, the intake would always stop too late or too early,
+            causing the same problem of scoring the ring on the mogo instead of throwing it off.
+
+            The second attempt was time based, and after the optical sensor lost sight of the ring, we would stop the intake in x amount of time.
+            But, this ran into the same problem as the first attempt, where the intake would stop too late or too early, and if the intake jammed momentarily,
+            it would be even less accurate.
+
+            This final iteration uses the current draw of the intake motor to determine when to stop the intake. Rings are very light, so it does not take much electric
+            current to power the motor that moves it along on a conveyor belt. But at the moment the ring gets flipped 180 degrees and slapped onto the stake of the mogo, much more
+            power is required. After experimenting, we found that the intake motor draws around 2100 mA when the ring is in the moment of being flipped onto the stake, but only a few hundred mA when just moving the ring.
+            This is very consistent over time. However, the intake motor also draws a lot of power when lifting the ring from the flex wheel intake to the hook intake. We do not want to mistake this as a time to
+            stop the intake for color sorting. This is done by running the color sorter stop only when 0.3 seconds have passed since the optical sensor
+            lost sight of the ring.
+
+             */
             if (current_ring_color != color) {
                 if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
                     hook_intake.move(0);
-                    wait_ticks = 10;
+                    wait_ticks = 10; // The next step is waiting a bit before the intake runs again. If we don't wait a bit, the intake
+                                     // will stop for so little time it will not throw the ring off.
                 }            
             }
+            // wait_ticks is used to wait a bit before the intake runs again. Every 20 milliseconds, we decrement it by 1, and when it reaches 0, the intake runs again.
             if (wait_ticks > 0) {
                 wait_ticks--;
             }
             if (wait_ticks == 0) {
+                // Repower the intake
                 hook_intake.move(126);
             }
 
@@ -486,19 +518,23 @@ void opcontrol() {
                     hook_intake.move_relative(-400, 200);
                 }
             }
-        } else if (arm_state == 1 && arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) {
-            if (!ready_to_score) {
-
-            
-            ready_to_score = true;
-            hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3355, 600);  //last_target - 400, 600);
-            ticks_since_intake = 0;
-            get_arm_ready_to_score = true;
-            last_target = last_target + 2955;
+        } else if (arm_state == 1 && arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) { // This contains a position check of the arm motor to make sure it is at the target position before the hook intake is moved to the right spot
+            if (!ready_to_score) {      
+                ready_to_score = true;
+                // We just need to move the intake so that one of the hooks is in the right spot to reverse intake a ring for wall stake scoring.
+                // This function (see above) allows us to do this.
+                hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3355, 600); 
+                ticks_since_intake = 0;
+                get_arm_ready_to_score = true;
+                last_target = last_target + 2955;
             }
         } else if (arm_state == 2) {
             ready_to_score = false;
-            // High stake scoring
+            /**
+            High stake scoring - we don't want to have to manually reverse the intake for scoring on wall stakes
+            and change it back for mogos, so this is done with a macro. At the press of a button, the intake
+            will score loaded rings onto the wall stakes.
+            */
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B) && !digital_b_was_pressed) {
                 digital_b_was_pressed = true;
                 hook_intake.move_relative(-2500, 200);
@@ -508,7 +544,13 @@ void opcontrol() {
             }
         }
 
-        // Toggleable Color Sorting
+        /**
+         Toggleable Color Sorting - If we forget to set the color sort color before the match, we
+         don't want to go the entire match unable to score a single ring because they all get tossed.
+         This allows us to change the color of the rings we want to score at the press of a button.
+
+         If we absolutely have to run a negative corner play to win, this will also be needed.
+        */
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && !digital_x_was_pressed) {
             digital_x_was_pressed = true;
             color == "red" ? color = "blue" : color = "red";   
@@ -517,31 +559,12 @@ void opcontrol() {
             digital_x_was_pressed = false;
         }
 
-        // if (intake_running) {
-        //     ticks_since_intake++;
-        //     if (current_ring_color != color) {
-        //         if (hook_intake.get_current_draw() > 2000 && ticks_since_intake > 30) {
-        //             hook_intake.move(0);
-        //             return_flag = true;
-        //         }            
-        //         if (return_flag) {
-        //             if (wait_ticks > 0) {
-        //                 wait_ticks--;
-        //             } else {
-        //                 hook_intake.move_absolute(last_target, 600);
-        //                 intake_running = false;
-        //                 return_flag = false;
-        //                 wait_ticks = 10;
-        //             }
-        //         }
-        //     } else {
-        //         if (hook_intake.get_position() < hook_intake.get_target_position() + 50 && hook_intake.get_position() > hook_intake.get_target_position() - 50) {
-        //             intake_running = false;
-        //         }
-        //     }
-        // }
-
-        // Mogo mech
+        /**
+        Mogo mech - This is pretty simple, just turn it on at the press of one button, off at the other. 
+        Maybe due to physical constraints, we will need to start with the mogo closed, so keep in mind for future.
+        We also keep track of whether the mogo is clamped or not, to maybe in the future not score rings, but ready them in the intake
+        if we don't even have a mogo.
+        */
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
             mogo_piston.set_value(0);
             mogo_clamped = false;
@@ -550,7 +573,12 @@ void opcontrol() {
             mogo_clamped = true;
         }
 
-        // Arm control
+        /**
+        Arm control - The highest arm position is not set right yet, it undershoots what it should be, but 
+        it functions as it should. Pressing the up arrow on the controller moves the arm up a bit so that it
+        can collect rings on the back of the intake. Pressing the up arrow again moves it to the very top position
+        where the arm moves the intake to the same height as the wall stakes and can score rings on them. (see above macro code)
+         */
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
@@ -565,11 +593,11 @@ void opcontrol() {
         } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
             digital_up_was_pressed = false;
         }
+        // Down arrow does the opposite.
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && !digital_down_was_pressed) {
            get_arm_ready_to_score = false;
             if (arm_state == 1) {
                 arm_motor.move_absolute(0, 80);
-                // hook_intake.move_absolute(last_target + 2995, 600);
                 arm_state--;
             } else if (arm_state == 2) {
                 arm_motor.move_absolute(662, 100);
@@ -579,18 +607,6 @@ void opcontrol() {
         } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
             digital_down_was_pressed = false;
         }
-        // if (get_arm_ready_to_score) {
-        //     if (arm_wait_ticks > 0) {
-        //         arm_wait_ticks--;
-        //     }
-        //     if (arm_wait_ticks == 0) {
-        //         arm_motor.move_absolute(2470, 80);
-        //         arm_state++;
-        //         arm_wait_ticks = 10;
-        //         get_arm_ready_to_score = false;
-        //     }
-        // }
-
 
 
         pros::delay(20);
