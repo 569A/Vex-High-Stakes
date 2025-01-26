@@ -539,7 +539,7 @@ void opcontrol() {
                 digital_b_was_pressed = true;
                 hook_intake.move_relative(-2500, 200);
                 last_target = last_target - 2955;
-            } else {
+            } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
                 digital_b_was_pressed = false;
             }
         }
@@ -555,7 +555,7 @@ void opcontrol() {
             digital_x_was_pressed = true;
             color == "red" ? color = "blue" : color = "red";   
             master.set_text(0, 0, "Ring color: " + color);        
-        } else {
+        } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
             digital_x_was_pressed = false;
         }
 
