@@ -349,6 +349,7 @@ void opcontrol() {
 
 	optical.disable_gesture();
 
+    bool digital_x_was_pressed = false;
     bool digital_up_was_pressed = false;
     bool digital_down_was_pressed = false;
     bool digital_b_was_pressed = false;
@@ -505,6 +506,15 @@ void opcontrol() {
             } else {
                 digital_b_was_pressed = false;
             }
+        }
+
+        // Toggleable Color Sorting
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && !digital_x_was_pressed) {
+            digital_x_was_pressed = true;
+            color == "red" ? color = "blue" : color = "red";   
+            master.set_text(0, 0, "Ring color: " + color);        
+        } else {
+            digital_x_was_pressed = false;
         }
 
         // if (intake_running) {
