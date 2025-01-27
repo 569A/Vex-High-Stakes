@@ -227,57 +227,87 @@ void autonomous() {
     // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
     //     pros::delay(20);w
     // }
+
+    // #1 Score on alliance stake
     arm_motor.move_absolute(140, 100);
     pros::delay(500);
     hook_intake.move_absolute(1200, 200);
     pros::delay(600);
+
+    // #2 Get mogo
     chassis.moveToPoint(-47, 0, 100000);
     chassis.turnToHeading(0, 10000);
     chassis.moveToPoint(-48, -24.5, 10000, {.forwards = false, .maxSpeed = 60}, false);
     mogo_piston.set_value(1);
 
+    // Activate all intakes
     flex_wheel_intake.move(-127);
     hook_intake.move(127);
 
     pros::delay(200);
 
     arm_motor.move_absolute(0, 100);
-
+    // Ring 1 by ladder
     chassis.turnToHeading(90, 10000);
     chassis.moveToPoint(-24, -24, 10000);
 
+    // Get to this point instead of directly to ring #2 to avoid hitting the ladder
     get_to_point(0, -45);
 
+    // Ring 2 by high stake
     chassis.turnToPoint(24, -48, 10000);
     chassis.moveToPoint(24, -48, 10000);
 
+    // Ring 3 - Maybe use this for high stake?
     chassis.turnToPoint(0, -55, 10000);
     chassis.moveToPoint(0, -55, 10000);
     
+    // Ring 4
     chassis.turnToPoint(-24, -48, 10000);
     chassis.moveToPoint(-24, -48, 10000);
 
-    chassis.turnToPoint(-48, -48, 10000);
-    chassis.moveToPoint(-48, -48, 10000);
-    chassis.moveToPoint(-60, -48, 10000);
-    chassis.moveToPoint(-36, -48, 10000, {.forwards = false});
-    chassis.turnToPoint(-48, -60, 10000);
-    chassis.moveToPoint(-48, -60, 10000);
-    chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+    // can just combine into one motion because they are on the same path
+    // chassis.turnToPoint(-48, -48, 10000);
+    // chassis.moveToPoint(-48, -48, 10000);
+    // chassis.turnToPoint(-60, -48, 10000);
+    // chassis.moveToPoint(-60, -48, 10000);
+
+    chassis.turnToPoint(-55, -48, 10000);
+    chassis.moveToPoint(-55, -48, 10000);
+
+    // Move back for ring 7
+    chassis.turnToHeading(-90, 10000);
+    chassis.moveToPoint(-50, -48, 10000, {.forwards = false});
+    
+    // Ring 7
+    // chassis.turnToPoint(-48, -60, 10000);
+    // chassis.moveToPoint(-48, -60, 10000);
+    chassis.turnToPoint(-48, -53, 10000);
+    chassis.moveToPoint(-48, -53, 10000);
+    
+    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
+    
     chassis.turnToPoint(72, 72, 10000);
     if (hook_intake.get_voltage() > 2000) {
         hook_intake.move_relative(-400, 200);
     }
+    // #3 Drop mogo in corner
     chassis.moveToPoint(-52.5, -52.5, 10000, {.forwards = false}, false);
-
     mogo_piston.set_value(0);
 
-    chassis.turnToPoint(-42, -42, 10000);
-    chassis.moveToPoint(-42, -42, 10000);
-    get_to_point(-48, 0);
-    chassis.turnToPoint(-48, -1000, 10000);
+    // chassis.turnToPoint(-42, -42, 10000);
+    // chassis.moveToPoint(-42, -42, 10000);
+    chassis.turnToPoint(-48, -48, 10000);
+    chassis.moveToPoint(-48, -48, 10000);
+    chassis.turnToHeading(180, 10000);
 
-    chassis.moveToPoint(-48, 14, 10000, {.forwards = false, .maxSpeed = 30});
+    // get_to_point(-48, 0);
+    // chassis.turnToPoint(-48, -1000, 10000);
+
+    // #4 Get mogo 2
+    chassis.moveToPoint(-48, 15, 10000, {.forwards = false, .maxSpeed = 60});
     // mogo_piston.set_value(1);
 
     // get_to_point(-24, 24);
