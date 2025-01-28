@@ -277,19 +277,21 @@ void autonomous() {
     chassis.moveToPoint(-55, -48, 10000);
 
     // Move back for ring 7
-    chassis.turnToHeading(-90, 10000);
+    chassis.turnToHeading(270, 10000);
     chassis.moveToPoint(-50, -48, 10000, {.forwards = false});
     
     // Ring 7
     // chassis.turnToPoint(-48, -60, 10000);
     // chassis.moveToPoint(-48, -60, 10000);
-    chassis.turnToPoint(-48, -53, 10000);
+    chassis.turnToHeading(68.2, 10000);
+    // chassis.turnToPoint(-48, -53, 10000);
     chassis.moveToPoint(-48, -53, 10000);
     
     //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    chassis.turnToHeading(180, 10000);
     chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
     
-    chassis.turnToPoint(72, 72, 10000);
+    chassis.turnToPoint(100, 100, 10000);
     if (hook_intake.get_voltage() > 2000) {
         hook_intake.move_relative(-400, 200);
     }
@@ -299,8 +301,11 @@ void autonomous() {
 
     // chassis.turnToPoint(-42, -42, 10000);
     // chassis.moveToPoint(-42, -42, 10000);
-    chassis.turnToPoint(-48, -48, 10000);
-    chassis.moveToPoint(-48, -48, 10000);
+    // chassis.turnToPoint(-48, -48, 10000);
+    // chassis.moveToPoint(-48, -48, 10000);
+    chassis.turnToPoint(-48, 0, 10000);
+    chassis.moveToPoint(-48, 0, 10000);
+
     chassis.turnToHeading(180, 10000);
 
     // get_to_point(-48, 0);
@@ -308,6 +313,7 @@ void autonomous() {
 
     // #4 Get mogo 2
     chassis.moveToPoint(-48, 15, 10000, {.forwards = false, .maxSpeed = 60});
+    
     // mogo_piston.set_value(1);
 
     // get_to_point(-24, 24);
