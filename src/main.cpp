@@ -228,6 +228,63 @@ void autonomous() {
     //     pros::delay(20);w
     // }
 
+    bool intake_running = false;
+    int ticks_since_intake = 0;
+    std::string current_ring_color = "none";
+    bool should_run_intake = false;
+    int wait_ticks = 0;
+
+    bool intake_task_running = false;
+
+    pros::Task auton_intake_manager([&]() {
+        while (true) {
+            if (intake_task_running) {
+                if (optical.get_proximity() > 230) {
+
+                    // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
+                    if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
+                        current_ring_color = "red";
+                    }
+                    
+                    if (optical.get_hue() > 200 && optical.get_hue() < 235 ) {
+                        current_ring_color = "blue";
+                    }
+                    ticks_since_intake = 0;
+
+                }
+                ticks_since_intake++;
+                
+                if (current_ring_color != "red") {
+                    if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
+                        hook_intake.move(0);
+                        wait_ticks = 10;
+                    }            
+                }
+
+                if (wait_ticks > 0) {
+                    wait_ticks--;
+                }
+
+                if (wait_ticks == 0) {
+                    if (should_run_intake) {
+                        hook_intake.move(126);
+                    }
+                }
+
+
+                if (distance.get() < 200) {
+                    if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
+                        hook_intake.move_relative(-400, 200);
+                        should_run_intake = false;
+                    }
+                } else {
+                    should_run_intake = true;
+                }
+                pros::delay(50);
+            }
+        }
+    });
+
     // #1 Score on alliance stake
     arm_motor.move_absolute(140, 100);
     pros::delay(500);
@@ -243,6 +300,7 @@ void autonomous() {
     // Activate all intakes
     flex_wheel_intake.move(-127);
     hook_intake.move(127);
+    intake_task_running = true;
 
     pros::delay(200);
 
@@ -292,12 +350,12 @@ void autonomous() {
     chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
     
     chassis.turnToPoint(100, 100, 10000);
-    if (hook_intake.get_voltage() > 2000) {
-        hook_intake.move_relative(-400, 200);
-    }
+
     // #3 Drop mogo in corner
     chassis.moveToPoint(-52.5, -52.5, 10000, {.forwards = false}, false);
     mogo_piston.set_value(0);
+
+    intake_task_running = false;
 
     // chassis.turnToPoint(-42, -42, 10000);
     // chassis.moveToPoint(-42, -42, 10000);
@@ -312,7 +370,7 @@ void autonomous() {
     // chassis.turnToPoint(-48, -1000, 10000);
 
     // #4 Get mogo 2
-    chassis.moveToPoint(-48, 15, 10000, {.forwards = false, .maxSpeed = 60});
+    chassis.moveToPoint(-48, 17, 10000, {.forwards = false, .maxSpeed = 60});
     
     // mogo_piston.set_value(1);
 
