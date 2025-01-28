@@ -53,14 +53,14 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 pros::Imu imu(5);
 
 // // Horizontal tracking wheel encoder
-// pros::Rotation horizontal_encoder(4);
+pros::Rotation horizontal_encoder(-3);
 
 // // Vertical tracking wheel encoder
 // pros::Rotation vertical_encoder(5);
 
 // // Horizontal tracking wheel
-// lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, -5.75);
-lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325 * 1.021276595745269, -6.3125, 480);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, -4.3125);
+lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -6.3125, 480); //* 1.021276595745269, -6.3125, 480);
 
 // // Vertical tracking wheel
 // lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
@@ -76,7 +76,7 @@ lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::
 // Odometry sensors
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            nullptr, // horizontal tracking wheel 1
+                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                             &imu // inertial sensor
 );
@@ -95,7 +95,7 @@ lemlib::ControllerSettings lateral_controller(5.85, // proportional gain (kP) 4.
                                               5, // small error range timeout, in milliseconds
                                               3, // large error range, in inches
                                               10, //400 large error range timeout, in milliseconds
-                                              0//40 // maximum acceleration (slew)
+                                              70//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -237,7 +237,7 @@ void autonomous() {
     // #2 Get mogo
     chassis.moveToPoint(-47, 0, 100000);
     chassis.turnToHeading(0, 10000);
-    chassis.moveToPoint(-48, -24.5, 10000, {.forwards = false, .maxSpeed = 60}, false);
+    chassis.moveToPoint(-48, -24.5, 10000, {.forwards = false, .maxSpeed = 35}, false);
     mogo_piston.set_value(1);
 
     // Activate all intakes
@@ -619,11 +619,11 @@ void opcontrol() {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
-                arm_motor.move_absolute(662, 100);
+                arm_motor.move_absolute(682, 100);
                 arm_state++;
             } else if (arm_state == 1) {
                 hook_intake.move_relative(-500, 200);
-                arm_motor.move_absolute(2770, 50);
+                arm_motor.move_absolute(2770, 35);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
@@ -637,7 +637,7 @@ void opcontrol() {
                 arm_motor.move_absolute(0, 80);
                 arm_state--;
             } else if (arm_state == 2) {
-                arm_motor.move_absolute(662, 100);
+                arm_motor.move_absolute(682, 100);
                 arm_state--;
             }
             digital_down_was_pressed = true;
