@@ -453,15 +453,6 @@ void opcontrol() {
          */
         if (arm_state == 0) {
             ready_to_score = false;
-            // Manual control in case of emergency to reverse/turn back on the intake (ring gets stuck, etc.)
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-                hook_intake.move(126);
-            } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
-                hook_intake.move(-126);
-            }
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-                hook_intake.move(0);
-            }
 
             /**
             Here we use the distance sensor to check if the mogo has 5 rings, which can then determine if the next ring is the 6th ring.
@@ -547,7 +538,18 @@ void opcontrol() {
                 }
             }
 
-            if (next_ring_must_reverse) {
+            // Manual control in case of emergency to reverse/turn back on the intake (ring gets stuck, etc.)
+            // The buttons have to be held down to work instead of toggling (for simplicity)
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+                should_run_intake = true;
+            } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+                hook_intake.move(-126);
+                should_run_intake = false; // Override running the intake forward
+            }
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+                hook_intake.move(0); 
+                should_run_intake = false; // Override running the intake forward
+            } else if (next_ring_must_reverse) {
                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
                     hook_intake.move_relative(-400, 200);
                     should_run_intake = false;
