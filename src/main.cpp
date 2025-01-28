@@ -59,7 +59,7 @@ pros::Rotation horizontal_encoder(-3);
 // pros::Rotation vertical_encoder(5);
 
 // // Horizontal tracking wheel
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, -4.3125);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.3125);
 lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -6.3125, 480); //* 1.021276595745269, -6.3125, 480);
 
 // // Vertical tracking wheel
