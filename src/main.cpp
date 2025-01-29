@@ -639,7 +639,7 @@ void opcontrol() {
                 ready_to_score = true;
                 // We just need to move the intake so that one of the hooks is in the right spot to reverse intake a ring for wall stake scoring.
                 // This function (see above) allows us to do this.
-                hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3355, 600); 
+                hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 600); 
                 ticks_since_intake = 0;
                 get_arm_ready_to_score = true;
                 last_target = last_target + 2955;
