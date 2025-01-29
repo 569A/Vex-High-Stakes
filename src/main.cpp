@@ -494,7 +494,7 @@ void opcontrol() {
     pros::delay(500);
     hook_intake.move_absolute(1300, 200);
     pros::delay(600);
-    hook_intake.move_absolute(0, 200);
+    arm_motor.move_absolute(-5, 200);
 
     flex_wheel_intake.move_velocity(-500);
 
@@ -597,7 +597,7 @@ void opcontrol() {
             lost sight of the ring.
 
              */
-            if (current_ring_color != color) {
+            if (current_ring_color != color && current_ring_color != "none") {
                 if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
                     hook_intake.move(0);
                     wait_ticks = 10; // The next step is waiting a bit before the intake runs again. If we don't wait a bit, the intake
@@ -669,7 +669,14 @@ void opcontrol() {
         */
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && !digital_x_was_pressed) {
             digital_x_was_pressed = true;
-            color == "red" ? color = "blue" : color = "red";   
+            if (color == "red") {
+                color = "blue";
+            } else if (color == "blue") {
+                color = "none";
+            } else {
+                color = "red";
+            }
+            master.clear_line(0);
             master.set_text(0, 0, "Ring color: " + color);        
         } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
             digital_x_was_pressed = false;
@@ -698,11 +705,11 @@ void opcontrol() {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
-                arm_motor.move_absolute(682, 100);
+                arm_motor.move_absolute(755, 100);
                 arm_state++;
             } else if (arm_state == 1) {
-                hook_intake.move_relative(-500, 200);
-                arm_motor.move_absolute(2670, 35);
+                hook_intake.move_relative(-600, 200);
+                arm_motor.move_absolute(2570, 35);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
@@ -716,7 +723,7 @@ void opcontrol() {
                 arm_motor.move_absolute(0, 80);
                 arm_state--;
             } else if (arm_state == 2) {
-                arm_motor.move_absolute(682, 100);
+                arm_motor.move_absolute(755, 100);
                 arm_state--;
             }
             digital_down_was_pressed = true;
