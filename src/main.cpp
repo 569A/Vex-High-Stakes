@@ -42,7 +42,7 @@ lemlib::ExpoDriveCurve steer_curve(3, // joystick deadband out of 127
 // Drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
                               &right_motor_group, // right motor group
-                              12.625, // 12.625 inch track width
+                              14.15, // 12.625 inch track width
                               lemlib::Omniwheel::NEW_325, 
                               480, // drivetrain rpm is 480
                               8 // horizontal drift is 8 (for now)
@@ -59,8 +59,8 @@ pros::Rotation horizontal_encoder(-3);
 // pros::Rotation vertical_encoder(5);
 
 // // Horizontal tracking wheel
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.3125);
-lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -6.3125, 480); //* 1.021276595745269, -6.3125, 480);
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.25);
+lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -7.4375, 480); //* 1.021276595745269, -6.3125, 480);
 
 // // Vertical tracking wheel
 // lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
@@ -74,7 +74,7 @@ lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::
 // );
 
 // Odometry sensors
-lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
+lemlib::OdomSensors sensors(nullptr,//&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
                             &horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
@@ -82,7 +82,7 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(5.85, // proportional gain (kP) 4.55 worked well 5.4
+lemlib::ControllerSettings lateral_controller(5.8, // proportional gain (kP) 4.55 worked well 5.4
                                               0, // integral gain (kI)
                                               82, // derivative gain (kD) 70
                                               0, // anti windup
@@ -218,10 +218,16 @@ double get_intake_closest_to_ready_mogo_score() {
  * from where it left off.
  */
 void autonomous() {
+    pros::delay(200);
     // hook_intake.set_zero_position(-1576);
     //hook_intake.move_absolute(0, 600);
     // set position to x:0, y:0, heading:0
-    chassis.setPose(-60.5, 0, 90);
+    chassis.setPose(0, 0, 0);
+    chassis.moveToPoint(0, 24, 10000);
+    chassis.turnToHeading(90, 10000);
+    chassis.moveToPoint(24, 24, 10000);
+    return;
+    chassis.setPose(-60.1, 0, 90);
     // turn to face heading 90 with a very long timeout
     // arm_motor.move_absolute(630, 100);
     // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
@@ -236,65 +242,68 @@ void autonomous() {
 
     bool intake_task_running = false;
 
-    pros::Task auton_intake_manager([&]() {
-        while (true) {
-            if (intake_task_running) {
-                if (optical.get_proximity() > 230) {
+    // pros::Task auton_intake_manager([&]() {
+    //     while (true) {
+    //         if (intake_task_running) {
+    //             if (optical.get_proximity() > 230) {
 
-                    // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
-                    if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
-                        current_ring_color = "red";
-                    }
+    //                 // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
+    //                 if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
+    //                     current_ring_color = "red";
+    //                 }
                     
-                    if (optical.get_hue() > 200 && optical.get_hue() < 235 ) {
-                        current_ring_color = "blue";
-                    }
-                    ticks_since_intake = 0;
+    //                 if (optical.get_hue() > 200 && optical.get_hue() < 235 ) {
+    //                     current_ring_color = "blue";
+    //                 }
+    //                 ticks_since_intake = 0;
 
-                }
-                ticks_since_intake++;
+    //             }
+    //             ticks_since_intake++;
                 
-                if (current_ring_color != "red") {
-                    if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
-                        hook_intake.move(0);
-                        wait_ticks = 10;
-                    }            
-                }
+    //             if (current_ring_color != "red") {
+    //                 if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
+    //                     hook_intake.move(0);
+    //                     wait_ticks = 10;
+    //                 }            
+    //             }
 
-                if (wait_ticks > 0) {
-                    wait_ticks--;
-                }
+    //             if (wait_ticks > 0) {
+    //                 wait_ticks--;
+    //             }
 
-                if (wait_ticks == 0) {
-                    if (should_run_intake) {
-                        hook_intake.move(126);
-                    }
-                }
+    //             if (wait_ticks == 0) {
+    //                 if (should_run_intake) {
+    //                     hook_intake.move(126);
+    //                 }
+    //             }
 
 
-                if (distance.get() < 200) {
-                    if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
-                        hook_intake.move_relative(-400, 200);
-                        should_run_intake = false;
-                    }
-                } else {
-                    should_run_intake = true;
-                }
-                pros::delay(50);
-            }
-        }
-    });
+    //             if (distance.get() < 200) {
+    //                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
+    //                     hook_intake.move_relative(-400, 200);
+    //                     should_run_intake = false;
+    //                 }
+    //             } else {
+    //                 should_run_intake = true;
+    //             }
+    //             pros::delay(50);
+    //         }
+    //     }
+    // });
 
     // #1 Score on alliance stake
     arm_motor.move_absolute(140, 100);
     pros::delay(500);
     hook_intake.move_absolute(1200, 200);
     pros::delay(600);
+    hook_intake.move_relative(-300, 200);
+    pros::delay(100);
 
     // #2 Get mogo
-    chassis.moveToPoint(-47, 0, 100000);
-    chassis.turnToHeading(0, 10000);
-    chassis.moveToPoint(-48, -24.5, 10000, {.forwards = false, .maxSpeed = 35}, false);
+    chassis.moveToPoint(-48, 0, 100000, {}, false);
+    chassis.turnToHeading(0, 10000, {}, false);
+    // y -24.5
+    chassis.moveToPose(-48, -26.5, 0, 2000, {.forwards = false, .maxSpeed = 100}, false);
     mogo_piston.set_value(1);
 
     // Activate all intakes
@@ -331,9 +340,10 @@ void autonomous() {
     // chassis.turnToPoint(-60, -48, 10000);
     // chassis.moveToPoint(-60, -48, 10000);
 
-    chassis.turnToPoint(-55, -48, 10000);
-    chassis.moveToPoint(-55, -48, 10000);
-
+    // chassis.turnToPoint(-55, -48, 10000);
+    // chassis.moveToPoint(-55, -48, 10000);
+    chassis.turnToPoint(-59, -48, 10000);
+    chassis.moveToPoint(-59, -48, 10000);
     // Move back for ring 7
     chassis.turnToHeading(270, 10000);
     chassis.moveToPoint(-50, -48, 10000, {.forwards = false});
@@ -341,18 +351,21 @@ void autonomous() {
     // Ring 7
     // chassis.turnToPoint(-48, -60, 10000);
     // chassis.moveToPoint(-48, -60, 10000);
-    chassis.turnToHeading(68.2, 10000);
-    // chassis.turnToPoint(-48, -53, 10000);
-    chassis.moveToPoint(-48, -53, 10000);
+
+    // uncomment from here for ring 7
+    // chassis.turnToHeading(68.2, 10000);
+    // // chassis.turnToPoint(-48, -53, 10000);
+    // chassis.moveToPoint(-48, -53, 10000);
     
-    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-    chassis.turnToHeading(180, 10000);
-    chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
+    // //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    // chassis.turnToHeading(180, 10000);
+    // chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
     
-    chassis.turnToPoint(100, 100, 10000);
+    // chassis.turnToPoint(100, 100, 10000);
 
     // #3 Drop mogo in corner
-    chassis.moveToPoint(-52.5, -52.5, 10000, {.forwards = false}, false);
+    pros::delay(200);
+    chassis.moveToPoint(-54.5, -54.5, 10000, {.forwards = false}, false);
     mogo_piston.set_value(0);
 
     intake_task_running = false;
@@ -364,13 +377,13 @@ void autonomous() {
     chassis.turnToPoint(-48, 0, 10000);
     chassis.moveToPoint(-48, 0, 10000);
 
-    chassis.turnToHeading(180, 10000);
+    // chassis.turnToHeading(180, 10000);
 
-    // get_to_point(-48, 0);
-    // chassis.turnToPoint(-48, -1000, 10000);
+    // // get_to_point(-48, 0);
+    // // chassis.turnToPoint(-48, -1000, 10000);
 
-    // #4 Get mogo 2
-    chassis.moveToPoint(-48, 17, 10000, {.forwards = false, .maxSpeed = 60});
+    // // #4 Get mogo 2
+    // chassis.moveToPoint(-48, 17, 10000, {.forwards = false, .maxSpeed = 60});
     
     // mogo_piston.set_value(1);
 
@@ -471,7 +484,7 @@ void opcontrol() {
     bool mogo_clamped = false;
 
     bool next_ring_must_reverse = false;
-    chassis.setPose(-60.5, 0, 90);
+    chassis.setPose(-60.1, 0, 90);
     // turn to face heading 90 with a very long timeout
     // arm_motor.move_absolute(630, 100);
     // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
@@ -479,7 +492,7 @@ void opcontrol() {
     // }
     arm_motor.move_absolute(140, 100);
     pros::delay(500);
-    hook_intake.move_absolute(1576, 200);
+    hook_intake.move_absolute(1300, 200);
     pros::delay(600);
     hook_intake.move_absolute(0, 200);
 
@@ -689,7 +702,7 @@ void opcontrol() {
                 arm_state++;
             } else if (arm_state == 1) {
                 hook_intake.move_relative(-500, 200);
-                arm_motor.move_absolute(2770, 35);
+                arm_motor.move_absolute(2670, 35);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
