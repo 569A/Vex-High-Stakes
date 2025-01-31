@@ -76,7 +76,7 @@ lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::
 // Odometry sensors
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            &horizontal_tracking_wheel, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                          &imu // inertial sensor
 );
@@ -218,6 +218,23 @@ double get_intake_closest_to_ready_mogo_score() {
  * from where it left off.
  */
 void autonomous() {
+    // Blue Pos
+    chassis.setPose(60, -41, 90);
+    chassis.moveToPose(41, -34, 120, 10000, {.forwards = false, .maxSpeed = 70});
+    chassis.moveToPose(31, -27, 120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+    mogo_piston.set_value(1);
+    hook_intake.move(127);
+    flex_wheel_intake.move(-127);
+    chassis.turnToPoint(24, -48, 10000);
+    chassis.moveToPoint(24, -50, 10000);
+    chassis.turnToPoint(24, -10, 10000, {}, false);
+    chassis.moveToPoint(24, -10, 10000, {}, false);
+    left_motor_group.move(50);
+    right_motor_group.move(50);
+    flex_wheel_intake.move(0);
+    hook_intake.move(0);
+    return;
+    
     // pros::delay(200);
     // // hook_intake.set_zero_position(-1576);
     // // hook_intake.move_absolute(0, 600);
@@ -289,8 +306,8 @@ void autonomous() {
     get_to_point(0, -45);
 
     // Ring 2 by high stake
-    chassis.turnToPoint(26, -48, 10000);
-    chassis.moveToPoint(26, -48, 10000);
+    chassis.turnToPoint(26, -46, 10000);
+    chassis.moveToPoint(26, -46, 10000);
 
     // Ring 3 - Maybe use this for high stake?
     chassis.turnToPoint(0, -55, 10000);
@@ -326,7 +343,7 @@ void autonomous() {
     
     //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
     chassis.turnToHeading(180, 10000);
-    chassis.moveToPoint(-42, -48, 10000, {.forwards = false});
+    chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
     
     chassis.turnToPoint(100, 100, 10000, {}, false);
 
@@ -352,7 +369,7 @@ void autonomous() {
     left_motor_group.move(-100);
     right_motor_group.move(-100);
     pros::delay(1000);
-    chassis.setPose(-36, -64, chassis.getPose().theta);
+    chassis.setPose(-39, -64, chassis.getPose().theta);
     left_motor_group.move(0);
     right_motor_group.move(0);
     
@@ -368,12 +385,12 @@ void autonomous() {
     // // chassis.turnToPoint(-48, -1000, 10000);
 
     // // #4 Get mogo 2
-    chassis.moveToPose(-48, 18, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60});
+    chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60});
     mogo_piston.set_value(1);
     
     // Activate all intakes 2nd run
     flex_wheel_intake.move(-127);
-    hook_intake.move(127);
+    hook_intake.move(80);
     intake_task_running = true;
 
     pros::delay(200);
@@ -442,7 +459,7 @@ void autonomous() {
     // chassis.turnToPoint(-48, -48, 10000);
     // chassis.moveToPoint(-48, -48, 10000);
     chassis.turnToHeading(45, 1000, {}, false);
-    chassis.moveToPoint(-38, -42, 10000, {}, false);
+    chassis.moveToPoint(-34.5, -42, 10000, {}, false);
     chassis.turnToHeading(0 , 10000, {}, false);
     mogo_piston.set_value(1);
     left_motor_group.move(-100);
@@ -586,7 +603,7 @@ void opcontrol() {
             flex_wheel_intake.move_velocity(-500);
             flex_wheel_running = true;
         } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
-            flex_wheel_intake.move(0);
+            flex_wheel_intake.move_velocity(500);
             flex_wheel_running = false;
         }    
 
@@ -611,7 +628,7 @@ void opcontrol() {
                 next_ring_must_reverse = false;
             }
             // Hook intake
-            if (optical.get_proximity() > 230 ) {
+            if (optical.get_proximity() > 220 ) {
                 // TODO, if intake is already scoring a ring that we want, but then a ring comes in that is the wrong
                 // color, we should throw the good ring out.
                 if (intake_running) {
@@ -714,6 +731,7 @@ void opcontrol() {
                 last_target = last_target + 2955;
             }
         } else if (arm_state == 2) {
+            flex_wheel_intake.move_velocity(600);
             ready_to_score = false;
             /**
             High stake scoring - we don't want to have to manually reverse the intake for scoring on wall stakes
