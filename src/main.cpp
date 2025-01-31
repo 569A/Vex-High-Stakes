@@ -21,6 +21,9 @@ pros::Motor hook_intake(-2, pros::MotorGearset::green);
 // Mogo mech piston
 pros::adi::DigitalOut mogo_piston('A');
 
+// Doinker
+pros::adi::DigitalOut doinker('B');
+
 // Arm motor
 pros::Motor arm_motor(10, pros::MotorGearset::red);
 
@@ -546,6 +549,7 @@ void opcontrol() {
     bool digital_up_was_pressed = false;
     bool digital_down_was_pressed = false;
     bool digital_b_was_pressed = false;
+    bool digital_y_was_pressed = false;
 
     bool flex_wheel_running = false;
     bool intake_running = false;
@@ -568,6 +572,9 @@ void opcontrol() {
 
     // Keep track of mogo mech
     bool mogo_clamped = false;
+
+    // Keep track of the doinker
+    bool doinker_down = false;
 
     bool next_ring_must_reverse = false;
     chassis.setPose(-60.1, 0, 90);
@@ -781,6 +788,17 @@ void opcontrol() {
         } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
             mogo_piston.set_value(1);
             mogo_clamped = true;
+        }
+
+        /**
+        Doinker - This code simply activates/deactivates the doinker at the press of the y button.
+         */
+        if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y) && !digital_y_was_pressed) {
+            digital_y_was_pressed = true;
+            doinker.set_value(!doinker_down);
+            doinker_down = !doinker_down;
+        } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+            digital_y_was_pressed = false;
         }
 
         /**
