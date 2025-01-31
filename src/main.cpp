@@ -42,10 +42,10 @@ lemlib::ExpoDriveCurve steer_curve(3, // joystick deadband out of 127
 // Drivetrain settings
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
                               &right_motor_group, // right motor group
-                              14.15, // 12.625 inch track width
+                              12.625, // 12.625 inch track width
                               lemlib::Omniwheel::NEW_325, 
                               480, // drivetrain rpm is 480
-                              8 // horizontal drift is 8 (for now)
+                              8 // horizontal drift is 8 (for now),
 );
 
 
@@ -60,7 +60,7 @@ pros::Rotation horizontal_encoder(-3);
 
 // // Horizontal tracking wheel
 lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.25);
-lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -7.4375, 480); //* 1.021276595745269, -6.3125, 480);
+lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -6.3125, 480); //* 1.021276595745269, -6.3125, 480);
 
 // // Vertical tracking wheel
 // lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
@@ -74,11 +74,11 @@ lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::
 // );
 
 // Odometry sensors
-lemlib::OdomSensors sensors(nullptr,//&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
+lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            nullptr, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
-                            &imu // inertial sensor
+                         &imu // inertial sensor
 );
 
 // lateral PID controller
@@ -92,14 +92,14 @@ lemlib::ControllerSettings lateral_controller(5.8, // proportional gain (kP) 4.5
                                             //     0, // large error range timeout, in milliseconds
                                             //     0 // maximum acceleration (slew)
                                               1, // small error range, in inches
-                                              5, // small error range timeout, in milliseconds
+                                              40, // small error range timeout, in milliseconds
                                               3, // large error range, in inches
-                                              10, //400 large error range timeout, in milliseconds
-                                              70//40 // maximum acceleration (slew)
+                                              400, //400 large error range timeout, in milliseconds
+                                              0//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2.8, // proportional gain (kP) 1.9 // 2.8
+lemlib::ControllerSettings angular_controller(2.825, // proportional gain (kP) 1.9 // 2.8
                                               0, // integral gain (kI)
                                               28, // derivative gain (kD) 30 // 27
                                               0, // anti windup
@@ -108,10 +108,10 @@ lemlib::ControllerSettings angular_controller(2.8, // proportional gain (kP) 1.9
                                             //     0, // large error range, in degrees
                                             //     0, // large error range timeout, in milliseconds
                                             //     0 // maximum acceleration (slew)
-                                              3, // small error range, in degrees
-                                              10, // small error range timeout, in milliseconds
-                                              10, // large error range, in degrees
-                                              50, // 600 large error range timeout, in milliseconds
+                                              1, // small error range, in degrees
+                                              50, // small error range timeout, in milliseconds
+                                              4, // large error range, in degrees
+                                              205, // 600 large error range timeout, in milliseconds
                                               0 // 40 maximum acceleration (slew)
 );
 
@@ -201,7 +201,7 @@ double get_intake_closest_to_ready_mogo_score() {
     double current_position = hook_intake.get_position();
     double target_position = 0;
     while (target_position < current_position) {
-        target_position += 2955;
+        target_position += 2957;
     }
     return target_position;
 }
@@ -218,15 +218,13 @@ double get_intake_closest_to_ready_mogo_score() {
  * from where it left off.
  */
 void autonomous() {
-    pros::delay(200);
-    // hook_intake.set_zero_position(-1576);
-    //hook_intake.move_absolute(0, 600);
-    // set position to x:0, y:0, heading:0
-    chassis.setPose(0, 0, 0);
-    chassis.moveToPoint(0, 24, 10000);
-    chassis.turnToHeading(90, 10000);
-    chassis.moveToPoint(24, 24, 10000);
-    return;
+    // pros::delay(200);
+    // // hook_intake.set_zero_position(-1576);
+    // // hook_intake.move_absolute(0, 600);
+    // // set position to x:0, y:0, heading:0
+    // chassis.setPose(0, 0, 0);
+    // chassis.turnToHeading(90, 10000);
+    // return;
     chassis.setPose(-60.1, 0, 90);
     // turn to face heading 90 with a very long timeout
     // arm_motor.move_absolute(630, 100);
@@ -242,68 +240,37 @@ void autonomous() {
 
     bool intake_task_running = false;
 
-    // pros::Task auton_intake_manager([&]() {
-    //     while (true) {
-    //         if (intake_task_running) {
-    //             if (optical.get_proximity() > 230) {
+    pros::Task auton_intake_manager([&]() {
+        while (true) {
+            if (optical.get_proximity() > 220) {
+                ticks_since_intake = 0;
+            }
+            ticks_since_intake++;
+            if (distance.get() < 200) {
+                if (hook_intake.get_current_draw() > 2450 && ticks_since_intake > 15) {
+                    hook_intake.move_relative(-400, 200);
+                    wait_ticks = 10;
+                }
+            }
+            pros::delay(20);
+        }
+    });
 
-    //                 // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
-    //                 if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
-    //                     current_ring_color = "red";
-    //                 }
-                    
-    //                 if (optical.get_hue() > 200 && optical.get_hue() < 235 ) {
-    //                     current_ring_color = "blue";
-    //                 }
-    //                 ticks_since_intake = 0;
-
-    //             }
-    //             ticks_since_intake++;
-                
-    //             if (current_ring_color != "red") {
-    //                 if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
-    //                     hook_intake.move(0);
-    //                     wait_ticks = 10;
-    //                 }            
-    //             }
-
-    //             if (wait_ticks > 0) {
-    //                 wait_ticks--;
-    //             }
-
-    //             if (wait_ticks == 0) {
-    //                 if (should_run_intake) {
-    //                     hook_intake.move(126);
-    //                 }
-    //             }
-
-
-    //             if (distance.get() < 200) {
-    //                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
-    //                     hook_intake.move_relative(-400, 200);
-    //                     should_run_intake = false;
-    //                 }
-    //             } else {
-    //                 should_run_intake = true;
-    //             }
-    //             pros::delay(50);
-    //         }
-    //     }
-    // });
-
+    arm_motor.set_zero_position(0);
+    hook_intake.set_zero_position(0);
     // #1 Score on alliance stake
     arm_motor.move_absolute(140, 100);
     pros::delay(500);
-    hook_intake.move_absolute(1200, 200);
+    hook_intake.move_absolute(400, 200);
     pros::delay(600);
-    hook_intake.move_relative(-300, 200);
+    hook_intake.move_relative(-50, 200);
     pros::delay(100);
 
     // #2 Get mogo
     chassis.moveToPoint(-48, 0, 100000, {}, false);
     chassis.turnToHeading(0, 10000, {}, false);
     // y -24.5
-    chassis.moveToPose(-48, -26.5, 0, 2000, {.forwards = false, .maxSpeed = 100}, false);
+    chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
     mogo_piston.set_value(1);
 
     // Activate all intakes
@@ -322,16 +289,16 @@ void autonomous() {
     get_to_point(0, -45);
 
     // Ring 2 by high stake
-    chassis.turnToPoint(24, -48, 10000);
-    chassis.moveToPoint(24, -48, 10000);
+    chassis.turnToPoint(26, -48, 10000);
+    chassis.moveToPoint(26, -48, 10000);
 
     // Ring 3 - Maybe use this for high stake?
     chassis.turnToPoint(0, -55, 10000);
     chassis.moveToPoint(0, -55, 10000);
     
     // Ring 4
-    chassis.turnToPoint(-24, -48, 10000);
-    chassis.moveToPoint(-24, -48, 10000);
+    chassis.turnToPoint(-24, -46, 10000);
+    chassis.moveToPoint(-24, -46, 10000);
 
     // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
     // can just combine into one motion because they are on the same path
@@ -342,49 +309,151 @@ void autonomous() {
 
     // chassis.turnToPoint(-55, -48, 10000);
     // chassis.moveToPoint(-55, -48, 10000);
-    chassis.turnToPoint(-59, -48, 10000);
-    chassis.moveToPoint(-59, -48, 10000);
+    chassis.turnToPoint(-57, -46, 10000);
+    chassis.moveToPoint(-57, -46, 10000);
     // Move back for ring 7
     chassis.turnToHeading(270, 10000);
-    chassis.moveToPoint(-50, -48, 10000, {.forwards = false});
+    chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
     
     // Ring 7
-    // chassis.turnToPoint(-48, -60, 10000);
-    // chassis.moveToPoint(-48, -60, 10000);
+    chassis.turnToPoint(-48, -61, 10000);
+    chassis.moveToPoint(-48, -61, 10000);
 
     // uncomment from here for ring 7
-    // chassis.turnToHeading(68.2, 10000);
-    // // chassis.turnToPoint(-48, -53, 10000);
-    // chassis.moveToPoint(-48, -53, 10000);
+    chassis.turnToHeading(68.2, 10000);
+    // chassis.turnToPoint(-48, -53, 10000);
+    chassis.moveToPoint(-37, -54, 10000);
     
-    // //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-    // chassis.turnToHeading(180, 10000);
-    // chassis.moveToPoint(-48, -48, 10000, {.forwards = false});
+    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    chassis.turnToHeading(180, 10000);
+    chassis.moveToPoint(-42, -48, 10000, {.forwards = false});
     
-    // chassis.turnToPoint(100, 100, 10000);
+    chassis.turnToPoint(100, 100, 10000, {}, false);
 
+    left_motor_group.move(-100);
+    right_motor_group.move(-100);
     // #3 Drop mogo in corner
-    pros::delay(200);
-    chassis.moveToPoint(-54.5, -54.5, 10000, {.forwards = false}, false);
+    pros::delay(400);
+    left_motor_group.move(0);
+    right_motor_group.move(0);
+    chassis.setPose(-51, -51, chassis.getPose().theta);
     mogo_piston.set_value(0);
-
-    intake_task_running = false;
 
     // chassis.turnToPoint(-42, -42, 10000);
     // chassis.moveToPoint(-42, -42, 10000);
     // chassis.turnToPoint(-48, -48, 10000);
     // chassis.moveToPoint(-48, -48, 10000);
+    chassis.turnToHeading(45, 1000, {}, false);
+    chassis.moveToPoint(-38, -42, 10000, {}, false);
+    chassis.turnToHeading(0 , 10000, {}, false);
+    mogo_piston.set_value(1);
+
+    // Wall reset pose
+    left_motor_group.move(-100);
+    right_motor_group.move(-100);
+    pros::delay(1000);
+    chassis.setPose(-36, -64, chassis.getPose().theta);
+    left_motor_group.move(0);
+    right_motor_group.move(0);
+    
+    chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
+    mogo_piston.set_value(0);
+
     chassis.turnToPoint(-48, 0, 10000);
     chassis.moveToPoint(-48, 0, 10000);
 
-    // chassis.turnToHeading(180, 10000);
+    chassis.turnToHeading(180, 10000);
 
     // // get_to_point(-48, 0);
     // // chassis.turnToPoint(-48, -1000, 10000);
 
     // // #4 Get mogo 2
-    // chassis.moveToPoint(-48, 17, 10000, {.forwards = false, .maxSpeed = 60});
+    chassis.moveToPose(-48, 18, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60});
+    mogo_piston.set_value(1);
     
+    // Activate all intakes 2nd run
+    flex_wheel_intake.move(-127);
+    hook_intake.move(127);
+    intake_task_running = true;
+
+    pros::delay(200);
+
+    arm_motor.move_absolute(0, 100);
+    // Ring 1 by ladder
+    chassis.turnToHeading(90, 10000);
+    chassis.moveToPoint(-24, 24, 10000);
+
+    // Get to this point instead of directly to ring #2 to avoid hitting the ladder
+    get_to_point(0, -45);
+
+    // Ring 2 by high stake
+    chassis.turnToPoint(26, 48, 10000);
+    chassis.moveToPoint(26, 48, 10000);
+
+    // Ring 3 - Maybe use this for high stake?
+    chassis.turnToPoint(0, 55, 10000);
+    chassis.moveToPoint(0, 55, 10000);
+    
+    // Ring 4
+    chassis.turnToPoint(-24, 46, 10000);
+    chassis.moveToPoint(-24, 46, 10000);
+
+    // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+    // can just combine into one motion because they are on the same path
+    // chassis.turnToPoint(-48, -48, 10000);
+    // chassis.moveToPoint(-48, -48, 10000);
+    // chassis.turnToPoint(-60, -48, 10000);
+    // chassis.moveToPoint(-60, -48, 10000);
+
+    // chassis.turnToPoint(-55, -48, 10000);
+    // chassis.moveToPoint(-55, -48, 10000);
+    chassis.turnToPoint(-57, 46, 10000);
+    chassis.moveToPoint(-57, 46, 10000);
+    // Move back for ring 7
+    chassis.turnToHeading(-90, 10000);
+    chassis.moveToPoint(-50, 46, 10000, {.forwards = false});
+    
+    // Ring 7
+    chassis.turnToPoint(-48, 61, 10000);
+    chassis.moveToPoint(-48, 61, 10000);
+
+    // uncomment from here for ring 7
+    chassis.turnToHeading(31.8, 10000);
+    // chassis.turnToPoint(-48, -53, 10000);
+    chassis.moveToPoint(-37, 54, 10000);
+    
+    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+    chassis.turnToHeading(0, 10000);
+    chassis.moveToPoint(-42, 48, 10000, {.forwards = false});
+    
+    chassis.turnToPoint(-100, -100, 10000, {}, false);
+
+    left_motor_group.move(-100);
+    right_motor_group.move(-100);
+    // #3 Drop mogo in corner
+    pros::delay(400);
+    left_motor_group.move(0);
+    right_motor_group.move(0);
+    chassis.setPose(-51, 51, chassis.getPose().theta);
+    mogo_piston.set_value(0);
+
+    // chassis.turnToPoint(-42, -42, 10000);
+    // chassis.moveToPoint(-42, -42, 10000);
+    // chassis.turnToPoint(-48, -48, 10000);
+    // chassis.moveToPoint(-48, -48, 10000);
+    chassis.turnToHeading(45, 1000, {}, false);
+    chassis.moveToPoint(-38, -42, 10000, {}, false);
+    chassis.turnToHeading(0 , 10000, {}, false);
+    mogo_piston.set_value(1);
+    left_motor_group.move(-100);
+    right_motor_group.move(-100);
+    pros::delay(1000);
+    chassis.setPose(-36, -64, chassis.getPose().theta);
+    left_motor_group.move(0);
+    right_motor_group.move(0);
+    
+    chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
+    mogo_piston.set_value(0);
     // mogo_piston.set_value(1);
 
     // get_to_point(-24, 24);
@@ -494,7 +563,7 @@ void opcontrol() {
     pros::delay(500);
     hook_intake.move_absolute(1300, 200);
     pros::delay(600);
-    arm_motor.move_absolute(-5, 200);
+    arm_motor.move_absolute(-10, 200);
 
     flex_wheel_intake.move_velocity(-500);
 
@@ -708,7 +777,7 @@ void opcontrol() {
                 arm_motor.move_absolute(765, 100);
                 arm_state++;
             } else if (arm_state == 1) {
-                hook_intake.move_relative(-600, 200);
+                hook_intake.move_relative(-700, 200);
                 arm_motor.move_absolute(2570, 35);
                 arm_state++;
             } 
