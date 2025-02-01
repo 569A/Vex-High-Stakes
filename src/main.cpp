@@ -227,13 +227,13 @@ void autonomous() {
     // Match autons are 2 ring + ladder touch
     // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
     chassis.setPose(55, -38.5, 135);
-    chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
-    chassis.moveToPose(24, -24, 120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+    // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
+    chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
     mogo_piston.set_value(1);
     chassis.turnToPoint(24, -48, 10000);
     chassis.moveToPoint(24, -50, 10000, {}, false);
     flex_wheel_intake.move_relative(-920, 200);
-    pros::delay(300);
+    pros::delay(500);
     chassis.turnToPoint(24, -10, 10000, {}, false);
     flex_wheel_intake.move(-30);
     hook_intake.move(100);
@@ -246,13 +246,13 @@ void autonomous() {
 
     // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
     chassis.setPose(-55, -38.5, -135);
-    chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
-    chassis.moveToPose(-24, -24, -120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+    // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
+    chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
     mogo_piston.set_value(1);
     chassis.turnToPoint(-24, -48, 10000);
     chassis.moveToPoint(-24, -50, 10000, {}, false);
     flex_wheel_intake.move_relative(-920, 200);
-    pros::delay(300);
+    pros::delay(500);
     chassis.turnToPoint(-24, -10, 10000, {}, false);
     flex_wheel_intake.move(-30);
     hook_intake.move(100);
