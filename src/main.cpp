@@ -810,7 +810,7 @@ void opcontrol() {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
-                arm_motor.move_absolute(795, 100);
+                arm_motor.move_absolute(785, 100);
                 arm_state++;
             } else if (arm_state == 1) {
                 hook_intake.move_relative(-700, 200);
@@ -829,7 +829,7 @@ void opcontrol() {
                 arm_motor.move_absolute(0, 80);
                 arm_state--;
             } else if (arm_state == 2) {
-                arm_motor.move_absolute(795, 100);
+                arm_motor.move_absolute(785, 100);
                 arm_state--;
             }
             digital_down_was_pressed = true;
