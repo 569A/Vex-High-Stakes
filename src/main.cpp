@@ -737,6 +737,9 @@ void opcontrol() {
                 get_arm_ready_to_score = true;
                 last_target = last_target + 2955;
             }
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+                hook_intake.move_relative(-500, 125);
+            }
         } else if (arm_state == 2) {
             flex_wheel_intake.move_velocity(0);
             ready_to_score = false;
