@@ -1,5 +1,6 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "lemlib/chassis/chassis.hpp"
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "liblvgl/llemu.hpp"
 #include "pros/abstract_motor.hpp"
@@ -259,7 +260,8 @@ void autonomous() {
         // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.5, .maxSpeed = 70}, false);
+        // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(24, -48, 10000);
         chassis.moveToPoint(24, -50, 10000, {}, false);
@@ -280,7 +282,8 @@ void autonomous() {
         // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.5, .maxSpeed = 70}, false);
+        // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(-24, -48, 10000);
         chassis.moveToPoint(-24, -50, 10000, {}, false);
