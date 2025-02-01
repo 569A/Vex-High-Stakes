@@ -833,7 +833,7 @@ void opcontrol() {
                 arm_state++;
             } else if (arm_state == 1) {
                 // hook_intake.move_relative(-700, 125);
-                arm_motor.move_absolute(2570, 35);
+                arm_motor.move_absolute(2570, 100);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
@@ -845,7 +845,7 @@ void opcontrol() {
            get_arm_ready_to_score = false;
            flex_wheel_intake.move(-500);
             if (arm_state == 1) {
-                arm_motor.move_absolute(0, 80);
+                arm_motor.move_absolute(0, 100);
                 arm_state--;
             } else if (arm_state == 2) {
                 arm_motor.move_absolute(775, 100);
