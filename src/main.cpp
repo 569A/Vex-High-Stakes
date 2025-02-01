@@ -550,6 +550,7 @@ void opcontrol() {
     bool digital_down_was_pressed = false;
     bool digital_b_was_pressed = false;
     bool digital_y_was_pressed = false;
+    bool digital_l1_was_pressed = false;
 
     bool flex_wheel_running = false;
     bool intake_running = false;
@@ -737,8 +738,15 @@ void opcontrol() {
                 get_arm_ready_to_score = true;
                 last_target = last_target + 2955;
             }
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+
+            /**
+            2 rings at once. Pressing button L1 will load the 1st ring, and a 2nd ring can be loaded later. This allows efficient wall stake scoring.
+             */
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1) && !digital_l1_was_pressed) {
                 hook_intake.move_relative(-500, 125);
+                digital_l1_was_pressed = true;
+            } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+                digital_l1_was_pressed = false;
             }
         } else if (arm_state == 2) {
             flex_wheel_intake.move_velocity(0);
