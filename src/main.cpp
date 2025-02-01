@@ -136,6 +136,9 @@ pros::Distance distance(8);
 // Color to score
 std::string color = "red";
 
+// Skills or not (this determines whether we run the score ring on alliance stake automatically at the start of driver control)
+bool skills_mode = false;
+
 
 /**
  * A callback function for LLEMU's center button.
@@ -238,6 +241,10 @@ void autonomous() {
     hook_intake.move(0);
     return;
     
+
+
+
+    // Skills 
     // pros::delay(200);
     // // hook_intake.set_zero_position(-1576);
     // // hook_intake.move_absolute(0, 600);
@@ -578,19 +585,20 @@ void opcontrol() {
     bool doinker_down = false;
 
     bool next_ring_must_reverse = false;
-    chassis.setPose(-60.1, 0, 90);
-    // turn to face heading 90 with a very long timeout
-    // arm_motor.move_absolute(630, 100);
-    // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
-    //     pros::delay(20);w
-    // }
-    arm_motor.move_absolute(140, 100);
-    pros::delay(500);
-    hook_intake.move_absolute(1300, 200);
-    pros::delay(600);
-    arm_motor.move_absolute(-10, 200);
+    
+    if (skills_mode) {
+        arm_motor.set_zero_position(0);
+        hook_intake.set_zero_position(0);
 
-    flex_wheel_intake.move_velocity(-500);
+        chassis.setPose(-60.1, 0, 90);
+        arm_motor.move_absolute(140, 100);
+        pros::delay(500);
+        hook_intake.move_absolute(1300, 200);
+        pros::delay(600);
+        arm_motor.move_absolute(-10, 200);
+
+        flex_wheel_intake.move_velocity(-500);
+    }
 
 	while (true) {
 		optical.set_led_pwm(100);
@@ -743,7 +751,7 @@ void opcontrol() {
             2 rings at once. Pressing button L1 will load the 1st ring, and a 2nd ring can be loaded later. This allows efficient wall stake scoring.
              */
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1) && !digital_l1_was_pressed) {
-                hook_intake.move_relative(-500, 125);
+                hook_intake.move_relative(-600, 125);
                 digital_l1_was_pressed = true;
             } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
                 digital_l1_was_pressed = false;
@@ -824,7 +832,7 @@ void opcontrol() {
                 arm_motor.move_absolute(775, 100);
                 arm_state++;
             } else if (arm_state == 1) {
-                hook_intake.move_relative(-700, 125);
+                // hook_intake.move_relative(-700, 125);
                 arm_motor.move_absolute(2570, 35);
                 arm_state++;
             } 
