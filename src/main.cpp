@@ -187,6 +187,7 @@ void on_right_button() {
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+    mogo_piston.set_value(1);
 	pros::lcd::initialize();
     pros::lcd::set_text(1, "Color Red selected");
     pros::lcd::set_text(2, "Skills mode disabled");
@@ -254,6 +255,7 @@ double get_intake_closest_to_ready_mogo_score() {
  * from where it left off.
  */
 void autonomous() {
+    mogo_piston.set_value(0);
     // Match autons are 2 ring + ladder touch
 
     if (auton == "blue_pos" || auton == "red_neg") {
@@ -645,6 +647,7 @@ void opcontrol() {
     bool next_ring_must_reverse = false;
     
     if (skills_mode) {
+        mogo_piston.set_value(0);
         arm_motor.set_zero_position(0);
         hook_intake.set_zero_position(0);
 
