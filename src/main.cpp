@@ -224,17 +224,39 @@ double get_intake_closest_to_ready_mogo_score() {
  * from where it left off.
  */
 void autonomous() {
-    // Blue Pos
-    chassis.setPose(60, -41, 90);
-    chassis.moveToPose(41, -34, 120, 10000, {.forwards = false, .maxSpeed = 70});
-    chassis.moveToPose(31, -27, 120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+    // Match autons are 2 ring + ladder touch
+    // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
+    chassis.setPose(55, -38.5, 135);
+    chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
+    chassis.moveToPose(24, -24, 120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
     mogo_piston.set_value(1);
-    hook_intake.move(127);
-    flex_wheel_intake.move(-127);
     chassis.turnToPoint(24, -48, 10000);
-    chassis.moveToPoint(24, -50, 10000);
+    chassis.moveToPoint(24, -50, 10000, {}, false);
+    flex_wheel_intake.move_relative(-920, 200);
+    pros::delay(300);
     chassis.turnToPoint(24, -10, 10000, {}, false);
+    flex_wheel_intake.move(-30);
+    hook_intake.move(100);
     chassis.moveToPoint(24, -10, 10000, {}, false);
+    left_motor_group.move(50);
+    right_motor_group.move(50);
+    flex_wheel_intake.move(0);
+    hook_intake.move(0);
+    return;
+
+    // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
+    chassis.setPose(-55, -38.5, -135);
+    chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
+    chassis.moveToPose(-24, -24, -120, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+    mogo_piston.set_value(1);
+    chassis.turnToPoint(-24, -48, 10000);
+    chassis.moveToPoint(-24, -50, 10000, {}, false);
+    flex_wheel_intake.move_relative(-920, 200);
+    pros::delay(300);
+    chassis.turnToPoint(-24, -10, 10000, {}, false);
+    flex_wheel_intake.move(-30);
+    hook_intake.move(100);
+    chassis.moveToPoint(-24, -10, 10000, {}, false);
     left_motor_group.move(50);
     right_motor_group.move(50);
     flex_wheel_intake.move(0);
