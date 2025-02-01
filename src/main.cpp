@@ -417,7 +417,7 @@ void autonomous() {
     // // chassis.turnToPoint(-48, -1000, 10000);
 
     // // #4 Get mogo 2
-    chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60});
+    chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
     mogo_piston.set_value(1);
     
     // Activate all intakes 2nd run
