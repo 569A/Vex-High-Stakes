@@ -738,7 +738,7 @@ void opcontrol() {
                 last_target = last_target + 2955;
             }
         } else if (arm_state == 2) {
-            flex_wheel_intake.move_velocity(600);
+            flex_wheel_intake.move_velocity(0);
             ready_to_score = false;
             /**
             High stake scoring - we don't want to have to manually reverse the intake for scoring on wall stakes
@@ -813,7 +813,7 @@ void opcontrol() {
                 arm_motor.move_absolute(775, 100);
                 arm_state++;
             } else if (arm_state == 1) {
-                hook_intake.move_relative(-700, 200);
+                hook_intake.move_relative(-700, 125);
                 arm_motor.move_absolute(2570, 35);
                 arm_state++;
             } 
