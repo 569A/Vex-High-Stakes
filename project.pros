@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "Blue Pos + Red Neg",
+    "project_name": "Vex-High-Stakes-24-25",
     "target": "v5",
     "templates": {
       "LemLib": {
@@ -300,7 +300,7 @@
     "upload_options": {
       "description": "569A 2024-25",
       "icon": "clawbot",
-      "slot": 2
+      "slot": 1
     },
     "use_early_access": false
   }

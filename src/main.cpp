@@ -139,23 +139,46 @@ std::string color = "red";
 // Skills or not (this determines whether we run the score ring on alliance stake automatically at the start of driver control)
 bool skills_mode = false;
 
+// What auton are we running
+std::string auton = "blue_pos";
 
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
+
+void on_left_button() {
+    if (color == "red") {
+        color = "blue";
+        pros::lcd::set_text(1, "Color Blue selected");
+    } else {
+        color = "red";
+        pros::lcd::set_text(1, "Color Red selected");
+    }
+}
 void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
+	skills_mode = !skills_mode;
+    if (skills_mode) {
+        pros::lcd::set_text(2, "Skills mode enabled");
+    } else {
+        pros::lcd::set_text(2, "Skills mode disabled");
+    }
 }
 
+void on_right_button() {
+    if (auton == "blue_pos") {
+        auton = "red_pos";
+        pros::lcd::set_text(3, "Red Pos selected");
+    } else if (auton == "red_pos") {
+        auton = "blue_neg";
+        pros::lcd::set_text(3, "Blue Neg selected");
+    } else if (auton == "blue_neg") {
+        auton = "red_neg";
+        pros::lcd::set_text(3, "Red Neg selected");
+    } else if (auton == "red_neg") {
+        auton = "blue_pos";
+        pros::lcd::set_text(3, "Blue Pos selected");
+    } else {
+        auton = "skills";
+        pros::lcd::set_text(3, "Skills selected");
+    }
+}
 /**
  * Runs initialization code. This occurs as soon as the program is started.
  *
@@ -164,7 +187,13 @@ void on_center_button() {
  */
 void initialize() {
 	pros::lcd::initialize();
+    pros::lcd::set_text(1, "Color Red selected");
+    pros::lcd::set_text(2, "Skills mode disabled");
+    pros::lcd::set_text(3, "Blue Pos selected");
+
+    pros::lcd::register_btn0_cb(on_left_button);
 	pros::lcd::register_btn1_cb(on_center_button);
+    pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     chassis.calibrate();
     pros::Task screen_task([&]() {
@@ -225,293 +254,297 @@ double get_intake_closest_to_ready_mogo_score() {
  */
 void autonomous() {
     // Match autons are 2 ring + ladder touch
-    // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
-    chassis.setPose(55, -38.5, 135);
-    // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
-    chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
-    mogo_piston.set_value(1);
-    chassis.turnToPoint(24, -48, 10000);
-    chassis.moveToPoint(24, -50, 10000, {}, false);
-    flex_wheel_intake.move_relative(-920, 200);
-    pros::delay(500);
-    chassis.turnToPoint(24, -10, 10000, {}, false);
-    flex_wheel_intake.move(-30);
-    hook_intake.move(100);
-    chassis.moveToPoint(24, -10, 10000, {}, false);
-    left_motor_group.move(50);
-    right_motor_group.move(50);
-    flex_wheel_intake.move(0);
-    hook_intake.move(0);
-    return;
 
-    // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
-    chassis.setPose(-55, -38.5, -135);
-    // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
-    chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
-    mogo_piston.set_value(1);
-    chassis.turnToPoint(-24, -48, 10000);
-    chassis.moveToPoint(-24, -50, 10000, {}, false);
-    flex_wheel_intake.move_relative(-920, 200);
-    pros::delay(500);
-    chassis.turnToPoint(-24, -10, 10000, {}, false);
-    flex_wheel_intake.move(-30);
-    hook_intake.move(100);
-    chassis.moveToPoint(-24, -10, 10000, {}, false);
-    left_motor_group.move(50);
-    right_motor_group.move(50);
-    flex_wheel_intake.move(0);
-    hook_intake.move(0);
-    return;
-    
+    if (auton == "blue_pos" || auton == "red_neg") {
+        // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
+        chassis.setPose(55, -38.5, 135);
+        // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
+        chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        mogo_piston.set_value(1);
+        chassis.turnToPoint(24, -48, 10000);
+        chassis.moveToPoint(24, -50, 10000, {}, false);
+        flex_wheel_intake.move_relative(-920, 200);
+        pros::delay(500);
+        chassis.turnToPoint(24, -10, 10000, {}, false);
+        flex_wheel_intake.move(-30);
+        hook_intake.move(100);
+        chassis.moveToPoint(24, -10, 10000, {}, false);
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+        hook_intake.move(0);
+        return;
+    }
+
+    if (auton == "red_pos" || auton == "blue_neg") {
+        // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
+        chassis.setPose(-55, -38.5, -135);
+        // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
+        chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        mogo_piston.set_value(1);
+        chassis.turnToPoint(-24, -48, 10000);
+        chassis.moveToPoint(-24, -50, 10000, {}, false);
+        flex_wheel_intake.move_relative(-920, 200);
+        pros::delay(500);
+        chassis.turnToPoint(-24, -10, 10000, {}, false);
+        flex_wheel_intake.move(-30);
+        hook_intake.move(100);
+        chassis.moveToPoint(-24, -10, 10000, {}, false);
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+        hook_intake.move(0);
+        return;
+    }
 
 
+    if (auton == "skills") {
+        // Skills 
+        // pros::delay(200);
+        // // hook_intake.set_zero_position(-1576);
+        // // hook_intake.move_absolute(0, 600);
+        // // set position to x:0, y:0, heading:0
+        // chassis.setPose(0, 0, 0);
+        // chassis.turnToHeading(90, 10000);
+        // return;
+        chassis.setPose(-60.1, 0, 90);
+        // turn to face heading 90 with a very long timeout
+        // arm_motor.move_absolute(630, 100);
+        // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
+        //     pros::delay(20);w
+        // }
 
-    // Skills 
-    // pros::delay(200);
-    // // hook_intake.set_zero_position(-1576);
-    // // hook_intake.move_absolute(0, 600);
-    // // set position to x:0, y:0, heading:0
-    // chassis.setPose(0, 0, 0);
-    // chassis.turnToHeading(90, 10000);
-    // return;
-    chassis.setPose(-60.1, 0, 90);
-    // turn to face heading 90 with a very long timeout
-    // arm_motor.move_absolute(630, 100);
-    // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
-    //     pros::delay(20);w
-    // }
+        bool intake_running = false;
+        int ticks_since_intake = 0;
+        std::string current_ring_color = "none";
+        bool should_run_intake = false;
+        int wait_ticks = 0;
 
-    bool intake_running = false;
-    int ticks_since_intake = 0;
-    std::string current_ring_color = "none";
-    bool should_run_intake = false;
-    int wait_ticks = 0;
+        bool intake_task_running = false;
 
-    bool intake_task_running = false;
-
-    pros::Task auton_intake_manager([&]() {
-        while (true) {
-            if (optical.get_proximity() > 220) {
-                ticks_since_intake = 0;
-            }
-            ticks_since_intake++;
-            if (distance.get() < 200) {
-                if (hook_intake.get_current_draw() > 2450 && ticks_since_intake > 12) {
-                    hook_intake.move_relative(-400, 200);
-                    wait_ticks = 10;
+        pros::Task auton_intake_manager([&]() {
+            while (true) {
+                if (optical.get_proximity() > 220) {
+                    ticks_since_intake = 0;
                 }
+                ticks_since_intake++;
+                if (distance.get() < 200) {
+                    if (hook_intake.get_current_draw() > 2450 && ticks_since_intake > 12) {
+                        hook_intake.move_relative(-400, 200);
+                        wait_ticks = 10;
+                    }
+                }
+                pros::delay(20);
             }
-            pros::delay(20);
-        }
-    });
+        });
 
-    arm_motor.set_zero_position(0);
-    hook_intake.set_zero_position(0);
-    // #1 Score on alliance stake
-    arm_motor.move_absolute(140, 100);
-    pros::delay(500);
-    hook_intake.move_absolute(400, 200);
-    pros::delay(600);
-    hook_intake.move_relative(-50, 200);
-    pros::delay(100);
+        arm_motor.set_zero_position(0);
+        hook_intake.set_zero_position(0);
+        // #1 Score on alliance stake
+        arm_motor.move_absolute(140, 100);
+        pros::delay(500);
+        hook_intake.move_absolute(400, 200);
+        pros::delay(600);
+        hook_intake.move_relative(-50, 200);
+        pros::delay(100);
 
-    // #2 Get mogo
-    chassis.moveToPoint(-48, 0, 100000, {}, false);
-    chassis.turnToHeading(0, 10000, {}, false);
-    // y -24.5
-    chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
-    mogo_piston.set_value(1);
+        // #2 Get mogo
+        chassis.moveToPoint(-48, 0, 100000, {}, false);
+        chassis.turnToHeading(0, 10000, {}, false);
+        // y -24.5
+        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        mogo_piston.set_value(1);
 
-    // Activate all intakes
-    flex_wheel_intake.move(-127);
-    hook_intake.move(127);
-    intake_task_running = true;
+        // Activate all intakes
+        flex_wheel_intake.move(-127);
+        hook_intake.move(127);
+        intake_task_running = true;
 
-    pros::delay(200);
+        pros::delay(200);
 
-    arm_motor.move_absolute(0, 100);
-    // Ring 1 by ladder
-    chassis.turnToHeading(90, 10000);
-    chassis.moveToPoint(-24, -24, 10000);
+        arm_motor.move_absolute(0, 100);
+        // Ring 1 by ladder
+        chassis.turnToHeading(90, 10000);
+        chassis.moveToPoint(-24, -24, 10000);
 
-    // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-    get_to_point(0, -45);
+        // Get to this point instead of directly to ring #2 to avoid hitting the ladder
+        get_to_point(0, -45);
 
-    // Ring 2 by high stake
-    chassis.turnToPoint(26, -46, 10000);
-    chassis.moveToPoint(26, -46, 10000);
+        // Ring 2 by high stake
+        chassis.turnToPoint(26, -46, 10000);
+        chassis.moveToPoint(26, -46, 10000);
 
-    // Ring 3 - Maybe use this for high stake?
-    chassis.turnToPoint(0, -55, 10000);
-    chassis.moveToPoint(0, -55, 10000);
-    
-    // Ring 4
-    chassis.turnToPoint(-24, -46, 10000);
-    chassis.moveToPoint(-24, -46, 10000);
+        // Ring 3 - Maybe use this for high stake?
+        chassis.turnToPoint(0, -55, 10000);
+        chassis.moveToPoint(0, -55, 10000);
+        
+        // Ring 4
+        chassis.turnToPoint(-24, -46, 10000);
+        chassis.moveToPoint(-24, -46, 10000);
 
-    // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
-    // can just combine into one motion because they are on the same path
-    // chassis.turnToPoint(-48, -48, 10000);
-    // chassis.moveToPoint(-48, -48, 10000);
-    // chassis.turnToPoint(-60, -48, 10000);
-    // chassis.moveToPoint(-60, -48, 10000);
+        // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+        // can just combine into one motion because they are on the same path
+        // chassis.turnToPoint(-48, -48, 10000);
+        // chassis.moveToPoint(-48, -48, 10000);
+        // chassis.turnToPoint(-60, -48, 10000);
+        // chassis.moveToPoint(-60, -48, 10000);
 
-    // chassis.turnToPoint(-55, -48, 10000);
-    // chassis.moveToPoint(-55, -48, 10000);
-    chassis.turnToPoint(-57, -46, 10000);
-    chassis.moveToPoint(-57, -46, 10000);
-    // Move back for ring 7
-    chassis.turnToHeading(270, 10000);
-    chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
-    
-    // Ring 7
-    chassis.turnToPoint(-48, -61, 10000);
-    chassis.moveToPoint(-48, -61, 10000);
+        // chassis.turnToPoint(-55, -48, 10000);
+        // chassis.moveToPoint(-55, -48, 10000);
+        chassis.turnToPoint(-57, -46, 10000);
+        chassis.moveToPoint(-57, -46, 10000);
+        // Move back for ring 7
+        chassis.turnToHeading(270, 10000);
+        chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
+        
+        // Ring 7
+        chassis.turnToPoint(-48, -61, 10000);
+        chassis.moveToPoint(-48, -61, 10000);
 
-    // uncomment from here for ring 7
-    chassis.turnToHeading(68.2, 10000);
-    // chassis.turnToPoint(-48, -53, 10000);
-    chassis.moveToPoint(-37, -54, 10000);
-    
-    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-    chassis.turnToHeading(180, 10000);
-    chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
-    
-    chassis.turnToPoint(100, 100, 10000, {}, false);
+        // uncomment from here for ring 7
+        chassis.turnToHeading(68.2, 10000);
+        // chassis.turnToPoint(-48, -53, 10000);
+        chassis.moveToPoint(-37, -54, 10000);
+        
+        //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+        chassis.turnToHeading(180, 10000);
+        chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
+        
+        chassis.turnToPoint(100, 100, 10000, {}, false);
 
-    left_motor_group.move(-100);
-    right_motor_group.move(-100);
-    // #3 Drop mogo in corner
-    pros::delay(400);
-    left_motor_group.move(0);
-    right_motor_group.move(0);
-    chassis.setPose(-51, -51, chassis.getPose().theta);
-    mogo_piston.set_value(0);
+        left_motor_group.move(-100);
+        right_motor_group.move(-100);
+        // #3 Drop mogo in corner
+        pros::delay(400);
+        left_motor_group.move(0);
+        right_motor_group.move(0);
+        chassis.setPose(-51, -51, chassis.getPose().theta);
+        mogo_piston.set_value(0);
 
-    // chassis.turnToPoint(-42, -42, 10000);
-    // chassis.moveToPoint(-42, -42, 10000);
-    // chassis.turnToPoint(-48, -48, 10000);
-    // chassis.moveToPoint(-48, -48, 10000);
-    chassis.turnToHeading(45, 1000, {}, false);
-    chassis.moveToPoint(-38, -42, 10000, {}, false);
-    chassis.turnToHeading(0 , 10000, {}, false);
-    mogo_piston.set_value(1);
+        // chassis.turnToPoint(-42, -42, 10000);
+        // chassis.moveToPoint(-42, -42, 10000);
+        // chassis.turnToPoint(-48, -48, 10000);
+        // chassis.moveToPoint(-48, -48, 10000);
+        chassis.turnToHeading(45, 1000, {}, false);
+        chassis.moveToPoint(-38, -42, 10000, {}, false);
+        chassis.turnToHeading(0 , 10000, {}, false);
+        mogo_piston.set_value(1);
 
-    // Wall reset pose
-    left_motor_group.move(-100);
-    right_motor_group.move(-100);
-    pros::delay(1000);
-    chassis.setPose(-39, -64, chassis.getPose().theta);
-    left_motor_group.move(0);
-    right_motor_group.move(0);
-    
-    chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
-    mogo_piston.set_value(0);
+        // Wall reset pose
+        left_motor_group.move(-100);
+        right_motor_group.move(-100);
+        pros::delay(1000);
+        chassis.setPose(-39, -64, chassis.getPose().theta);
+        left_motor_group.move(0);
+        right_motor_group.move(0);
+        
+        chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
+        mogo_piston.set_value(0);
 
-    chassis.turnToPoint(-48, 0, 10000);
-    chassis.moveToPoint(-48, 0, 10000);
+        chassis.turnToPoint(-48, 0, 10000);
+        chassis.moveToPoint(-48, 0, 10000);
 
-    chassis.turnToHeading(180, 10000);
+        chassis.turnToHeading(180, 10000);
 
-    // // get_to_point(-48, 0);
-    // // chassis.turnToPoint(-48, -1000, 10000);
+        // // get_to_point(-48, 0);
+        // // chassis.turnToPoint(-48, -1000, 10000);
 
-    // // #4 Get mogo 2
-    chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
-    mogo_piston.set_value(1);
-    
-    // Activate all intakes 2nd run
-    flex_wheel_intake.move(-127);
-    hook_intake.move(80);
-    intake_task_running = true;
+        // // #4 Get mogo 2
+        chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
+        mogo_piston.set_value(1);
+        
+        // Activate all intakes 2nd run
+        flex_wheel_intake.move(-127);
+        hook_intake.move(80);
+        intake_task_running = true;
 
-    pros::delay(200);
+        pros::delay(200);
 
-    arm_motor.move_absolute(0, 100);
-    // Ring 1 by ladder
-    chassis.turnToHeading(90, 10000);
-    chassis.moveToPoint(-24, 24, 10000);
+        arm_motor.move_absolute(0, 100);
+        // Ring 1 by ladder
+        chassis.turnToHeading(90, 10000);
+        chassis.moveToPoint(-24, 24, 10000);
 
-    // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-    get_to_point(0, -45);
+        // Get to this point instead of directly to ring #2 to avoid hitting the ladder
+        get_to_point(0, -45);
 
-    // Ring 2 by high stake
-    chassis.turnToPoint(26, 48, 10000);
-    chassis.moveToPoint(26, 48, 10000);
+        // Ring 2 by high stake
+        chassis.turnToPoint(26, 48, 10000);
+        chassis.moveToPoint(26, 48, 10000);
 
-    // Ring 3 - Maybe use this for high stake?
-    chassis.turnToPoint(0, 55, 10000);
-    chassis.moveToPoint(0, 55, 10000);
-    
-    // Ring 4
-    chassis.turnToPoint(-24, 46, 10000);
-    chassis.moveToPoint(-24, 46, 10000);
+        // Ring 3 - Maybe use this for high stake?
+        chassis.turnToPoint(0, 55, 10000);
+        chassis.moveToPoint(0, 55, 10000);
+        
+        // Ring 4
+        chassis.turnToPoint(-24, 46, 10000);
+        chassis.moveToPoint(-24, 46, 10000);
 
-    // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
-    // can just combine into one motion because they are on the same path
-    // chassis.turnToPoint(-48, -48, 10000);
-    // chassis.moveToPoint(-48, -48, 10000);
-    // chassis.turnToPoint(-60, -48, 10000);
-    // chassis.moveToPoint(-60, -48, 10000);
+        // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+        // can just combine into one motion because they are on the same path
+        // chassis.turnToPoint(-48, -48, 10000);
+        // chassis.moveToPoint(-48, -48, 10000);
+        // chassis.turnToPoint(-60, -48, 10000);
+        // chassis.moveToPoint(-60, -48, 10000);
 
-    // chassis.turnToPoint(-55, -48, 10000);
-    // chassis.moveToPoint(-55, -48, 10000);
-    chassis.turnToPoint(-57, 46, 10000);
-    chassis.moveToPoint(-57, 46, 10000);
-    // Move back for ring 7
-    chassis.turnToHeading(-90, 10000);
-    chassis.moveToPoint(-50, 46, 10000, {.forwards = false});
-    
-    // Ring 7
-    chassis.turnToPoint(-48, 61, 10000);
-    chassis.moveToPoint(-48, 61, 10000);
+        // chassis.turnToPoint(-55, -48, 10000);
+        // chassis.moveToPoint(-55, -48, 10000);
+        chassis.turnToPoint(-57, 46, 10000);
+        chassis.moveToPoint(-57, 46, 10000);
+        // Move back for ring 7
+        chassis.turnToHeading(-90, 10000);
+        chassis.moveToPoint(-50, 46, 10000, {.forwards = false});
+        
+        // Ring 7
+        chassis.turnToPoint(-48, 61, 10000);
+        chassis.moveToPoint(-48, 61, 10000);
 
-    // uncomment from here for ring 7
-    chassis.turnToHeading(31.8, 10000);
-    // chassis.turnToPoint(-48, -53, 10000);
-    chassis.moveToPoint(-37, 54, 10000);
-    
-    //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-    chassis.turnToHeading(0, 10000);
-    chassis.moveToPoint(-42, 48, 10000, {.forwards = false});
-    
-    chassis.turnToPoint(-100, -100, 10000, {}, false);
+        // uncomment from here for ring 7
+        chassis.turnToHeading(31.8, 10000);
+        // chassis.turnToPoint(-48, -53, 10000);
+        chassis.moveToPoint(-37, 54, 10000);
+        
+        //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+        chassis.turnToHeading(0, 10000);
+        chassis.moveToPoint(-42, 48, 10000, {.forwards = false});
+        
+        chassis.turnToPoint(-100, -100, 10000, {}, false);
 
-    left_motor_group.move(-100);
-    right_motor_group.move(-100);
-    // #3 Drop mogo in corner
-    pros::delay(400);
-    left_motor_group.move(0);
-    right_motor_group.move(0);
-    chassis.setPose(-51, 51, chassis.getPose().theta);
-    mogo_piston.set_value(0);
+        left_motor_group.move(-100);
+        right_motor_group.move(-100);
+        // #3 Drop mogo in corner
+        pros::delay(400);
+        left_motor_group.move(0);
+        right_motor_group.move(0);
+        chassis.setPose(-51, 51, chassis.getPose().theta);
+        mogo_piston.set_value(0);
 
-    // chassis.turnToPoint(-42, -42, 10000);
-    // chassis.moveToPoint(-42, -42, 10000);
-    // chassis.turnToPoint(-48, -48, 10000);
-    // chassis.moveToPoint(-48, -48, 10000);
-    chassis.turnToHeading(45, 1000, {}, false);
-    chassis.moveToPoint(-34.5, -42, 10000, {}, false);
-    chassis.turnToHeading(0 , 10000, {}, false);
-    mogo_piston.set_value(1);
-    left_motor_group.move(-100);
-    right_motor_group.move(-100);
-    pros::delay(1000);
-    chassis.setPose(-36, -64, chassis.getPose().theta);
-    left_motor_group.move(0);
-    right_motor_group.move(0);
-    
-    chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
-    mogo_piston.set_value(0);
-    // mogo_piston.set_value(1);
+        // chassis.turnToPoint(-42, -42, 10000);
+        // chassis.moveToPoint(-42, -42, 10000);
+        // chassis.turnToPoint(-48, -48, 10000);
+        // chassis.moveToPoint(-48, -48, 10000);
+        chassis.turnToHeading(45, 1000, {}, false);
+        chassis.moveToPoint(-34.5, -42, 10000, {}, false);
+        chassis.turnToHeading(0 , 10000, {}, false);
+        mogo_piston.set_value(1);
+        left_motor_group.move(-100);
+        right_motor_group.move(-100);
+        pros::delay(1000);
+        chassis.setPose(-36, -64, chassis.getPose().theta);
+        left_motor_group.move(0);
+        right_motor_group.move(0);
+        
+        chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
+        mogo_piston.set_value(0);
+        // mogo_piston.set_value(1);
 
-    // get_to_point(-24, 24);
-    // get_to_point(24, 48);
-    // get_to_point(0, 60);
-    // get_to_point(-24, 48);
-    // get_to_point(-48, 48);
-    // get_to_point(-60, 48);
-
+        // get_to_point(-24, 24);
+        // get_to_point(24, 48);
+        // get_to_point(0, 60);
+        // get_to_point(-24, 48);
+        // get_to_point(-48, 48);
+        // get_to_point(-60, 48);
+    }
 
     // Angular PID test 
     // chassis.turnToHeading(45, 100000, {}, false);
