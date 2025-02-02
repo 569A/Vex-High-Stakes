@@ -671,15 +671,19 @@ void opcontrol() {
 
 	while (true) {
 		optical.set_led_pwm(100);
+        optical.set_integration_time(4);
 		// Tank drive
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
         // chassis.tank(leftY, rightY);
-        // Emulate 450 rpm
-        chassis.tank(leftY * (0.9375), rightY * (0.9375), true);
-        // Emulate 360 rpm
-        // chassis.tank(leftY * (.75), rightY * (.75), true);
+        if (arm_state == 2) {
+            // Emulate 360 rpm
+            chassis.tank(leftY * (.75), rightY * (.75), true);
+        } else {
+            // Emulate 450 rpm
+            chassis.tank(leftY * (0.9375), rightY * (0.9375), true);
+        }
 
 
 		// Intake control
