@@ -675,7 +675,12 @@ void opcontrol() {
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
-        chassis.tank(leftY, rightY);
+        // chassis.tank(leftY, rightY);
+        // Emulate 450 rpm
+        chassis.tank(leftY * (0.9375), rightY * (0.9375), true);
+        // Emulate 360 rpm
+        // chassis.tank(leftY * (.75), rightY * (.75), true);
+
 
 		// Intake control
 		pros::lcd::set_text(0, "Optical: " + std::to_string(optical.get_hue()));
