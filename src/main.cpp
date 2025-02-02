@@ -173,11 +173,11 @@ void on_right_button() {
         auton = "red_neg";
         pros::lcd::set_text(3, "Red Neg selected");
     } else if (auton == "red_neg") {
-        auton = "blue_pos";
-        pros::lcd::set_text(3, "Blue Pos selected");
-    } else {
         auton = "skills";
         pros::lcd::set_text(3, "Skills selected");
+    } else if (auton == "skills") {
+        auton = "blue_pos";
+        pros::lcd::set_text(3, "Blue Pos selected");
     }
 }
 /**
@@ -262,21 +262,22 @@ void autonomous() {
         // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(24, -24, 121, 10000, {.forwards = false, .lead = 0.5, .maxSpeed = 70}, false);
+        chassis.moveToPose(24, -24, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 75}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(24, -48, 10000);
+        flex_wheel_intake.move(-100);
         chassis.moveToPoint(24, -50, 10000, {}, false);
-        flex_wheel_intake.move_relative(-920, 200);
         pros::delay(500);
         chassis.turnToPoint(24, -10, 10000, {}, false);
-        flex_wheel_intake.move(-30);
+        chassis.moveToPoint(24, -10, 10000, {});
+        pros::delay(200);
         hook_intake.move(100);
-        chassis.moveToPoint(24, -10, 10000, {}, false);
+        chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
-        hook_intake.move(0);
+        // chassis.moveToPose(53, -45, float theta, int timeout)
         return;
     }
 
@@ -284,21 +285,28 @@ void autonomous() {
         // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(-24, -24, -121, 10000, {.forwards = false, .lead = 0.5, .maxSpeed = 70}, false);
+        chassis.moveToPose(-24, -24, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 75}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(-24, -48, 10000);
+        flex_wheel_intake.move(-100);
         chassis.moveToPoint(-24, -50, 10000, {}, false);
-        flex_wheel_intake.move_relative(-920, 200);
         pros::delay(500);
         chassis.turnToPoint(-24, -10, 10000, {}, false);
-        flex_wheel_intake.move(-30);
+        chassis.moveToPoint(-24, -10, 10000, {});
+        pros::delay(200);
         hook_intake.move(100);
-        chassis.moveToPoint(-24, -10, 10000, {}, false);
+        chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
         hook_intake.move(0);
+        if (auton == "red_pos") {
+            chassis.moveToPose(-49, -48, 45, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3});
+            mogo_piston.set_value(0);
+            chassis.moveToPose(-16, -48, 90, 10000, {.minSpeed = 100});
+            chassis.turnToHeading(-90, 10000);
+        }
         return;
     }
 
@@ -656,10 +664,10 @@ void opcontrol() {
         pros::delay(500);
         hook_intake.move_absolute(1300, 200);
         pros::delay(600);
-        arm_motor.move_absolute(-10, 200);
+        arm_motor.move_absolute(-5, 200);
 
-        flex_wheel_intake.move_velocity(-500);
     }
+    flex_wheel_intake.move_velocity(-500);
 
 	while (true) {
 		optical.set_led_pwm(100);
@@ -714,7 +722,7 @@ void opcontrol() {
                 intake_running = true;
 
                 // Check color of ring - make sure to adjust on tournament day because this changes with light conditions.
-                if (optical.get_hue() > 0 && optical.get_hue() < 15 ) {
+                if (optical.get_hue() > 0 && optical.get_hue() < 23) {
                     current_ring_color = "red";
                 }
                 
@@ -812,7 +820,7 @@ void opcontrol() {
             2 rings at once. Pressing button L1 will load the 1st ring, and a 2nd ring can be loaded later. This allows efficient wall stake scoring.
              */
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1) && !digital_l1_was_pressed) {
-                hook_intake.move_relative(-600, 125);
+                hook_intake.move_relative(-600, 90);
                 digital_l1_was_pressed = true;
             } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
                 digital_l1_was_pressed = false;
@@ -850,7 +858,6 @@ void opcontrol() {
             } else {
                 color = "red";
             }
-            master.clear_line(0);
             master.set_text(0, 0, "Ring color: " + color);        
         } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
             digital_x_was_pressed = false;
@@ -890,7 +897,7 @@ void opcontrol() {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
-                arm_motor.move_absolute(775, 100);
+                arm_motor.move_absolute(765, 100);
                 arm_state++;
             } else if (arm_state == 1) {
                 // hook_intake.move_relative(-700, 125);
@@ -909,7 +916,7 @@ void opcontrol() {
                 arm_motor.move_absolute(0, 100);
                 arm_state--;
             } else if (arm_state == 2) {
-                arm_motor.move_absolute(775, 100);
+                arm_motor.move_absolute(765, 100);
                 arm_state--;
             }
             digital_down_was_pressed = true;
