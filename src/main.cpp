@@ -258,8 +258,8 @@ void autonomous() {
     mogo_piston.set_value(0);
     // Match autons are 2 ring + ladder touch
 
-    if (auton == "blue_pos" || auton == "red_neg") {
-        // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
+    if (auton == "blue_pos") {
+        // Blue Pos (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
@@ -281,8 +281,30 @@ void autonomous() {
         // chassis.moveToPose(53, -45, float theta, int timeout)
         return;
     }
+    if (auton == "red_neg") {
+        // Red neg
+         chassis.setPose(-55, 38.5, -45);
+        // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
+        // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
+        chassis.moveToPose(-23.399139381, 23, -31, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
+        mogo_piston.set_value(1);
+        chassis.turnToPoint(-24, 48, 10000);
+        flex_wheel_intake.move(-100);
+        chassis.moveToPoint(-24, 50, 10000, {}, false);
+        pros::delay(500);
+        chassis.turnToPoint(-24, 10, 10000, {}, false);
+        chassis.moveToPoint(-24, 10, 10000, {});
+        pros::delay(200);
+        hook_intake.move(100);
+        chassis.waitUntilDone();
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+        return;       
+    }
 
-    if (auton == "red_pos" || auton == "blue_neg") {
+    if (auton == "red_pos") {
         // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
@@ -303,12 +325,35 @@ void autonomous() {
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
         hook_intake.move(0);
-        if (auton == "red_pos") {
-            chassis.moveToPose(-49, -48, 45, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3});
-            mogo_piston.set_value(0);
-            chassis.moveToPose(-16, -48, 90, 10000, {.minSpeed = 100});
-            chassis.turnToHeading(-90, 10000);
-        }
+        // if (auton == "red_pos") {
+        //     chassis.moveToPose(-49, -48, 45, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3});
+        //     mogo_piston.set_value(0);
+        //     chassis.moveToPose(-16, -48, 90, 10000, {.minSpeed = 100});
+        //     chassis.turnToHeading(-90, 10000);
+        // }
+        return;
+    }
+
+    if (auton == "blue_neg") {
+        // Blue Neg
+        chassis.setPose(55, 38.5, 45);
+        // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
+        // tan 31 = 0.600860619028
+        chassis.moveToPose(23.399139381, 23, 31, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
+        mogo_piston.set_value(1);
+        chassis.turnToPoint(24, 48, 10000);
+        flex_wheel_intake.move(-100);
+        chassis.moveToPoint(24, 50, 10000, {}, false);
+        pros::delay(500);
+        chassis.turnToPoint(24, 10, 10000, {}, false);
+        chassis.moveToPoint(24, 10, 10000, {});
+        pros::delay(200);
+        hook_intake.move(100);
+        chassis.waitUntilDone();
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
         return;
     }
 
