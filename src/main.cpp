@@ -262,7 +262,8 @@ void autonomous() {
         // Blue Pos / Red Neg (Setup: Robot should be almost touching ring at x = 48, y = -48 (mirror for red neg), and facing heading 135 degrees)
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(24, -24, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 75}, false);
+        // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
+        chassis.moveToPose(23.399139381, -23, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(24, -48, 10000);
@@ -285,7 +286,8 @@ void autonomous() {
         // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPose(-24, -24, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 75}, false);
+        // tan 31 = 0.600860619028
+        chassis.moveToPose(-23.399139381, -23, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(-24, -48, 10000);
