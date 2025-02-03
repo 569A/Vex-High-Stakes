@@ -243,6 +243,8 @@ double get_intake_closest_to_ready_mogo_score() {
     return target_position;
 }
 
+ASSET(red_neg_txt);
+
 /**
  * Runs the user autonomous code. This function will be started in its own task
  * with the default priority and stack size whenever the robot is enabled via
@@ -289,6 +291,11 @@ void autonomous() {
         chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
+        // EXPERIMENTAL - 4+ ring auton
+        chassis.turnToHeading(45, 1000, {}, false);
+        chassis.follow(red_neg_txt, 13, 10000);
+        return;
+
         chassis.turnToPoint(-24, 48, 10000);
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(-24, 50, 10000, {}, false);
