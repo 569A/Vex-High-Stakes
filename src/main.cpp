@@ -293,6 +293,8 @@ void autonomous() {
         mogo_piston.set_value(1);
         // EXPERIMENTAL - 4+ ring auton
         chassis.turnToHeading(45, 1000, {}, false);
+        flex_wheel_intake.move(-100);
+        hook_intake.move(100);
         chassis.follow(red_neg_txt, 13, 10000);
         return;
 
