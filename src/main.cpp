@@ -265,7 +265,7 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(24, -48, 10000);
@@ -288,7 +288,7 @@ void autonomous() {
          chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         // EXPERIMENTAL - 4+ ring auton
@@ -316,7 +316,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(-24, -48, 10000);
@@ -346,7 +346,7 @@ void autonomous() {
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(23.399139381, 23, 59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90}, false);
+        chassis.moveToPose(23.399139381, 23, 59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         mogo_piston.set_value(1);
         chassis.turnToPoint(24, 48, 10000);
