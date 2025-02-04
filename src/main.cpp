@@ -206,7 +206,7 @@ void initialize() {
         pros::lcd::print(7, "Theta: %f", chassis.getPose().theta); // heading
         pros::lcd::print(4, "Arm current: %f", arm_motor.get_current_draw()); 
         // delay to save resources
-        pros::delay(50);
+        pros::delay(100);
     }
 });
 }
