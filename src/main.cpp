@@ -717,6 +717,11 @@ void opcontrol() {
     bool digital_b_was_pressed = false;
     bool digital_y_was_pressed = false;
     bool digital_l1_was_pressed = false;
+    bool digital_a_was_pressed = false;
+
+    // Ring-loading (skills)
+    bool ring_loading = false;
+    bool ring_loading_started = false;
 
     bool flex_wheel_running = false;
     bool intake_running = false;
@@ -894,7 +899,35 @@ void opcontrol() {
                 hook_intake.move(-126);
                 should_run_intake = false; // Override running the intake forward
             }
-            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+            if (skills_mode) {
+                // Ring loading
+                /*
+                In skills, we might want to collect rings on the way to grabbing the 
+                third mogo and then score them right after clamping
+                to save time instead of grabbing the mogo then going backwards for the rings.
+                */
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && !digital_a_was_pressed) {
+                    digital_a_was_pressed = true;
+                    ring_loading = !ring_loading;
+                    ring_loading_started = false;
+                    master.set_text(1, 0, "Ring loading: " + std::to_string(ring_loading));
+                    if (ring_loading == false) {
+                        should_run_intake = true;
+                    }
+                } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+                    digital_a_was_pressed = false;
+                }
+                if (ring_loading) {
+                    should_run_intake = false;
+                    if (optical.get_proximity() > 220 && ring_loading_started && (hook_intake.get_position() + 20 > hook_intake.get_target_position() && hook_intake.get_position() - 20 < hook_intake.get_target_position())) {
+                        hook_intake.move_relative(200, 200);
+                    } else if (!ring_loading_started) {
+                        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);
+                        ring_loading_started = true;
+                    }
+
+                }
+            } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
                 hook_intake.move(0); 
                 should_run_intake = false; // Override running the intake forward
             } else if (next_ring_must_reverse) {
