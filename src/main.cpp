@@ -86,7 +86,7 @@ lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel
 );
 
 // lateral PID controller
-lemlib::ControllerSettings lateral_controller(5.8, // proportional gain (kP) 4.55 worked well 5.4
+lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4.55 worked well 5.4
                                               0, // integral gain (kI)
                                               82, // derivative gain (kD) 70
                                               0, // anti windup
@@ -99,11 +99,11 @@ lemlib::ControllerSettings lateral_controller(5.8, // proportional gain (kP) 4.5
                                               40, // small error range timeout, in milliseconds
                                               3, // large error range, in inches
                                               400, //400 large error range timeout, in milliseconds
-                                              40 // maximum acceleration (slew)
+                                              0//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2.825, // proportional gain (kP) 1.9 // 2.8
+lemlib::ControllerSettings angular_controller(2.885, // proportional gain (kP) 1.9 // 2.8
                                               0, // integral gain (kI)
                                               28, // derivative gain (kD) 30 // 27
                                               0, // anti windup
@@ -112,7 +112,7 @@ lemlib::ControllerSettings angular_controller(2.825, // proportional gain (kP) 1
                                             //     0, // large error range, in degrees
                                             //     0, // large error range timeout, in milliseconds
                                             //     0 // maximum acceleration (slew)
-                                              1, // small error range, in degrees
+                                              1.3, // small error range, in degrees
                                               50, // small error range timeout, in milliseconds
                                               4, // large error range, in degrees
                                               205, // 600 large error range timeout, in milliseconds
@@ -206,7 +206,7 @@ void initialize() {
         pros::lcd::print(7, "Theta: %f", chassis.getPose().theta); // heading
         pros::lcd::print(4, "Arm current: %f", arm_motor.get_current_draw()); 
         // delay to save resources
-        pros::delay(100);
+        pros::delay(50);
     }
 });
 }
@@ -418,9 +418,10 @@ void autonomous() {
         pros::delay(100);
 
         // #2 Get mogo
-        chassis.moveToPoint(-48, 0, 100000, {.minSpeed = 30, .earlyExitRange = 1});
-        chassis.turnToHeading(0, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 3});
-        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70, .minSpeed = 20}, false);
+        chassis.moveToPoint(-48, 0, 100000, {}, false);
+        chassis.turnToHeading(0, 10000, {}, false);
+        // y -24.5
+        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
         mogo_piston.set_value(1);
 
         // Activate all intakes
@@ -432,71 +433,23 @@ void autonomous() {
 
         arm_motor.move_absolute(0, 100);
         // Ring 1 by ladder
-        chassis.turnToHeading(90, 10000, {.maxSpeed = 100,.minSpeed = 20, .earlyExitRange = 3});
-        chassis.moveToPoint(-24, -24, 10000, {.minSpeed = 35});
+        chassis.turnToHeading(90, 10000);
+        chassis.moveToPoint(-24, -24, 10000);
 
-        // Motion chain to this point instead of directly to ring #2 to avoid hitting the ladder
-        chassis.turnToPoint(0, -44, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 7});
-        chassis.moveToPoint(0, -44, 10000, {.minSpeed = 40, .earlyExitRange = 4});
+        // Get to this point instead of directly to ring #2 to avoid hitting the ladder
+        get_to_point(0, -45);
 
-        // Ring 2 (right of ladder)
-        chassis.turnToPoint(27, -47, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
-        chassis.moveToPoint(27, -47, 10000, {.minSpeed = 30, .earlyExitRange = 1});
-        // chassis.moveToPose(26, -46, 100,10000);
+        // Ring 2 by high stake
+        chassis.turnToPoint(26, -46, 10000);
+        chassis.moveToPoint(26, -46, 10000);
 
         // Ring 3 - Maybe use this for high stake?
-        // Bottom two lines are for mogo.
-        // chassis.turnToPoint(0, -55, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 5});
-        // chassis.moveToPoint(0, -55, 10000, {.minSpeed = 30, .earlyExitRange = 1});
-        
-        // Wall stake codes is below
-        chassis.turnToPoint(0, -55, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 5}, false);
-        chassis.moveToPose(0, -55, 180, 10000, {.minSpeed = 10});
-        pros::delay(200);
-        flex_wheel_intake.move(0);
-        pros::delay(200);
-        arm_motor.move_absolute(765, 100);
-        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200); 
-        while (arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) {
-            pros::delay(10);
-        }
-        while (hook_intake.get_target_position() + 20 > hook_intake.get_position() && hook_intake.get_target_position() - 20 < hook_intake.get_position()) {
-            pros::delay(10);
-        }
-        flex_wheel_intake.move(-120);
-        while (optical.get_proximity() < 220) {
-            pros::delay(10);
-        }
-        flex_wheel_intake.move(-80);
-        pros:: delay(200);
-        hook_intake.move_relative(-600, 90);
-        pros::delay(200);
-        arm_motor.move_absolute(2570, 100);
-        left_motor_group.move(40);
-        right_motor_group.move(40);
-        pros::delay(200);
-        while (arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) {
-            pros::delay(10);
-        }        
-        hook_intake.move_relative(-2500, 200);
-        chassis.setPose(0, -60, chassis.getPose().theta);
-        
-        int ms_since_try_wall_stake = 0;
-        while (hook_intake.get_target_position() + 20 > hook_intake.get_position() && hook_intake.get_target_position() - 20 < hook_intake.get_position()) {
-            ms_since_try_wall_stake += 10;
-            if (ms_since_try_wall_stake > 1000) {
-                break;
-            }
-            pros::delay(10);
-        }
-        hook_intake.move_relative(200, 200);
-        chassis.moveToPoint(0, -48, 10000, {.forwards = false, .minSpeed = 30, .earlyExitRange = 1});
-        pros::delay(200);
-        arm_motor.move_absolute(0, 100);
+        chassis.turnToPoint(0, -55, 10000);
+        chassis.moveToPoint(0, -55, 10000);
         
         // Ring 4
-        chassis.turnToPoint(-24, -46, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
-        chassis.moveToPoint(-24, -46, 10000, {.minSpeed = 30});
+        chassis.turnToPoint(-24, -46, 10000);
+        chassis.moveToPoint(-24, -46, 10000);
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
@@ -507,14 +460,26 @@ void autonomous() {
 
         // chassis.turnToPoint(-55, -48, 10000);
         // chassis.moveToPoint(-55, -48, 10000);
-        chassis.turnToPoint(-52, -45, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
-        chassis.moveToPoint(-52, -45, 10000, {.minSpeed = 30});
+        chassis.turnToPoint(-57, -46, 10000);
+        chassis.moveToPoint(-57, -46, 10000);
+        // Move back for ring 7
+        chassis.turnToHeading(270, 10000);
+        chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
         
         // Ring 7
-        chassis.turnToHeading(145, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPose(-48, -57, 90, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 1});
+        chassis.turnToPoint(-48, -61, 10000);
+        chassis.moveToPoint(-48, -61, 10000);
 
-        chassis.moveToPose(-55, -55, 45, 2000, {.forwards = false, .minSpeed = 20});
+        // uncomment from here for ring 7
+        chassis.turnToHeading(68.2, 10000);
+        // chassis.turnToPoint(-48, -53, 10000);
+        chassis.moveToPoint(-37, -54, 10000);
+        
+        //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
+        chassis.turnToHeading(180, 10000);
+        chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
+        
+        chassis.turnToPoint(100, 100, 10000, {}, false);
 
         left_motor_group.move(-100);
         right_motor_group.move(-100);
@@ -522,7 +487,7 @@ void autonomous() {
         pros::delay(400);
         left_motor_group.move(0);
         right_motor_group.move(0);
-        chassis.setPose(-53, -53, chassis.getPose().theta);
+        chassis.setPose(-51, -51, chassis.getPose().theta);
         mogo_piston.set_value(0);
 
         // chassis.turnToPoint(-42, -42, 10000);
@@ -530,23 +495,20 @@ void autonomous() {
         // chassis.turnToPoint(-48, -48, 10000);
         // chassis.moveToPoint(-48, -48, 10000);
         chassis.turnToHeading(45, 1000, {}, false);
-        chassis.moveToPoint(-38, -42, 10000, {}, false);
-        chassis.turnToHeading(0 , 10000, {}, false);
+        chassis.moveToPoint(-42, -38, 10000, {}, false);
+        chassis.turnToHeading(90 , 10000, {}, false);
         mogo_piston.set_value(1);
 
         // Wall reset pose
         left_motor_group.move(-100);
         right_motor_group.move(-100);
         pros::delay(1000);
-        chassis.setPose(-39, -64, chassis.getPose().theta);
+        chassis.setPose(-64.5, -50, chassis.getPose().theta);
         left_motor_group.move(0);
         right_motor_group.move(0);
         
-        chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
+        chassis.moveToPoint(-48, 0, 10000, {}, false);
         mogo_piston.set_value(0);
-
-        chassis.turnToPoint(-48, 0, 10000);
-        chassis.moveToPoint(-48, 0, 10000);
 
         chassis.turnToHeading(180, 10000);
 
@@ -570,7 +532,7 @@ void autonomous() {
         chassis.moveToPoint(-24, 24, 10000);
 
         // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        get_to_point(0, -45);
+        get_to_point(0, 45);
 
         // Ring 2 by high stake
         chassis.turnToPoint(26, 48, 10000);
@@ -612,7 +574,7 @@ void autonomous() {
         chassis.turnToHeading(0, 10000);
         chassis.moveToPoint(-42, 48, 10000, {.forwards = false});
         
-        chassis.turnToPoint(-100, -100, 10000, {}, false);
+        chassis.turnToPoint(100, -100, 10000, {}, false);
 
         left_motor_group.move(-100);
         right_motor_group.move(-100);
@@ -638,7 +600,6 @@ void autonomous() {
         left_motor_group.move(0);
         right_motor_group.move(0);
         
-        chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 10000, {}, false);
         mogo_piston.set_value(0);
         // mogo_piston.set_value(1);
 
@@ -717,11 +678,6 @@ void opcontrol() {
     bool digital_b_was_pressed = false;
     bool digital_y_was_pressed = false;
     bool digital_l1_was_pressed = false;
-    bool digital_a_was_pressed = false;
-
-    // Ring-loading (skills)
-    bool ring_loading = false;
-    bool ring_loading_started = false;
 
     bool flex_wheel_running = false;
     bool intake_running = false;
@@ -899,35 +855,7 @@ void opcontrol() {
                 hook_intake.move(-126);
                 should_run_intake = false; // Override running the intake forward
             }
-            if (skills_mode) {
-                // Ring loading
-                /*
-                In skills, we might want to collect rings on the way to grabbing the 
-                third mogo and then score them right after clamping
-                to save time instead of grabbing the mogo then going backwards for the rings.
-                */
-                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && !digital_a_was_pressed) {
-                    digital_a_was_pressed = true;
-                    ring_loading = !ring_loading;
-                    ring_loading_started = false;
-                    master.set_text(1, 0, "Ring loading: " + std::to_string(ring_loading));
-                    if (ring_loading == false) {
-                        should_run_intake = true;
-                    }
-                } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-                    digital_a_was_pressed = false;
-                }
-                if (ring_loading) {
-                    should_run_intake = false;
-                    if (optical.get_proximity() > 220 && ring_loading_started && (hook_intake.get_position() + 20 > hook_intake.get_target_position() && hook_intake.get_position() - 20 < hook_intake.get_target_position())) {
-                        hook_intake.move_relative(200, 200);
-                    } else if (!ring_loading_started) {
-                        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);
-                        ring_loading_started = true;
-                    }
-
-                }
-            } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
                 hook_intake.move(0); 
                 should_run_intake = false; // Override running the intake forward
             } else if (next_ring_must_reverse) {
