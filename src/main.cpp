@@ -229,11 +229,6 @@ void disabled() {}
  */
 void competition_initialize() {}
 
-void get_to_point(float x, float y) {
-    chassis.turnToPoint(x, y, 10000);
-    chassis.moveToPoint(x, y, 10000);
-}
-
 double get_intake_closest_to_ready_mogo_score() {
     double current_position = hook_intake.get_position();
     double target_position = 0;
@@ -437,7 +432,8 @@ void autonomous() {
         chassis.moveToPoint(-24, -24, 10000);
 
         // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        get_to_point(0, -45);
+        chassis.turnToPoint(0, -45, 10000);
+        chassis.moveToPoint(0, -45, 10000);
 
         // Ring 2 by high stake
         chassis.turnToPoint(26, -46, 10000);
@@ -532,7 +528,8 @@ void autonomous() {
         chassis.moveToPoint(-24, 24, 10000);
 
         // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        get_to_point(0, 45);
+        chassis.turnToPoint(0, 45, 10000);
+        chassis.moveToPoint(0, 45, 10000);
 
         // Ring 2 by high stake
         chassis.turnToPoint(26, 48, 10000);
