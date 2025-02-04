@@ -99,7 +99,7 @@ lemlib::ControllerSettings lateral_controller(5.8, // proportional gain (kP) 4.5
                                               40, // small error range timeout, in milliseconds
                                               3, // large error range, in inches
                                               400, //400 large error range timeout, in milliseconds
-                                              0//40 // maximum acceleration (slew)
+                                              40 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -418,10 +418,9 @@ void autonomous() {
         pros::delay(100);
 
         // #2 Get mogo
-        chassis.moveToPoint(-48, 0, 100000, {}, false);
-        chassis.turnToHeading(0, 10000, {}, false);
-        // y -24.5
-        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        chassis.moveToPoint(-48, 0, 100000, {.minSpeed = 30, .earlyExitRange = 1});
+        chassis.turnToHeading(0, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 3});
+        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70, .minSpeed = 20}, false);
         mogo_piston.set_value(1);
 
         // Activate all intakes
@@ -433,23 +432,71 @@ void autonomous() {
 
         arm_motor.move_absolute(0, 100);
         // Ring 1 by ladder
-        chassis.turnToHeading(90, 10000);
-        chassis.moveToPoint(-24, -24, 10000);
+        chassis.turnToHeading(90, 10000, {.maxSpeed = 100,.minSpeed = 20, .earlyExitRange = 3});
+        chassis.moveToPoint(-24, -24, 10000, {.minSpeed = 35});
 
-        // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        get_to_point(0, -45);
+        // Motion chain to this point instead of directly to ring #2 to avoid hitting the ladder
+        chassis.turnToPoint(0, -44, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 7});
+        chassis.moveToPoint(0, -44, 10000, {.minSpeed = 40, .earlyExitRange = 4});
 
-        // Ring 2 by high stake
-        chassis.turnToPoint(26, -46, 10000);
-        chassis.moveToPoint(26, -46, 10000);
+        // Ring 2 (right of ladder)
+        chassis.turnToPoint(27, -47, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
+        chassis.moveToPoint(27, -47, 10000, {.minSpeed = 30, .earlyExitRange = 1});
+        // chassis.moveToPose(26, -46, 100,10000);
 
         // Ring 3 - Maybe use this for high stake?
-        chassis.turnToPoint(0, -55, 10000);
-        chassis.moveToPoint(0, -55, 10000);
+        // Bottom two lines are for mogo.
+        // chassis.turnToPoint(0, -55, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 5});
+        // chassis.moveToPoint(0, -55, 10000, {.minSpeed = 30, .earlyExitRange = 1});
+        
+        // Wall stake codes is below
+        chassis.turnToPoint(0, -55, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 5}, false);
+        chassis.moveToPose(0, -55, 180, 10000, {.minSpeed = 10});
+        pros::delay(200);
+        flex_wheel_intake.move(0);
+        pros::delay(200);
+        arm_motor.move_absolute(765, 100);
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200); 
+        while (arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) {
+            pros::delay(10);
+        }
+        while (hook_intake.get_target_position() + 20 > hook_intake.get_position() && hook_intake.get_target_position() - 20 < hook_intake.get_position()) {
+            pros::delay(10);
+        }
+        flex_wheel_intake.move(-120);
+        while (optical.get_proximity() < 220) {
+            pros::delay(10);
+        }
+        flex_wheel_intake.move(-80);
+        pros:: delay(200);
+        hook_intake.move_relative(-600, 90);
+        pros::delay(200);
+        arm_motor.move_absolute(2570, 100);
+        left_motor_group.move(40);
+        right_motor_group.move(40);
+        pros::delay(200);
+        while (arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) {
+            pros::delay(10);
+        }        
+        hook_intake.move_relative(-2500, 200);
+        chassis.setPose(0, -60, chassis.getPose().theta);
+        
+        int ms_since_try_wall_stake = 0;
+        while (hook_intake.get_target_position() + 20 > hook_intake.get_position() && hook_intake.get_target_position() - 20 < hook_intake.get_position()) {
+            ms_since_try_wall_stake += 10;
+            if (ms_since_try_wall_stake > 1000) {
+                break;
+            }
+            pros::delay(10);
+        }
+        hook_intake.move_relative(200, 200);
+        chassis.moveToPoint(0, -48, 10000, {.forwards = false, .minSpeed = 30, .earlyExitRange = 1});
+        pros::delay(200);
+        arm_motor.move_absolute(0, 100);
         
         // Ring 4
-        chassis.turnToPoint(-24, -46, 10000);
-        chassis.moveToPoint(-24, -46, 10000);
+        chassis.turnToPoint(-24, -46, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
+        chassis.moveToPoint(-24, -46, 10000, {.minSpeed = 30});
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
@@ -460,26 +507,14 @@ void autonomous() {
 
         // chassis.turnToPoint(-55, -48, 10000);
         // chassis.moveToPoint(-55, -48, 10000);
-        chassis.turnToPoint(-57, -46, 10000);
-        chassis.moveToPoint(-57, -46, 10000);
-        // Move back for ring 7
-        chassis.turnToHeading(270, 10000);
-        chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
+        chassis.turnToPoint(-52, -45, 10000, {.maxSpeed = 100, .minSpeed = 30, .earlyExitRange = 3});
+        chassis.moveToPoint(-52, -45, 10000, {.minSpeed = 30});
         
         // Ring 7
-        chassis.turnToPoint(-48, -61, 10000);
-        chassis.moveToPoint(-48, -61, 10000);
+        chassis.turnToHeading(145, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPose(-48, -57, 90, 10000, {.maxSpeed = 100, .minSpeed = 20, .earlyExitRange = 1});
 
-        // uncomment from here for ring 7
-        chassis.turnToHeading(68.2, 10000);
-        // chassis.turnToPoint(-48, -53, 10000);
-        chassis.moveToPoint(-37, -54, 10000);
-        
-        //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-        chassis.turnToHeading(180, 10000);
-        chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
-        
-        chassis.turnToPoint(100, 100, 10000, {}, false);
+        chassis.moveToPose(-55, -55, 45, 2000, {.forwards = false, .minSpeed = 20});
 
         left_motor_group.move(-100);
         right_motor_group.move(-100);
@@ -487,7 +522,7 @@ void autonomous() {
         pros::delay(400);
         left_motor_group.move(0);
         right_motor_group.move(0);
-        chassis.setPose(-51, -51, chassis.getPose().theta);
+        chassis.setPose(-53, -53, chassis.getPose().theta);
         mogo_piston.set_value(0);
 
         // chassis.turnToPoint(-42, -42, 10000);
