@@ -238,6 +238,30 @@ double get_intake_closest_to_ready_mogo_score() {
     return target_position;
 }
 
+// Auto load a ring
+void auto_load_ring() {
+    int ring_load_timeout_ticks = 100;
+    int ring_loaded_timeout_ticks = 100;
+    flex_wheel_intake.move(-127);
+    hook_intake.move(0);
+    while (optical.get_proximity() < 220) {
+        ring_load_timeout_ticks--;
+        if (ring_load_timeout_ticks < 0) {
+            break;
+        }
+        pros::delay(20);
+    }
+
+    while (optical.get_proximity() > 220) {
+        ring_loaded_timeout_ticks--;
+        hook_intake.move(100);
+        if (ring_loaded_timeout_ticks < 0) {
+            break;
+        }
+        pros::delay(20);
+    }
+}
+
 ASSET(red_neg_txt);
 
 /**
@@ -279,8 +303,26 @@ void autonomous() {
         return;
     }
     if (auton == "red_neg") {
+        // EXPERIMENTAL - Solo Auton WP (WIP)
+        chassis.setPose(-58.618, 12.733, 180);
+        flex_wheel_intake.move(120);
+        chassis.moveToPose(-54, 0, 90, 10000, {.maxSpeed = 50});
+        arm_motor.move_absolute(140, 100);
+        chassis.moveToPose(-60, 0, 90, 10000, {.forwards = false, .maxSpeed = 40}, false);
+        hook_intake.move_absolute(400, 200);
+        pros::delay(600);
+        chassis.moveToPoint(-37, 14, 10000);
+        chassis.turnToHeading(239, 10000);
+        chassis.moveToPose(-24, 24, 239, 10000, {.forwards = false, .maxSpeed = 50});
+        mogo_piston.set_value(1);
+        chassis.turnToPoint(-24, 48, 10000);
+        flex_wheel_intake.move(-120);
+        chassis.moveToPoint(-24, 51.5, 10000, {}, false);
+
+
+
         // Red neg
-         chassis.setPose(-55, 38.5, -45);
+        chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
         chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
@@ -444,27 +486,20 @@ void autonomous() {
         chassis.moveToPoint(0, -55, 10000);
         
         // Ring 4
-        chassis.turnToPoint(-24, -46, 10000);
-        chassis.moveToPoint(-24, -46, 10000);
+        chassis.turnToPoint(-24, -46, 3000);
+        chassis.moveToPoint(-24, -46, 3000);
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        // chassis.turnToPoint(-48, -48, 10000);
-        // chassis.moveToPoint(-48, -48, 10000);
-        // chassis.turnToPoint(-60, -48, 10000);
-        // chassis.moveToPoint(-60, -48, 10000);
-
-        // chassis.turnToPoint(-55, -48, 10000);
-        // chassis.moveToPoint(-55, -48, 10000);
-        chassis.turnToPoint(-57, -46, 10000);
-        chassis.moveToPoint(-57, -46, 10000);
+        chassis.turnToPoint(-57, -46, 4000);
+        chassis.moveToPoint(-57, -46, 4000);
         // Move back for ring 7
-        chassis.turnToHeading(270, 10000);
-        chassis.moveToPoint(-50, -46, 10000, {.forwards = false});
+        chassis.turnToHeading(270, 2000);
+        chassis.moveToPoint(-50, -46, 2000, {.forwards = false});
         
         // Ring 7
-        chassis.turnToPoint(-48, -61, 10000);
-        chassis.moveToPoint(-48, -61, 10000);
+        chassis.turnToPoint(-48, -61, 2000);
+        chassis.moveToPoint(-48, -61, 2000);
 
         // uncomment from here for ring 7
         chassis.turnToHeading(68.2, 10000);
@@ -472,10 +507,10 @@ void autonomous() {
         chassis.moveToPoint(-37, -54, 10000);
         
         //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-        chassis.turnToHeading(180, 10000);
-        chassis.moveToPoint(-42, -46, 10000, {.forwards = false});
+        chassis.turnToHeading(180, 2000);
+        chassis.moveToPoint(-42, -46, 2000, {.forwards = false});
         
-        chassis.turnToPoint(100, 100, 10000, {}, false);
+        chassis.turnToHeading(45, 3000, {}, false);
 
         left_motor_group.move(-100);
         right_motor_group.move(-100);
@@ -495,10 +530,15 @@ void autonomous() {
         chassis.turnToHeading(90 , 10000, {}, false);
         mogo_piston.set_value(1);
 
-        // Wall reset pose
-        left_motor_group.move(-100);
-        right_motor_group.move(-100);
-        pros::delay(1000);
+        // #4 Wall reset pose
+        // Stop hook intake incase we did not get all 6 rings and the hooks are still running
+        hook_intake.move(0);
+        // Give flex wheel intake a break
+        flex_wheel_intake.move(0);
+
+        left_motor_group.move(-70);
+        right_motor_group.move(-70);
+        pros::delay(800);
         chassis.setPose(-64.5, -50, chassis.getPose().theta);
         left_motor_group.move(0);
         right_motor_group.move(0);
@@ -511,24 +551,21 @@ void autonomous() {
         // // get_to_point(-48, 0);
         // // chassis.turnToPoint(-48, -1000, 10000);
 
-        // // #4 Get mogo 2
+        // #5 Get mogo 2
         chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
         mogo_piston.set_value(1);
         
         // Activate all intakes 2nd run
         flex_wheel_intake.move(-127);
-        hook_intake.move(80);
+        hook_intake.move(127);
         intake_task_running = true;
 
-        pros::delay(200);
-
-        arm_motor.move_absolute(0, 100);
         // Ring 1 by ladder
-        chassis.turnToHeading(90, 10000);
-        chassis.moveToPoint(-24, 24, 10000);
+        chassis.turnToHeading(90, 3000);
+        chassis.moveToPoint(-24, 24, 3000);
 
         // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        chassis.turnToPoint(0, 45, 10000);
+        chassis.turnToPoint(0, 45, 3000);
         chassis.moveToPoint(0, 45, 10000);
 
         // Ring 2 by high stake
@@ -545,15 +582,8 @@ void autonomous() {
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        // chassis.turnToPoint(-48, -48, 10000);
-        // chassis.moveToPoint(-48, -48, 10000);
-        // chassis.turnToPoint(-60, -48, 10000);
-        // chassis.moveToPoint(-60, -48, 10000);
-
-        // chassis.turnToPoint(-55, -48, 10000);
-        // chassis.moveToPoint(-55, -48, 10000);
-        chassis.turnToPoint(-57, 46, 10000);
-        chassis.moveToPoint(-57, 46, 10000);
+        chassis.turnToPoint(-57, 46, 4000);
+        chassis.moveToPoint(-57, 46, 4000);
         // Move back for ring 7
         chassis.turnToHeading(-90, 10000);
         chassis.moveToPoint(-50, 46, 10000, {.forwards = false});
@@ -563,7 +593,7 @@ void autonomous() {
         chassis.moveToPoint(-48, 61, 10000);
 
         // uncomment from here for ring 7
-        chassis.turnToHeading(31.8, 10000);
+        chassis.turnToHeading(111.8, 10000);
         // chassis.turnToPoint(-48, -53, 10000);
         chassis.moveToPoint(-37, 54, 10000);
         
@@ -575,37 +605,81 @@ void autonomous() {
 
         left_motor_group.move(-100);
         right_motor_group.move(-100);
-        // #3 Drop mogo in corner
+
+        // #6 Drop mogo 2 in corner
         pros::delay(400);
         left_motor_group.move(0);
         right_motor_group.move(0);
         chassis.setPose(-51, 51, chassis.getPose().theta);
         mogo_piston.set_value(0);
 
-        // chassis.turnToPoint(-42, -42, 10000);
-        // chassis.moveToPoint(-42, -42, 10000);
-        // chassis.turnToPoint(-48, -48, 10000);
-        // chassis.moveToPoint(-48, -48, 10000);
         chassis.turnToHeading(45, 1000, {}, false);
-        chassis.moveToPoint(-34.5, -42, 10000, {}, false);
-        chassis.turnToHeading(0 , 10000, {}, false);
+        chassis.moveToPoint(-42, -38, 10000, {}, false);
+        chassis.turnToHeading(90 , 10000, {}, false);
         mogo_piston.set_value(1);
-        left_motor_group.move(-100);
-        right_motor_group.move(-100);
-        pros::delay(1000);
-        chassis.setPose(-36, -64, chassis.getPose().theta);
+
+        // Stop hook intake incase we did not get all 6 rings and the hooks are still running
+        hook_intake.move(0);
+        // Give flex wheel intake a break
+        flex_wheel_intake.move(0);
+
+        // #7 Wall reset pose (2nd time)
+        left_motor_group.move(-70);
+        right_motor_group.move(-70);
+        pros::delay(800);
+        chassis.setPose(-64.5, 50, chassis.getPose().theta);
         left_motor_group.move(0);
         right_motor_group.move(0);
         
+        // #8 Load 2 red rings
+        chassis.moveToPoint(24, 46.5, 10000, {.maxSpeed = 90});
+        pros::delay(400);
         mogo_piston.set_value(0);
-        // mogo_piston.set_value(1);
 
-        // get_to_point(-24, 24);
-        // get_to_point(24, 48);
-        // get_to_point(0, 60);
-        // get_to_point(-24, 48);
-        // get_to_point(-48, 48);
-        // get_to_point(-60, 48);
+        auto_load_ring();
+
+        // chassis.turnToPoint(23, 26, 10000, {}, false);
+        // chassis.moveToPoint(23, 26, 10000);
+        // pros::delay(200);
+        
+        // auto_load_ring();
+
+        // #9 Go for blue ring mogo to push into corner
+        chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
+        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 50, .minSpeed = 5}, false);
+        mogo_piston.set_value(1);
+
+        // #10 Place mogo in corner 
+        // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
+        chassis.turnToHeading(237, 10000);
+
+        left_motor_group.move(-100);
+        right_motor_group.move(-100);
+        while (chassis.getPose().y < 73) {
+            pros::delay(20);
+        }
+
+        left_motor_group.move(0);
+        right_motor_group.move(0);
+        
+        // Reset pose again
+        chassis.setPose({64.5, 52.25, chassis.getPose().theta});
+        
+        mogo_piston.set_value(0);
+        chassis.moveToPoint(48, 48, 10000);
+        pros::delay(100);
+        auto_load_ring();
+
+        // #11 Fill mogo 4
+        chassis.turnToHeading(0, 10000);
+        chassis.moveToPose(48, 0, 0, 10000, {.forwards = false, .maxSpeed = 70, .minSpeed = 10}, false);
+        mogo_piston.set_value(1);
+
+        flex_wheel_intake.move(-127);
+        hook_intake.move(127);
+
+        // # 12 Drop mogo 4 in corner
+
     }
 
     // Angular PID test 
