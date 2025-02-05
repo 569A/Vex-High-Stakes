@@ -77,6 +77,10 @@ lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::
 //                             &imu // inertial sensor
 // );
 
+// Makes it easy to tune PID from the controller - there is no toggle for this anywhere. Just swap this variable and upload
+// to brain. this is to make sure it doesn't get enabled accidently in a match.
+bool pid_tuner = false;
+
 // Odometry sensors
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
@@ -95,11 +99,11 @@ lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4
                                             //   0, // large error range, in inches
                                             //     0, // large error range timeout, in milliseconds
                                             //     0 // maximum acceleration (slew)
-                                              1, // small error range, in inches
-                                              40, // small error range timeout, in milliseconds
-                                              3, // large error range, in inches
-                                              400, //400 large error range timeout, in milliseconds
-                                              0//40 // maximum acceleration (slew)
+                                              pid_tuner ? 0 : 1, // small error range, in inches
+                                              pid_tuner ? 0 :40, // small error range timeout, in milliseconds
+                                              pid_tuner ? 0 : 3, // large error range, in inches
+                                              pid_tuner ? 0 : 400, //400 large error range timeout, in milliseconds
+                                              pid_tuner ? 0 : 0//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -112,11 +116,11 @@ lemlib::ControllerSettings angular_controller(2.885, // proportional gain (kP) 1
                                             //     0, // large error range, in degrees
                                             //     0, // large error range timeout, in milliseconds
                                             //     0 // maximum acceleration (slew)
-                                              1.3, // small error range, in degrees
-                                              50, // small error range timeout, in milliseconds
-                                              4, // large error range, in degrees
-                                              205, // 600 large error range timeout, in milliseconds
-                                              0 // 40 maximum acceleration (slew)
+                                              pid_tuner ? 0 : 1.3, // small error range, in degrees
+                                              pid_tuner ? 0 : 50, // small error range timeout, in milliseconds
+                                              pid_tuner ? 0 : 4, // large error range, in degrees
+                                              pid_tuner ? 0 : 205, // 600 large error range timeout, in milliseconds
+                                              pid_tuner ? 0 : 0 // 40 maximum acceleration (slew)
 );
 
 // Create the chassis
@@ -208,7 +212,52 @@ void initialize() {
         // delay to save resources
         pros::delay(50);
     }
-});
+    });
+    if (pid_tuner) {
+    pros::Task pid_tuner([&]() {
+            while (true) {
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+                    chassis.lateralPID.setKP(chassis.lateralPID.getKP() + 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+                    chassis.lateralPID.setKP(chassis.lateralPID.getKP() - 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) {
+                    chassis.angularPID.setKP(chassis.angularPID.getKP() + 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+                    chassis.angularPID.setKP(chassis.angularPID.getKP() - 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+                    chassis.lateralPID.setKD(chassis.lateralPID.getKD() + 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
+                    chassis.lateralPID.setKD(chassis.lateralPID.getKD() - 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+                    chassis.angularPID.setKD(chassis.angularPID.getKD() + 0.1);
+                    pros::delay(200);
+                }
+                if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                    chassis.angularPID.setKD(chassis.angularPID.getKD() - 0.1);
+                    pros::delay(200);
+                }
+
+                master.print(0, 0, "l_kP: %f", chassis.lateralPID.getKP());
+                master.print(0, 1, "l_kD: %f", chassis.lateralPID.getKD());
+                master.print(0, 2, "a_kP: %f", chassis.angularPID.getKP());
+                master.print(0, 3, "a_kD: %f", chassis.angularPID.getKD());
+                
+                pros::delay(20);
+            }
+        });
+    }
 }
 
 /**
@@ -299,6 +348,12 @@ ASSET(red_neg_txt);
  * from where it left off.
  */
 void autonomous() {
+    // PID Tuner - tune PID from controller
+    if (pid_tuner) {
+        chassis.setPose(0, 0, 0);
+        chassis.moveToPoint(0, 48, 10000);
+        return;
+    }
     mogo_piston.set_value(0);
     // Match autons are 2 ring + ladder touch
 
