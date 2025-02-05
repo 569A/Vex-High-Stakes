@@ -350,6 +350,8 @@ ASSET(red_neg_txt);
 void autonomous() {
     // PID Tuner - tune PID from controller
     if (pid_tuner) {
+        mogo_piston.set_value(1);
+        pros::delay(200);
         chassis.setPose(0, 0, 0);
         chassis.moveToPoint(0, 48, 10000);
         return;
