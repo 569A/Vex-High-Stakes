@@ -60,11 +60,33 @@ class PID {
          * @endcode
          */
         void reset();
+
+
+        // Make PID adjustable mid-run
+        void setKP(float kP) {
+            this->kP = kP;
+        }
+        void setKI(float kI) {
+            this->kI = kI;
+        }
+        void setKD(float kD) {
+            this->kD = kD;
+        }
+
+        float getKP() {
+            return kP;
+        }
+        float getKI() {
+            return kI;
+        }
+        float getKD() {
+            return kD;
+        }
     protected:
         // gains
-        const float kP;
-        const float kI;
-        const float kD;
+        float kP;
+        float kI;
+        float kD;
 
         // optimizations
         const float windupRange;

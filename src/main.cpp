@@ -262,6 +262,29 @@ void auto_load_ring() {
     }
 }
 
+/**
+Swap PID for mogo -
+PID handles how the robot moves. P is proportional D is derivative
+P is how much the robot will move based on how far off the robot is from the target
+D affects how the robot should speed/slow down based on how fast it is approaching the target
+
+The problem is the mogo adds 3 lbs to the robot which throws off a perfectly tuned PID for the robot
+if it lifts a mogo. The added weight will make the bot undershoot its targets, and go for them
+very slowly. Having separate PIDs, one for with the mogo, and one without, fixes this issue.
+ */ 
+void swap_mogo_pid() {
+    // Still needs adjusting, maybe kD needs change too.
+    chassis.lateralPID.setKP(6.2);
+    chassis.angularPID.setKP(3);
+}
+
+// This lets us swap back after dropping mogo
+void swap_robot_pid() {
+    chassis.lateralPID.setKP(5.875);
+    chassis.angularPID.setKP(2.885);
+}
+
+
 ASSET(red_neg_txt);
 
 /**
