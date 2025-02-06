@@ -325,8 +325,8 @@ void swap_mogo_pid() {
     chassis.lateralPID.reset();
     chassis.angularPID.reset();
 
-    chassis.lateralPID.setKP(10.575);
-    chassis.lateralPID.setKD(96);
+    chassis.lateralPID.setKP(10);
+    chassis.lateralPID.setKD(92);
     chassis.angularPID.setKP(6.885);
     chassis.angularPID.setKD(78);
 }
@@ -369,11 +369,12 @@ ASSET(red_neg_txt);
 void autonomous() {
     // PID Tuner - tune PID from controller
     if (pid_tuner) {
-        mogo_piston.set_value(1);
-        pros::delay(200);
+        unclamp_mogo();
         chassis.setPose(0, 0, 0);
         // chassis.turnToHeading(90, 10000);
-        chassis.moveToPoint(0, 48, 10000);
+        chassis.moveToPose(0, -48, 0, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 30}, false);
+        clamp_mogo();
+        chassis.moveToPoint(0, 0, 10000);
         return;
     }
     mogo_piston.set_value(0);
