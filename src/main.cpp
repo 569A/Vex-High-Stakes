@@ -322,15 +322,34 @@ if it lifts a mogo. The added weight will make the bot undershoot its targets, a
 very slowly. Having separate PIDs, one for with the mogo, and one without, fixes this issue.
  */ 
 void swap_mogo_pid() {
-    // Still needs adjusting, maybe kD needs change too.
-    chassis.lateralPID.setKP(6.2);
-    chassis.angularPID.setKP(3);
+    chassis.lateralPID.reset();
+    chassis.angularPID.reset();
+
+    chassis.lateralPID.setKP(10.575);
+    chassis.lateralPID.setKD(96);
+    chassis.angularPID.setKP(6.885);
+    chassis.angularPID.setKD(78);
 }
 
 // This lets us swap back after dropping mogo
 void swap_robot_pid() {
+    chassis.lateralPID.reset();
+    chassis.angularPID.reset();
+
     chassis.lateralPID.setKP(5.875);
+    chassis.lateralPID.setKD(82);
     chassis.angularPID.setKP(2.885);
+    chassis.angularPID.setKD(28);
+}
+
+void clamp_mogo() {
+    mogo_piston.set_value(1);
+    swap_mogo_pid();
+}
+
+void unclamp_mogo() {
+    mogo_piston.set_value(0);
+    swap_robot_pid();
 }
 
 
@@ -353,6 +372,7 @@ void autonomous() {
         mogo_piston.set_value(1);
         pros::delay(200);
         chassis.setPose(0, 0, 0);
+        // chassis.turnToHeading(90, 10000);
         chassis.moveToPoint(0, 48, 10000);
         return;
     }
@@ -366,7 +386,7 @@ void autonomous() {
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
         chassis.moveToPose(23.399139381, -23, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
-        mogo_piston.set_value(1);
+        clamp_mogo();
         chassis.turnToPoint(24, -48, 10000);
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(24, -50, 10000, {}, false);
@@ -394,7 +414,7 @@ void autonomous() {
         chassis.moveToPoint(-37, 14, 10000);
         chassis.turnToHeading(239, 10000);
         chassis.moveToPose(-24, 24, 239, 10000, {.forwards = false, .maxSpeed = 50});
-        mogo_piston.set_value(1);
+        clamp_mogo();
         chassis.turnToPoint(-24, 48, 10000);
         flex_wheel_intake.move(-120);
         chassis.moveToPoint(-24, 51.5, 10000, {}, false);
@@ -407,7 +427,7 @@ void autonomous() {
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
         chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
-        mogo_piston.set_value(1);
+        clamp_mogo();
         // EXPERIMENTAL - 4+ ring auton
         chassis.turnToHeading(45, 1000, {}, false);
         flex_wheel_intake.move(-100);
@@ -437,7 +457,7 @@ void autonomous() {
         // tan 31 = 0.600860619028
         chassis.moveToPose(-23.399139381, -23, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
-        mogo_piston.set_value(1);
+        clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(-24, -50, 10000, {}, false);
@@ -453,7 +473,7 @@ void autonomous() {
         hook_intake.move(0);
         // if (auton == "red_pos") {
         //     chassis.moveToPose(-49, -48, 45, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3});
-        //     mogo_piston.set_value(0);
+        //     unclamp_mogo();
         //     chassis.moveToPose(-16, -48, 90, 10000, {.minSpeed = 100});
         //     chassis.turnToHeading(-90, 10000);
         // }
@@ -467,7 +487,7 @@ void autonomous() {
         // tan 31 = 0.600860619028
         chassis.moveToPose(23.399139381, 23, 59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 90, .minSpeed = 20}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
-        mogo_piston.set_value(1);
+        clamp_mogo();
         chassis.turnToPoint(24, 48, 10000);
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(24, 50, 10000, {}, false);
@@ -539,7 +559,7 @@ void autonomous() {
         chassis.turnToHeading(0, 10000, {}, false);
         // y -24.5
         chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
 
         // Activate all intakes
         flex_wheel_intake.move(-127);
@@ -599,7 +619,7 @@ void autonomous() {
         left_motor_group.move(0);
         right_motor_group.move(0);
         chassis.setPose(-51, -51, chassis.getPose().theta);
-        mogo_piston.set_value(0);
+        unclamp_mogo();
 
         // chassis.turnToPoint(-42, -42, 10000);
         // chassis.moveToPoint(-42, -42, 10000);
@@ -608,7 +628,7 @@ void autonomous() {
         chassis.turnToHeading(45, 1000, {}, false);
         chassis.moveToPoint(-42, -38, 10000, {}, false);
         chassis.turnToHeading(90 , 10000, {}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
 
         // #4 Wall reset pose
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
@@ -623,8 +643,8 @@ void autonomous() {
         left_motor_group.move(0);
         right_motor_group.move(0);
         
-        chassis.moveToPoint(-48, 0, 10000, {}, false);
-        mogo_piston.set_value(0);
+        chassis.moveToPoint(-48, -48, 10000, {}, false);
+        unclamp_mogo();
 
         chassis.turnToHeading(180, 10000);
 
@@ -633,7 +653,7 @@ void autonomous() {
 
         // #5 Get mogo 2
         chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
         
         // Activate all intakes 2nd run
         flex_wheel_intake.move(-127);
@@ -691,12 +711,12 @@ void autonomous() {
         left_motor_group.move(0);
         right_motor_group.move(0);
         chassis.setPose(-51, 51, chassis.getPose().theta);
-        mogo_piston.set_value(0);
+        unclamp_mogo();
 
         chassis.turnToHeading(45, 1000, {}, false);
-        chassis.moveToPoint(-42, -38, 10000, {}, false);
+        chassis.moveToPoint(-42, 38, 10000, {}, false);
         chassis.turnToHeading(90 , 10000, {}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
 
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
         hook_intake.move(0);
@@ -714,7 +734,7 @@ void autonomous() {
         // #8 Load 2 red rings
         chassis.moveToPoint(24, 46.5, 10000, {.maxSpeed = 90});
         pros::delay(400);
-        mogo_piston.set_value(0);
+        unclamp_mogo();
 
         auto_load_ring();
 
@@ -727,7 +747,7 @@ void autonomous() {
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
         chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 50, .minSpeed = 5}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
 
         // #10 Place mogo in corner 
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
@@ -745,7 +765,7 @@ void autonomous() {
         // Reset pose again
         chassis.setPose({64.5, 52.25, chassis.getPose().theta});
         
-        mogo_piston.set_value(0);
+        unclamp_mogo();
         chassis.moveToPoint(48, 48, 10000);
         pros::delay(100);
         auto_load_ring();
@@ -753,7 +773,7 @@ void autonomous() {
         // #11 Fill mogo 4
         chassis.turnToHeading(0, 10000);
         chassis.moveToPose(48, 0, 0, 10000, {.forwards = false, .maxSpeed = 70, .minSpeed = 10}, false);
-        mogo_piston.set_value(1);
+        clamp_mogo();
 
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
