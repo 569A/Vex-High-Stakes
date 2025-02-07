@@ -901,7 +901,7 @@ void opcontrol() {
             chassis.tank(leftY * (.75), rightY * (.75), true);
         } else {
             // Emulate 450 rpm
-            chassis.tank(leftY * (0.9375), rightY * (0.9375), true);
+            chassis.tank(leftY, rightY, true);
         }
 
 
