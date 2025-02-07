@@ -103,7 +103,7 @@ lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4
                                               pid_tuner ? 0 :40, // small error range timeout, in milliseconds
                                               pid_tuner ? 0 : 3, // large error range, in inches
                                               pid_tuner ? 0 : 400, //400 large error range timeout, in milliseconds
-                                              pid_tuner ? 0 : 0//40 // maximum acceleration (slew)
+                                              pid_tuner ? 0 : 2.75//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -322,10 +322,10 @@ if it lifts a mogo. The added weight will make the bot undershoot its targets, a
 very slowly. Having separate PIDs, one for with the mogo, and one without, fixes this issue.
  */ 
 void swap_mogo_pid() {
-    chassis.lateralPID.reset();
-    chassis.angularPID.reset();
+    // chassis.lateralPID.reset();
+    // chassis.angularPID.reset();
 
-    chassis.lateralPID.setKP(10);
+    chassis.lateralPID.setKP(9.3);
     chassis.lateralPID.setKD(92);
     chassis.angularPID.setKP(6.885);
     chassis.angularPID.setKD(78);
@@ -333,8 +333,8 @@ void swap_mogo_pid() {
 
 // This lets us swap back after dropping mogo
 void swap_robot_pid() {
-    chassis.lateralPID.reset();
-    chassis.angularPID.reset();
+    // chassis.lateralPID.reset();
+    // chassis.angularPID.reset();
 
     chassis.lateralPID.setKP(5.875);
     chassis.lateralPID.setKD(82);
@@ -385,7 +385,7 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, -48, 10000);
@@ -394,8 +394,7 @@ void autonomous() {
         pros::delay(500);
         chassis.turnToPoint(24, -10, 10000, {}, false);
         chassis.moveToPoint(24, -10, 10000, {});
-        pros::delay(200);
-        hook_intake.move(100);
+        hook_intake.move(120);
         chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
@@ -426,7 +425,7 @@ void autonomous() {
         chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(-23.399139381, 23, -59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, 23, -59, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         // EXPERIMENTAL - 4+ ring auton
@@ -442,8 +441,7 @@ void autonomous() {
         pros::delay(500);
         chassis.turnToPoint(-24, 10, 10000, {}, false);
         chassis.moveToPoint(-24, 10, 10000, {});
-        pros::delay(200);
-        hook_intake.move(100);
+        hook_intake.move(120);
         chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
@@ -456,7 +454,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
@@ -465,13 +463,11 @@ void autonomous() {
         pros::delay(500);
         chassis.turnToPoint(-24, -10, 10000, {}, false);
         chassis.moveToPoint(-24, -10, 10000, {});
-        pros::delay(200);
-        hook_intake.move(100);
+        hook_intake.move(120);
         chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
-        hook_intake.move(0);
         // if (auton == "red_pos") {
         //     chassis.moveToPose(-49, -48, 45, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3});
         //     unclamp_mogo();
@@ -486,7 +482,7 @@ void autonomous() {
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(23.399139381, 23, 59, 3100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, 23, 59, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, 48, 10000);
@@ -495,8 +491,7 @@ void autonomous() {
         pros::delay(500);
         chassis.turnToPoint(24, 10, 10000, {}, false);
         chassis.moveToPoint(24, 10, 10000, {});
-        pros::delay(200);
-        hook_intake.move(100);
+        hook_intake.move(120);
         chassis.waitUntilDone();
         left_motor_group.move(50);
         right_motor_group.move(50);
@@ -536,7 +531,7 @@ void autonomous() {
                 }
                 ticks_since_intake++;
                 if (distance.get() < 200) {
-                    if (hook_intake.get_current_draw() > 2450 && ticks_since_intake > 12) {
+                    if (hook_intake.get_current_draw() > 2550 && ticks_since_intake > 12) {
                         hook_intake.move_relative(-400, 200);
                         wait_ticks = 10;
                     }
@@ -619,6 +614,7 @@ void autonomous() {
         pros::delay(400);
         left_motor_group.move(0);
         right_motor_group.move(0);
+        // return;
         chassis.setPose(-51, -51, chassis.getPose().theta);
         unclamp_mogo();
 
@@ -628,8 +624,8 @@ void autonomous() {
         // chassis.moveToPoint(-48, -48, 10000);
         chassis.turnToHeading(45, 1000, {}, false);
         chassis.moveToPoint(-42, -38, 10000, {}, false);
-        chassis.turnToHeading(90 , 10000, {}, false);
-        clamp_mogo();
+        chassis.turnToHeading(92 , 10000, {}, false);
+        mogo_piston.set_value(1);
 
         // #4 Wall reset pose
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
@@ -637,12 +633,12 @@ void autonomous() {
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
-        left_motor_group.move(-70);
-        right_motor_group.move(-70);
-        pros::delay(800);
-        chassis.setPose(-64.5, -50, chassis.getPose().theta);
+        left_motor_group.move(-60);
+        right_motor_group.move(-60);
+        pros::delay(1200);
         left_motor_group.move(0);
         right_motor_group.move(0);
+        chassis.setPose(-66.5, -50, chassis.getPose().theta);
         
         chassis.moveToPoint(-48, -48, 10000, {}, false);
         unclamp_mogo();
@@ -892,10 +888,9 @@ void opcontrol() {
 
     }
     flex_wheel_intake.move_velocity(-500);
-
+    optical.set_integration_time(4);
 	while (true) {
 		optical.set_led_pwm(100);
-        optical.set_integration_time(4);
 		// Tank drive
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
@@ -959,7 +954,7 @@ void opcontrol() {
                     current_ring_color = "red";
                 }
                 
-                if (optical.get_hue() > 200 && optical.get_hue() < 235 ) {
+                if (optical.get_hue() > 175 && optical.get_hue() < 235 ) {
                     current_ring_color = "blue";
                 }
                 ticks_since_intake = 0;
