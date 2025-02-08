@@ -84,7 +84,7 @@ bool pid_tuner = false;
 // Odometry sensors
 lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
                             nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
-                            &horizontal_tracking_wheel, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            nullptr, //&horizontal_tracking_wheel, //&horizontal_tracking_wheel, // horizontal tracking wheel 1
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                          &imu // inertial sensor
 );
@@ -103,7 +103,7 @@ lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4
                                               pid_tuner ? 0 :40, // small error range timeout, in milliseconds
                                               pid_tuner ? 0 : 3, // large error range, in inches
                                               pid_tuner ? 0 : 400, //400 large error range timeout, in milliseconds
-                                              pid_tuner ? 0 : 2.75//40 // maximum acceleration (slew)
+                                              pid_tuner ? 0 : 2.5//40 // maximum acceleration (slew)
 );
 
 // angular PID controller
@@ -385,7 +385,7 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, -48, 10000);
@@ -404,20 +404,20 @@ void autonomous() {
     }
     if (auton == "red_neg") {
         // EXPERIMENTAL - Solo Auton WP (WIP)
-        chassis.setPose(-58.618, 12.733, 180);
-        flex_wheel_intake.move(120);
-        chassis.moveToPose(-54, 0, 90, 10000, {.maxSpeed = 50});
-        arm_motor.move_absolute(140, 100);
-        chassis.moveToPose(-60, 0, 90, 10000, {.forwards = false, .maxSpeed = 40}, false);
-        hook_intake.move_absolute(400, 200);
-        pros::delay(600);
-        chassis.moveToPoint(-37, 14, 10000);
-        chassis.turnToHeading(239, 10000);
-        chassis.moveToPose(-24, 24, 239, 10000, {.forwards = false, .maxSpeed = 50});
-        clamp_mogo();
-        chassis.turnToPoint(-24, 48, 10000);
-        flex_wheel_intake.move(-120);
-        chassis.moveToPoint(-24, 51.5, 10000, {}, false);
+        // chassis.setPose(-58.618, 12.733, 180);
+        // flex_wheel_intake.move(120);
+        // chassis.moveToPose(-54, 0, 90, 10000, {.maxSpeed = 50});
+        // arm_motor.move_absolute(140, 100);
+        // chassis.moveToPose(-60, 0, 90, 10000, {.forwards = false, .maxSpeed = 40}, false);
+        // hook_intake.move_absolute(400, 200);
+        // pros::delay(600);
+        // chassis.moveToPoint(-37, 14, 10000);
+        // chassis.turnToHeading(239, 10000);
+        // chassis.moveToPose(-24, 24, 239, 10000, {.forwards = false, .maxSpeed = 50});
+        // clamp_mogo();
+        // chassis.turnToPoint(-24, 48, 10000);
+        // flex_wheel_intake.move(-120);
+        // chassis.moveToPoint(-24, 51.5, 10000, {}, false);
 
 
 
@@ -425,15 +425,15 @@ void autonomous() {
         chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(-23.399139381, 23, -59, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, 23, -59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         // EXPERIMENTAL - 4+ ring auton
-        chassis.turnToHeading(45, 1000, {}, false);
-        flex_wheel_intake.move(-100);
-        hook_intake.move(100);
-        chassis.follow(red_neg_txt, 13, 10000);
-        return;
+        // chassis.turnToHeading(45, 1000, {}, false);
+        // flex_wheel_intake.move(-100);
+        // hook_intake.move(100);
+        // chassis.follow(red_neg_txt, 13, 10000);
+        // return;
 
         chassis.turnToPoint(-24, 48, 10000);
         flex_wheel_intake.move(-100);
@@ -454,7 +454,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
@@ -482,7 +482,7 @@ void autonomous() {
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(23.399139381, 23, 59, 4100, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, 23, 59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, 48, 10000);
@@ -531,7 +531,7 @@ void autonomous() {
                 }
                 ticks_since_intake++;
                 if (distance.get() < 200) {
-                    if (hook_intake.get_current_draw() > 2550 && ticks_since_intake > 12) {
+                    if (hook_intake.get_current_draw() > 2500 && ticks_since_intake > 12) {
                         hook_intake.move_relative(-400, 200);
                         wait_ticks = 10;
                     }
@@ -624,7 +624,7 @@ void autonomous() {
         // chassis.moveToPoint(-48, -48, 10000);
         chassis.turnToHeading(45, 1000, {}, false);
         chassis.moveToPoint(-42, -38, 10000, {}, false);
-        chassis.turnToHeading(92 , 10000, {}, false);
+        chassis.turnToHeading(90 , 10000, {}, false);
         mogo_piston.set_value(1);
 
         // #4 Wall reset pose
@@ -633,12 +633,12 @@ void autonomous() {
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
-        left_motor_group.move(-60);
-        right_motor_group.move(-60);
-        pros::delay(1200);
+        left_motor_group.move(-40);
+        right_motor_group.move(-45);
+        pros::delay(1600);
         left_motor_group.move(0);
         right_motor_group.move(0);
-        chassis.setPose(-66.5, -50, chassis.getPose().theta);
+        chassis.setPose(-65.5, -54, chassis.getPose().theta - 1.95);
         
         chassis.moveToPoint(-48, -48, 10000, {}, false);
         unclamp_mogo();
@@ -649,7 +649,7 @@ void autonomous() {
         // // chassis.turnToPoint(-48, -1000, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 60}, false);
+        chassis.moveToPose(-48, 28.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
         
         // Activate all intakes 2nd run
@@ -680,7 +680,7 @@ void autonomous() {
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
         chassis.turnToPoint(-57, 46, 4000);
-        chassis.moveToPoint(-57, 46, 4000);
+        chassis.moveToPoint(-57, 46, 4000, {.maxSpeed = 60});
         // Move back for ring 7
         chassis.turnToHeading(-90, 10000);
         chassis.moveToPoint(-50, 46, 10000, {.forwards = false});
@@ -700,11 +700,11 @@ void autonomous() {
         
         chassis.turnToPoint(100, -100, 10000, {}, false);
 
-        left_motor_group.move(-100);
-        right_motor_group.move(-100);
+        left_motor_group.move(-110);
+        right_motor_group.move(-110);
 
         // #6 Drop mogo 2 in corner
-        pros::delay(400);
+        pros::delay(1000);
         left_motor_group.move(0);
         right_motor_group.move(0);
         chassis.setPose(-51, 51, chassis.getPose().theta);
@@ -723,12 +723,14 @@ void autonomous() {
         // #7 Wall reset pose (2nd time)
         left_motor_group.move(-70);
         right_motor_group.move(-70);
-        pros::delay(800);
-        chassis.setPose(-64.5, 50, chassis.getPose().theta);
+        pros::delay(1200);
+        chassis.setPose(-64.5, 49, chassis.getPose().theta);
         left_motor_group.move(0);
         right_motor_group.move(0);
         
         // #8 Load 2 red rings
+        chassis.moveToPoint(-50, 49, 1000);
+        chassis.turnToHeading(45, 10000, {.earlyExitRange = 10});
         chassis.moveToPoint(24, 46.5, 10000, {.maxSpeed = 90});
         pros::delay(400);
         unclamp_mogo();
