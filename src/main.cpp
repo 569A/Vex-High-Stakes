@@ -311,6 +311,33 @@ void auto_load_ring() {
     }
 }
 
+// Auto load a ring
+void driver_load_ring() {
+            pros::Task auton_intake_manager([&]() {
+
+    int ring_load_timeout_ticks = 100;
+    int ring_loaded_timeout_ticks = 100;
+    flex_wheel_intake.move(-127);
+    hook_intake.move(0);
+    while (optical.get_proximity() < 220) {
+        ring_load_timeout_ticks--;
+        if (ring_load_timeout_ticks < 0) {
+            break;
+        }
+        pros::delay(20);
+    }
+
+    while (optical.get_proximity() > 220) {
+        ring_loaded_timeout_ticks--;
+        hook_intake.move(100);
+        if (ring_loaded_timeout_ticks < 0) {
+            break;
+        }
+        pros::delay(20);
+    }
+            });
+}
+
 /**
 Swap PID for mogo -
 PID handles how the robot moves. P is proportional D is derivative
@@ -385,7 +412,7 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, -48, 10000);
@@ -425,7 +452,7 @@ void autonomous() {
         chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(-23.399139381, 23, -59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, 23, -59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         // EXPERIMENTAL - 4+ ring auton
@@ -454,7 +481,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
@@ -482,7 +509,7 @@ void autonomous() {
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(23.399139381, 23, 59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(23.399139381, 23, 59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, 48, 10000);
@@ -554,7 +581,7 @@ void autonomous() {
         chassis.moveToPoint(-48, 0, 100000, {}, false);
         chassis.turnToHeading(0, 10000, {}, false);
         // y -24.5
-        chassis.moveToPose(-50, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        chassis.moveToPose(-48, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
         clamp_mogo();
 
         // Activate all intakes
@@ -745,7 +772,7 @@ void autonomous() {
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
-        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 50, .minSpeed = 5}, false);
+        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 50, .minSpeed = 30}, false);
         clamp_mogo();
 
         // #10 Place mogo in corner 
@@ -1030,6 +1057,7 @@ void opcontrol() {
             } else if (next_ring_must_reverse) {
                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
                     hook_intake.move_relative(-400, 200);
+                    flex_wheel_intake.move(100);
                     should_run_intake = false;
                 }
             } else {
@@ -1127,11 +1155,11 @@ void opcontrol() {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP) && !digital_up_was_pressed) {
             get_arm_ready_to_score = false;
             if (arm_state == 0) {
-                arm_motor.move_absolute(765, 100);
+                arm_motor.move_absolute(767, 100);
                 arm_state++;
             } else if (arm_state == 1) {
                 // hook_intake.move_relative(-700, 125);
-                arm_motor.move_absolute(2570, 100);
+                arm_motor.move_absolute(2560, 100);
                 arm_state++;
             } 
             digital_up_was_pressed = true;
@@ -1146,7 +1174,7 @@ void opcontrol() {
                 arm_motor.move_absolute(0, 100);
                 arm_state--;
             } else if (arm_state == 2) {
-                arm_motor.move_absolute(765, 100);
+                arm_motor.move_absolute(767, 100);
                 arm_state--;
             }
             digital_down_was_pressed = true;
