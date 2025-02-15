@@ -57,17 +57,16 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 pros::Imu imu(5);
 
 // // Horizontal tracking wheel encoder
-pros::Rotation horizontal_encoder(-3);
+// pros::Rotation horizontal_encoder(-3);
 
 // // Vertical tracking wheel encoder
-// pros::Rotation vertical_encoder(5);
+pros::Rotation vertical_encoder(-3);
 
 // // Horizontal tracking wheel
-lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.25);
-lemlib::TrackingWheel vertical_tracking_wheel(&left_tracker, lemlib::Omniwheel::NEW_325, -6.3125, 480); //* 1.021276595745269, -6.3125, 480);
+// lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, 2, -4.25);
 
 // // Vertical tracking wheel
-// lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, -2.5);
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, 1.97552, 0);
 
 // odometry settings
 // lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
