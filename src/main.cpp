@@ -9,6 +9,7 @@
 #include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
 #include <cstddef>
+#include "customdevices/filtered_inertial.h"
 
 // Drivetrain motor groups
 pros::MotorGroup left_tracker({-18}, pros::MotorGearset::blue); // use one of the motors in the left motor group to track position
@@ -54,7 +55,7 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 
 
 // Inertial sensor
-pros::Imu imu(5);
+FilteredInertial imu(5, 1.004);
 
 // // Horizontal tracking wheel encoder
 // pros::Rotation horizontal_encoder(-3);
