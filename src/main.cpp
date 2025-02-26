@@ -120,7 +120,7 @@ lemlib::ControllerSettings angular_controller(2.9, // proportional gain (kP) 1.9
                                               pid_tuner ? 0 : 50, // small error range timeout, in milliseconds
                                               pid_tuner ? 0 : 4, // large error range, in degrees
                                               pid_tuner ? 0 : 205, // 600 large error range timeout, in milliseconds
-                                              pid_tuner ? 0 : 4.5 // 40 maximum acceleration (slew)
+                                              pid_tuner ? 0 : 0//4.5 // 40 maximum acceleration (slew)
 );
 
 // Create the chassis
@@ -289,8 +289,8 @@ double get_intake_closest_to_ready_mogo_score() {
 
 // Auto load a ring
 void auto_load_ring() {
-    int ring_load_timeout_ticks = 100;
-    int ring_loaded_timeout_ticks = 100;
+    int ring_load_timeout_ticks = 300;
+    int ring_loaded_timeout_ticks = 300;
     flex_wheel_intake.move(-127);
     hook_intake.move(0);
     while (optical.get_proximity() < 220) {
@@ -300,15 +300,15 @@ void auto_load_ring() {
         }
         pros::delay(20);
     }
-
+    hook_intake.move(127);
     while (optical.get_proximity() > 220) {
         ring_loaded_timeout_ticks--;
-        hook_intake.move(100);
         if (ring_loaded_timeout_ticks < 0) {
             break;
         }
         pros::delay(20);
     }
+    hook_intake.move(0);
 }
 
 // Auto load a ring
@@ -600,8 +600,8 @@ void autonomous() {
 
         arm_motor.move_absolute(0, 100);
         // Ring Sweep 1-2 on each side of ladder
-        chassis.turnToHeading(90, 10000, {.earlyExitRange = 4});
-        chassis.moveToPoint(-24, -24, 10000);
+        chassis.turnToHeading(90, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-24, -24, 10000, {.minSpeed = 40, .earlyExitRange = 2});
 
         // chassis.follow(skills_ring_sweep_1_txt, 10, 10000, true, false);
         
@@ -716,22 +716,22 @@ void autonomous() {
         // chassis.moveToPoint(26, -46, 10000);
 
         // Ring 3 - Maybe use this for high stake?
-        chassis.turnToPoint(0, -55, 10000, {.earlyExitRange = 4});
+        chassis.turnToPoint(0, -55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, -55, 10000);        
         // Ring 4
-        chassis.turnToPoint(-24, -46, 3000, {.earlyExitRange = 4});
+        chassis.turnToPoint(-24, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, -46, 3000);
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, -46, 4000, {.earlyExitRange = 4});
-        chassis.moveToPoint(-57, -46, 4000);
+        chassis.turnToPoint(-57, -46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
         // // Move back for ring 7
         // chassis.turnToHeading(270, 2000);
         // chassis.moveToPoint(-50, -46, 2000, {.forwards = false});
         
         // Ring 7
-        chassis.turnToPoint(-48, -61, 2000, {.earlyExitRange = 4});
+        chassis.turnToPoint(-48, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, -61, 2000);
 
         // // uncomment from here for ring 7
@@ -758,8 +758,8 @@ void autonomous() {
         // chassis.moveToPoint(-42, -42, 10000);
         // chassis.turnToPoint(-48, -48, 10000);
         // chassis.moveToPoint(-48, -48, 10000);
-        chassis.turnToHeading(90, 1000, {}, false);
-        chassis.moveToPoint(-59.5, -62, 10000, {.forwards = false}, false);
+        chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
+        chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 2.5}, false);
         unclamp_mogo();
         // #4 Wall reset pose
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
@@ -784,37 +784,42 @@ void autonomous() {
         intake_task_running = true;
 
         // Ring 1 by ladder
-        chassis.turnToHeading(90, 3000);
+        chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, 24, 3000);
         
         // Ring 3 - Maybe use this for high stake?
-        chassis.turnToPoint(0, 55, 10000);
+        chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, 55, 10000);
         
         // Ring 4
-        chassis.turnToPoint(-24, 46, 3000);
+        chassis.turnToPoint(-24, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, 46, 3000);
 
         // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, 46, 4000);
+        chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-57, 46, 4000);
 
         
         // Ring 7
-        chassis.turnToPoint(-48, 61, 2000);
+        chassis.turnToPoint(-48, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, 61, 2000);
 
         chassis.turnToHeading(90, 1000, {}, false);
-        chassis.moveToPoint(-59.5, 62, 10000, {.forwards = false}, false);
+        chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 2.5}, false);
         unclamp_mogo();
         // #4 Wall reset pose
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
-        hook_intake.move(0);
+        // hook_intake.move(0);
         // Give flex wheel intake a break
         // flex_wheel_intake.move(0);
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
         chassis.moveToPoint(24, 48, 10000);
+
+        while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
+            pros::delay(20);
+        }
 
         auto_load_ring();
 
@@ -826,39 +831,52 @@ void autonomous() {
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
-        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 90, .minSpeed = 30}, false);
+        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 90, .minSpeed = 40}, false);
         clamp_mogo();
 
         // #10 Place mogo in corner 
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
         chassis.turnToHeading(237, 10000);
+        flex_wheel_intake.move(127);
 
-        left_motor_group.move(-100);
-        right_motor_group.move(-100);
-        while (chassis.getPose().y < 73) {
-            pros::delay(20);
-        }
+        // left_motor_group.move(-100);
+        // right_motor_group.move(-100);
+        // while (chassis.getPose().y < 73) {
+        //     pros::delay(20);
+        // }
 
-        left_motor_group.move(0);
-        right_motor_group.move(0);
+        // left_motor_group.move(0);
+        // right_motor_group.move(0);
         
         // Reset pose again
-        chassis.setPose({64.5, 52.25, chassis.getPose().theta});
+        // chassis.setPose({64.5, 52.25, chassis.getPose().theta});
+
+        chassis.moveToPoint(59, 56, 5000, {.forwards = false}, false);
         
         unclamp_mogo();
-        chassis.moveToPoint(48, 48, 10000);
-        pros::delay(100);
-        auto_load_ring();
+        chassis.moveToPoint(47, 47, 10000);
+        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
+        // pros::delay(100);
+        // auto_load_ring();
 
         // #11 Fill mogo 4
         chassis.turnToHeading(0, 10000);
-        chassis.moveToPose(48, 0, 0, 10000, {.forwards = false, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(47, -3, 0, 10000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30}, false);
         clamp_mogo();
 
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
 
         // # 12 Drop mogo 4 in corner
+        chassis.turnToPoint(48, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(48, -57, 10000, {}, false);
+
+        chassis.turnToHeading(-65, 10000, {}, false);
+        hook_intake.move_relative(-300, 200);
+        unclamp_mogo();
+
+        chassis.moveToPoint(59, -56, 5000, {.forwards = false}, false);
+        
 
     }
 
@@ -989,7 +1007,7 @@ void opcontrol() {
 
 
 		// Intake control
-		pros::lcd::set_text(0, "Optical: " + std::to_string(optical.get_hue()));
+		pros::lcd::set_text(0, "Optical: " + std::to_string(optical.get_proximity()));
         pros::lcd::set_text(1, "Intake: " + std::to_string(hook_intake.get_position()));
         pros::lcd::set_text(2, "Arm: " + std::to_string(arm_motor.get_position()));
         pros::lcd::set_text(3, "Intake Current: " + std::to_string(hook_intake.get_current_draw()));
