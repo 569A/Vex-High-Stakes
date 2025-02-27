@@ -838,10 +838,11 @@ void autonomous() {
 
         // # 12 Drop mogo 4 in corner
         chassis.turnToHeading(-65, 10000, {}, false);
+        pros::delay(400);
         hook_intake.move_relative(-300, 200);
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
 
-        chassis.moveToPoint(59, -56, 5000, {.forwards = false}, false);
+        chassis.moveToPoint(59, -56, 5000, {.forwards = false, .earlyExitRange = 3}, false);
         
 
     }
