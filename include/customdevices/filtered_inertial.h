@@ -11,11 +11,14 @@
 class FilteredInertial : public pros::Imu {
 
 private:
-    double rotation_scalar;
+    double rotation_scalar; // Multiplier to scale the rotation by (account for consistent error)
+    double compensation_factor; // Hooks vibrating makes IMU drift, so we just negate it by adding/subtracting how much it drifts by every 10 ms
 public:
-    FilteredInertial(std::uint8_t port, double rotation_scalar) : pros::Imu(port) {
+    FilteredInertial(std::uint8_t port, double rotation_scalar, double compensation_factor) : pros::Imu(port) {
         this->rotation_scalar = rotation_scalar;
+        this->compensation_factor = compensation_factor;
     }
 
     double get_rotation() const override;
+    void update_compensation_factor();
 };
