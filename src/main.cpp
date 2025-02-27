@@ -293,7 +293,7 @@ void auto_load_ring() {
     int ring_loaded_timeout_ticks = 300;
     flex_wheel_intake.move(-127);
     hook_intake.move(0);
-    while (optical.get_proximity() < 220) {
+    while (optical.get_proximity() < 200) {
         ring_load_timeout_ticks--;
         if (ring_load_timeout_ticks < 0) {
             break;
@@ -301,7 +301,7 @@ void auto_load_ring() {
         pros::delay(20);
     }
     hook_intake.move(127);
-    while (optical.get_proximity() > 220) {
+    while (optical.get_proximity() > 200) {
         ring_loaded_timeout_ticks--;
         if (ring_loaded_timeout_ticks < 0) {
             break;
@@ -319,7 +319,7 @@ void driver_load_ring() {
     int ring_loaded_timeout_ticks = 100;
     flex_wheel_intake.move(-127);
     hook_intake.move(0);
-    while (optical.get_proximity() < 220) {
+    while (optical.get_proximity() < 200) {
         ring_load_timeout_ticks--;
         if (ring_load_timeout_ticks < 0) {
             break;
@@ -327,7 +327,7 @@ void driver_load_ring() {
         pros::delay(20);
     }
 
-    while (optical.get_proximity() > 220) {
+    while (optical.get_proximity() > 200) {
         ring_loaded_timeout_ticks--;
         hook_intake.move(100);
         if (ring_loaded_timeout_ticks < 0) {
@@ -400,6 +400,10 @@ ASSET(text_txt);
  * from where it left off.
  */
 void autonomous() {
+    // auto_load_ring
+    flex_wheel_intake.move(-120);
+    auto_load_ring();
+    return;
 
     // PID Tuner - tune PID from controller
     if (pid_tuner) {
@@ -560,7 +564,7 @@ void autonomous() {
 
         pros::Task auton_intake_manager([&]() {
             while (true) {
-                if (optical.get_proximity() > 220) {
+                if (optical.get_proximity() > 200) {
                     ticks_since_intake = 0;
                 }
                 ticks_since_intake++;
@@ -831,7 +835,7 @@ void autonomous() {
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
-        chassis.moveToPose(53, 27, -63, 10000, {.forwards = false, .maxSpeed = 90, .minSpeed = 40}, false);
+        chassis.moveToPose(53, 27, -63, 4000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false);
         clamp_mogo();
 
         // #10 Place mogo in corner 
@@ -1042,7 +1046,7 @@ void opcontrol() {
                 next_ring_must_reverse = false;
             }
             // Hook intake
-            if (optical.get_proximity() > 220 ) {
+            if (optical.get_proximity() > 200 ) {
                 // TODO, if intake is already scoring a ring that we want, but then a ring comes in that is the wrong
                 // color, we should throw the good ring out.
                 if (intake_running) {
