@@ -819,7 +819,7 @@ void autonomous() {
         unclamp_mogo();
         // Prep for mogo grab
         chassis.moveToPoint(47, 47, 10000);
-        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
+        // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
         // pros::delay(100);
         // auto_load_ring();
 
