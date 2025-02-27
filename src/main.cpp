@@ -400,10 +400,6 @@ ASSET(text_txt);
  * from where it left off.
  */
 void autonomous() {
-    // auto_load_ring
-    flex_wheel_intake.move(-120);
-    auto_load_ring();
-    return;
 
     // PID Tuner - tune PID from controller
     if (pid_tuner) {
