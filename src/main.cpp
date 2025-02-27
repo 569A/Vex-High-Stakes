@@ -9,6 +9,7 @@
 #include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
 #include <cstddef>
+#include <cstdlib>
 #include "customdevices/filtered_inertial.h"
 
 // Drivetrain motor groups
@@ -55,7 +56,7 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 
 
 // Inertial sensor
-FilteredInertial imu(5, 1.0039, -0.000001);
+FilteredInertial imu(5, 1.0039, -0.0008);
 
 // // Horizontal tracking wheel encoder
 // pros::Rotation horizontal_encoder(-3);
@@ -569,6 +570,9 @@ void autonomous() {
                         hook_intake.move_relative(-400, 200);
                         wait_ticks = 10;
                     }
+                }
+                if (abs(hook_intake.get_current_draw()) > 50) {
+                    imu.update_compensation_factor();
                 }
                 pros::delay(20);
             }
