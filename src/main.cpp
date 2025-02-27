@@ -709,72 +709,33 @@ void autonomous() {
         // // Maybe reset?
         // return;
 
-        // Get to this point instead of directly to ring #2 to avoid hitting the ladder
-        // chassis.turnToPoint(0, -45, 10000, {.earlyExitRange = 4});
-        // chassis.moveToPoint(0, -45, 10000, {.earlyExitRange = 2});
 
-        // // Ring 2 by high stake
-        // chassis.turnToPoint(26, -46, 10000);
-        // chassis.moveToPoint(26, -46, 10000);
-
-        // Ring 3 - Maybe use this for high stake?
+        // Ring 2 - Maybe use this for high stake?
         chassis.turnToPoint(0, -55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, -55, 10000);        
-        // Ring 4
+        // Ring 3
         chassis.turnToPoint(-24, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, -46, 3000);
 
-        // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+        // Rings 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
         chassis.turnToPoint(-57, -46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
-        // // Move back for ring 7
-        // chassis.turnToHeading(270, 2000);
-        // chassis.moveToPoint(-50, -46, 2000, {.forwards = false});
-        
-        // Ring 7
+
+        // Ring 6
         chassis.turnToPoint(-48, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, -61, 2000);
 
-        // // uncomment from here for ring 7
-        // chassis.turnToHeading(68.2, 10000);
-        // // chassis.turnToPoint(-48, -53, 10000);
-        // chassis.moveToPoint(-37, -54, 10000);
-        
-        // //chassis.moveToPoint(-38, -48, 10000, {.forwards = false});
-        // chassis.turnToHeading(180, 2000);
-        // chassis.moveToPoint(-42, -46, 2000, {.forwards = false});
-        
-        // chassis.turnToHeading(45, 3000, {}, false);
-
-        // left_motor_group.move(-100);
-        // right_motor_group.move(-100);
-        // // #3 Drop mogo in corner
-        // pros::delay(400);
-        // left_motor_group.move(0);
-        // right_motor_group.move(0);
-        // // return;
-        // chassis.setPose(-51, -51, chassis.getPose().theta);
-
-        // chassis.turnToPoint(-42, -42, 10000);
-        // chassis.moveToPoint(-42, -42, 10000);
-        // chassis.turnToPoint(-48, -48, 10000);
-        // chassis.moveToPoint(-48, -48, 10000);
         chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
         chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 2.5}, false);
         unclamp_mogo();
-        // #4 Wall reset pose
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
         hook_intake.move(0);
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
         chassis.moveToPoint(-48, -48, 10000, {}, false);
-
         chassis.turnToHeading(180, 10000);
-
-        // // get_to_point(-48, 0);
-        // // chassis.turnToPoint(-48, -1000, 10000);
 
         // #5 Get mogo 2
         chassis.moveToPose(-48, 28.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
@@ -789,46 +750,48 @@ void autonomous() {
         chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, 24, 3000);
         
-        // Ring 3 - Maybe use this for high stake?
+        // Ring 2 - Maybe use this for high stake?
         chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, 55, 10000);
         
-        // Ring 4
+        // Ring 3
         chassis.turnToPoint(-24, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, 46, 3000);
 
-        // Ring 5-6 (cluster of 3 rings, this is the horizontal 2)
+        // Ring 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
         chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-57, 46, 4000);
 
         
-        // Ring 7
+        // Ring 6
         chassis.turnToPoint(-48, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, 61, 2000);
 
         chassis.turnToHeading(90, 1000, {}, false);
         chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 2.5}, false);
         unclamp_mogo();
-        // #4 Wall reset pose
-        // Stop hook intake incase we did not get all 6 rings and the hooks are still running
-        // hook_intake.move(0);
-        // Give flex wheel intake a break
-        // flex_wheel_intake.move(0);
+
+        // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
+        // Begin motion to next ring
         chassis.moveToPoint(24, 48, 10000);
 
+        // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
             pros::delay(20);
         }
 
+        // Load ring #1
         auto_load_ring();
 
+        // Turn and begin motion to next ring
         chassis.turnToPoint(23, 26, 10000, {}, false);
         chassis.moveToPoint(23, 26, 10000);
         pros::delay(200);
         
+        // Load ring #2
         auto_load_ring();
 
         // #9 Go for blue ring mogo to push into corner
@@ -839,23 +802,13 @@ void autonomous() {
         // #10 Place mogo in corner 
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
         chassis.turnToHeading(237, 10000);
+        // Reverse flex wheel intake so that we don't accidently intake a blue ring or get something stuck inside
         flex_wheel_intake.move(127);
 
-        // left_motor_group.move(-100);
-        // right_motor_group.move(-100);
-        // while (chassis.getPose().y < 73) {
-        //     pros::delay(20);
-        // }
-
-        // left_motor_group.move(0);
-        // right_motor_group.move(0);
-        
-        // Reset pose again
-        // chassis.setPose({64.5, 52.25, chassis.getPose().theta});
-
-        chassis.moveToPoint(59, 56, 5000, {.forwards = false}, false);
-        
+        chassis.moveToPoint(59, 56, 4000, {.forwards = false}, false);
+        // Release mogo
         unclamp_mogo();
+        // Prep for mogo grab
         chassis.moveToPoint(47, 47, 10000);
         chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
         // pros::delay(100);
@@ -863,19 +816,21 @@ void autonomous() {
 
         // #11 Fill mogo 4
         chassis.turnToHeading(0, 10000);
-        chassis.moveToPose(47, -3, 0, 10000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30}, false);
+        chassis.moveToPose(47, -3, 0, 5000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30}, false);
         clamp_mogo();
 
+        // Score loaded rings & allow intaking of rings again
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
 
-        // # 12 Drop mogo 4 in corner
+        // Score two more rings near the corner
         chassis.turnToPoint(48, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(48, -57, 10000, {}, false);
 
+        // # 12 Drop mogo 4 in corner
         chassis.turnToHeading(-65, 10000, {}, false);
         hook_intake.move_relative(-300, 200);
-        unclamp_mogo();
+        unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
 
         chassis.moveToPoint(59, -56, 5000, {.forwards = false}, false);
         
