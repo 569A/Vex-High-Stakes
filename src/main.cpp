@@ -599,10 +599,12 @@ void autonomous() {
         pros::delay(200);
 
         arm_motor.move_absolute(0, 100);
-        // Ring Sweep 1-2 on each side of ladder
+
+        // Ring 1
         chassis.turnToHeading(90, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-24, -24, 10000, {.minSpeed = 40, .earlyExitRange = 2});
 
+        // Ring Sweep 1-2 on each side of ladder
         // chassis.follow(skills_ring_sweep_1_txt, 10, 10000, true, false);
         
 
