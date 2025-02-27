@@ -782,10 +782,13 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
         // Begin motion to next ring
-        chassis.moveToPoint(24, 48, 10000);
+        chassis.moveToPoint(24, 48, 5000, {.earlyExitRange = 3});
 
         // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
+            if (distance.get() > 200) {
+                break;
+            }
             pros::delay(20);
         }
 
@@ -793,7 +796,7 @@ void autonomous() {
         auto_load_ring();
 
         // Turn and begin motion to next ring
-        chassis.turnToPoint(23, 26, 10000, {}, false);
+        chassis.turnToPoint(23, 26, 10000, {.earlyExitRange = 4}, false);
         chassis.moveToPoint(23, 26, 10000);
         pros::delay(200);
         
@@ -801,8 +804,8 @@ void autonomous() {
         auto_load_ring();
 
         // #9 Go for blue ring mogo to push into corner
-        chassis.turnToHeading(-50, 10000, {.earlyExitRange = 3});
-        chassis.moveToPose(53, 27, -63, 4000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false);
+        chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
+        chassis.moveToPose(53, 29, -63, 4500, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         clamp_mogo();
 
         // #10 Place mogo in corner 
