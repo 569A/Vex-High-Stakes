@@ -203,6 +203,7 @@ void initialize() {
     pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     chassis.calibrate();
+    imu.set_data_rate(5);
     pros::Task screen_task([&]() {
     while (true) {
         // print robot location to the brain screen
