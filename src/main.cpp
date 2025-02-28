@@ -837,6 +837,10 @@ void autonomous() {
         chassis.turnToPoint(48, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(48, -57, 10000, {}, false);
 
+        // Another two rings ?...
+        // chassis.turnToPoint(24, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        // chassis.moveToPoint(24, -48, 10000);
+
         // # 12 Drop mogo 4 in corner
         chassis.turnToHeading(-65, 10000, {.earlyExitRange = 3}, false);
         pros::delay(400);
@@ -844,7 +848,8 @@ void autonomous() {
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
 
         chassis.moveToPoint(59, -56, 5000, {.forwards = false, .earlyExitRange = 3}, false);
-        
+        // Right now, there is a theoretical max of 45 points
+        // We need 50 at minimum        
 
     }
 
