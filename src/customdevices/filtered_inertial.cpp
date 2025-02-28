@@ -5,5 +5,5 @@ double FilteredInertial::get_rotation() const {
 }
 
 void FilteredInertial::update_compensation_factor() {
-    set_rotation(get_rotation() + compensation_factor);
+    //set_rotation(get_rotation() + compensation_factor);
 }

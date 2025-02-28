@@ -203,7 +203,6 @@ void initialize() {
     pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     chassis.calibrate();
-    imu.set_data_rate(5);
     pros::Task screen_task([&]() {
     while (true) {
         // print robot location to the brain screen
@@ -586,7 +585,7 @@ void autonomous() {
         pros::delay(500);
         hook_intake.move_absolute(400, 200);
         pros::delay(600);
-        hook_intake.move_relative(-50, 200);
+        hook_intake.move_relative(-400, 200);
         pros::delay(100);
 
         // #2 Get mogo
@@ -744,7 +743,7 @@ void autonomous() {
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-48, 28.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
+        chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
         
         // Activate all intakes 2nd run
@@ -806,7 +805,7 @@ void autonomous() {
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
-        chassis.moveToPose(53, 29, -63, 4500, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
+        chassis.moveToPose(54.3, 26.3, -63, 4500, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         clamp_mogo();
 
         // #10 Place mogo in corner 
