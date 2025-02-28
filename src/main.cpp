@@ -421,10 +421,10 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
-        chassis.turnToPoint(24, -48, 10000);
+        chassis.turnToPoint(24, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(24, -50, 10000, {}, false);
         pros::delay(500);
@@ -461,7 +461,7 @@ void autonomous() {
         chassis.setPose(-55, 38.5, -45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(-23.399139381, 23, -59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(-23.399139381, 23, -59, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         // EXPERIMENTAL - 4+ ring auton
@@ -471,7 +471,7 @@ void autonomous() {
         // chassis.follow(red_neg_txt, 13, 10000);
         // return;
 
-        chassis.turnToPoint(-24, 48, 10000);
+        chassis.turnToPoint(-24, 48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         flex_wheel_intake.move(-100);
         chassis.moveToPoint(-24, 50, 10000, {}, false);
         pros::delay(500);
@@ -490,7 +490,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
@@ -518,7 +518,7 @@ void autonomous() {
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(23.399139381, 23, 59, 6300, {.forwards = false, .lead = 0.5, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(23.399139381, 23, 59, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, 48, 10000);
