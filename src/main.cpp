@@ -289,7 +289,7 @@ double get_intake_closest_to_ready_mogo_score() {
 }
 
 // Auto load a ring
-void auto_load_ring() {
+bool auto_load_ring() {
     int ring_load_timeout_ticks = 300;
     int ring_loaded_timeout_ticks = 300;
     flex_wheel_intake.move(-127);
@@ -297,7 +297,7 @@ void auto_load_ring() {
     while (optical.get_proximity() < 200) {
         ring_load_timeout_ticks--;
         if (ring_load_timeout_ticks < 0) {
-            break;
+            return false;
         }
         pros::delay(20);
     }
@@ -305,11 +305,12 @@ void auto_load_ring() {
     while (optical.get_proximity() > 200) {
         ring_loaded_timeout_ticks--;
         if (ring_loaded_timeout_ticks < 0) {
-            break;
+            return false;
         }
         pros::delay(20);
     }
     hook_intake.move(0);
+    return true;
 }
 
 // Auto load a ring
@@ -790,7 +791,7 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
         // Begin motion to next ring
-        chassis.moveToPoint(24, 48, 5000, {.earlyExitRange = 3});
+        chassis.moveToPoint(24, 48, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
 
         // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
@@ -798,15 +799,15 @@ void autonomous() {
         }
 
         // Load ring #1
-        auto_load_ring();
-
-        // Turn and begin motion to next ring
-        chassis.turnToPoint(23, 26, 10000, {.earlyExitRange = 4}, false);
-        chassis.moveToPoint(23, 26, 10000);
-        pros::delay(200);
+        bool got_ring = auto_load_ring();
         
-        // Load ring #2
-        auto_load_ring();
+        // Load ring #2 - only if 1st one was successful. If not, skip, don't mess it up further
+        if (got_ring) {
+            // Turn and begin motion to next ring
+            chassis.turnToPoint(23, 26, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
+            chassis.moveToPoint(23, 26, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
+            got_ring = auto_load_ring();
+        } 
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
