@@ -831,8 +831,10 @@ void autonomous() {
 
         // #11 Fill mogo 4
         chassis.turnToHeading(0, 10000);
-        chassis.moveToPose(47, -3, 0, 5000, {.forwards = false, .maxSpeed = 70, .minSpeed = 30}, false);
+        chassis.moveToPoint(47, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
+        chassis.moveToPose(47, -5.5, 0, 5000, {.forwards = false, .maxSpeed = 50, .minSpeed = 10}, false);
         clamp_mogo();
+        pros::delay(200);
 
         // Score loaded rings & allow intaking of rings again
         flex_wheel_intake.move(-127);
@@ -851,7 +853,7 @@ void autonomous() {
         pros::delay(400);
         hook_intake.move_relative(-300, 200);
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
-
+        pros::delay(200);
         chassis.moveToPoint(59, -56, 5000, {.forwards = false, .earlyExitRange = 3}, false);
         // Right now, there is a theoretical max of 45 points
         // We need 50 at minimum        
