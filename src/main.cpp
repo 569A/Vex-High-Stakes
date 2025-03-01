@@ -786,9 +786,6 @@ void autonomous() {
 
         // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
-            if (distance.get() > 200) {
-                break;
-            }
             pros::delay(20);
         }
 
