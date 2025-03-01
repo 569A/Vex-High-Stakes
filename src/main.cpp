@@ -389,6 +389,8 @@ ASSET(skills_ring_sweep_2_txt);
 ASSET(skills_ring_load_2_txt);
 ASSET(text_txt);
 
+const float TILE_UNIT = 23.62205;
+
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -590,11 +592,11 @@ void autonomous() {
         pros::delay(100);
 
         // #2 Get mogo
-        chassis.moveToPoint(-48, 0, 100000, {}, false);
+        chassis.moveToPoint(-2 * TILE_UNIT, 0, 100000, {}, false);
         chassis.turnToHeading(0, 10000, {}, false);
         // y -24.5
-        chassis.moveToPoint(-48, -20.5, 10000, {.forwards = false, .earlyExitRange = 4});
-        chassis.moveToPose(-48, -28, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 40});
+        chassis.moveToPoint(-2 * TILE_UNIT, -20.5, 10000, {.forwards = false, .earlyExitRange = 4});
+        chassis.moveToPose(-2 * TILE_UNIT, -28, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 40});
         clamp_mogo();
 
         // Activate all intakes
@@ -608,7 +610,7 @@ void autonomous() {
 
         // Ring 1
         chassis.turnToHeading(90, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-24, -24, 10000, {.minSpeed = 40, .earlyExitRange = 2});
+        chassis.moveToPoint(-TILE_UNIT, -TILE_UNIT, 10000, {.minSpeed = 40, .earlyExitRange = 2});
 
         // Ring Sweep 1-2 on each side of ladder
         // chassis.follow(skills_ring_sweep_1_txt, 10, 10000, true, false);
@@ -720,17 +722,17 @@ void autonomous() {
         chassis.turnToPoint(0, -55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, -55, 10000);        
         // Ring 3
-        chassis.turnToPoint(-24, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-24, -46, 3000);
+        chassis.turnToPoint(-TILE_UNIT, -2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, -2 * TILE_UNIT, 3000);
 
         // Rings 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, -46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
+        chassis.turnToPoint(-57, -2 * TILE_UNIT, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-57, -2 * TILE_UNIT, 4000, {.maxSpeed= 93});
 
         // Ring 6
-        chassis.turnToPoint(-48, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-48, -61, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-2 * TILE_UNIT, -61, 2000);
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
         chassis.turnToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 4});
@@ -745,11 +747,11 @@ void autonomous() {
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
-        chassis.moveToPoint(-48, -48, 10000, {}, false);
+        chassis.moveToPoint(-2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-48, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
+        chassis.moveToPose(-2 * TILE_UNIT, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
         
         // Activate all intakes 2nd run
@@ -759,25 +761,25 @@ void autonomous() {
 
         // Ring 1 by ladder
         chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-24, 24, 3000);
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 3000);
         
         // Ring 2 - Maybe use this for high stake?
         chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, 55, 10000);
         
         // Ring 3
-        chassis.turnToPoint(-24, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-24, 46, 3000);
+        chassis.turnToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000);
 
         // Ring 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, 46, 4000);
+        chassis.turnToPoint(-57, TILE_UNIT, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-57, TILE_UNIT, 4000);
 
         
         // Ring 6
-        chassis.turnToPoint(-48, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-48, 61, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(- 2 * TILE_UNIT, 61, 2000);
 
         // chassis.turnToHeading(90, 1000, {}, false);
         chassis.turnToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 3});
@@ -791,7 +793,7 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
         // Begin motion to next ring
-        chassis.moveToPoint(24, 48, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
 
         // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
@@ -804,14 +806,14 @@ void autonomous() {
         // Load ring #2 - only if 1st one was successful. If not, skip, don't mess it up further
         if (got_ring) {
             // Turn and begin motion to next ring
-            chassis.turnToPoint(23, 26, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
-            chassis.moveToPoint(23, 26, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
+            chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
+            chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
             got_ring = auto_load_ring();
         } 
 
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
-        chassis.moveToPose(54.3, 26.3, -63, 4500, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
+        chassis.moveToPose(55.3, 26.3, -63, 4500, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         clamp_mogo();
 
         // #10 Place mogo in corner 
@@ -824,15 +826,15 @@ void autonomous() {
         // Release mogo
         unclamp_mogo();
         // Prep for mogo grab
-        chassis.moveToPoint(47, 47, 10000);
+        chassis.moveToPoint(2 * TILE_UNIT, 2 * TILE_UNIT, 10000);
         // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
         // pros::delay(100);
         // auto_load_ring();
 
         // #11 Fill mogo 4
         chassis.turnToHeading(0, 10000);
-        chassis.moveToPoint(47, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
-        chassis.moveToPose(47, -5.5, 0, 5000, {.forwards = false, .maxSpeed = 50, .minSpeed = 10}, false);
+        chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
+        chassis.moveToPose(2 * TILE_UNIT, -5.5, 0, 5000, {.forwards = false, .maxSpeed = 50, .minSpeed = 10}, false);
         clamp_mogo();
         pros::delay(200);
 
@@ -841,8 +843,8 @@ void autonomous() {
         hook_intake.move(127);
 
         // Score two more rings near the corner
-        chassis.turnToPoint(48, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(48, -57, 10000, {}, false);
+        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(2 * TILE_UNIT, -57, 10000, {}, false);
 
         // Another two rings ?...
         // chassis.turnToPoint(24, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
