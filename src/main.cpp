@@ -732,6 +732,9 @@ void autonomous() {
 
         chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
         chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 3}, false);
+        // Pause a bit in case 6th ring not scored yet
+        pros::delay(600);
+
         // Drop mogo 1
         unclamp_mogo();
         // Stop hook intake incase we did not get all 6 rings and the hooks are still running
@@ -777,7 +780,9 @@ void autonomous() {
         chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 3}, false);
         // Drop mogo 2
         unclamp_mogo();
-
+        // Pause a bit in case 6th ring not scored yet
+        pros::delay(600);
+        
         // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
 
