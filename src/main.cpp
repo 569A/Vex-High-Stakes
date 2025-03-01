@@ -571,9 +571,9 @@ void autonomous() {
                         wait_ticks = 10;
                     }
                 }
-                if (abs(hook_intake.get_current_draw()) > 50) {
-                    imu.update_compensation_factor();
-                }
+                // if (abs(hook_intake.get_current_draw()) > 50) {
+                //     imu.update_compensation_factor();
+                // }
                 pros::delay(20);
             }
         });
