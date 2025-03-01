@@ -592,7 +592,8 @@ void autonomous() {
         chassis.moveToPoint(-48, 0, 100000, {}, false);
         chassis.turnToHeading(0, 10000, {}, false);
         // y -24.5
-        chassis.moveToPose(-48, -29, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 70}, false);
+        chassis.moveToPoint(-48, -20.5, 10000, {.forwards = false, .earlyExitRange = 4});
+        chassis.moveToPose(-48, -28, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 40});
         clamp_mogo();
 
         // Activate all intakes
@@ -730,8 +731,9 @@ void autonomous() {
         chassis.turnToPoint(-48, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, -61, 2000);
 
-        chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
-        chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 3}, false);
+        // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
+        chassis.turnToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 4});
+        chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);
 
@@ -776,12 +778,13 @@ void autonomous() {
         chassis.turnToPoint(-48, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-48, 61, 2000);
 
-        chassis.turnToHeading(90, 1000, {}, false);
-        chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 3}, false);
+        // chassis.turnToHeading(90, 1000, {}, false);
+        chassis.turnToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 3});
+        chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
+        // Pause a bit in case 6th ring not scored yet
+        pros::delay(600);        
         // Drop mogo 2
         unclamp_mogo();
-        // Pause a bit in case 6th ring not scored yet
-        pros::delay(600);
         
         // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
