@@ -962,7 +962,8 @@ void opcontrol() {
         arm_motor.set_zero_position(0);
         hook_intake.set_zero_position(0);
 
-        chassis.setPose(-60.1, 0, 90);
+        // chassis.setPose(-60.1, 0, 90);
+        chassis.setPose(-59.8, 0, 90);
         arm_motor.move_absolute(140, 100);
         pros::delay(500);
         hook_intake.move_absolute(1300, 200);
