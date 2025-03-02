@@ -735,8 +735,8 @@ void autonomous() {
         chassis.moveToPoint(-2 * TILE_UNIT, -61, 2000);
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
-        chassis.turnToPoint(-59.5, -62, 2000, {.forwards = false, .earlyExitRange = 4});
-        chassis.moveToPoint(-59.5, -62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
+        chassis.turnToPoint(-58, -62, 2000, {.forwards = false, .earlyExitRange = 4});
+        chassis.moveToPoint(-58, -62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);
 
@@ -782,8 +782,8 @@ void autonomous() {
         chassis.moveToPoint(- 2 * TILE_UNIT, 61, 2000);
 
         // chassis.turnToHeading(90, 1000, {}, false);
-        chassis.turnToPoint(-59.5, 62, 2000, {.forwards = false, .earlyExitRange = 3});
-        chassis.moveToPoint(-59.5, 62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
+        chassis.turnToPoint(-58, 62, 2000, {.forwards = false, .earlyExitRange = 3});
+        chassis.moveToPoint(-58, 62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);        
         // Drop mogo 2
