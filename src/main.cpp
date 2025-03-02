@@ -596,7 +596,7 @@ void autonomous() {
         chassis.turnToHeading(0, 10000, {}, false);
         // y -24.5
         chassis.moveToPoint(-2 * TILE_UNIT, -20.5, 10000, {.forwards = false, .earlyExitRange = 4});
-        chassis.moveToPose(-2 * TILE_UNIT, -28, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 40});
+        chassis.moveToPose(-2 * TILE_UNIT, -27, 0, 2000, {.forwards = false, .lead = 0.1, .maxSpeed = 40});
         clamp_mogo();
 
         // Activate all intakes
@@ -751,7 +751,7 @@ void autonomous() {
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-2 * TILE_UNIT, 27.5, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
+        chassis.moveToPose(-2 * TILE_UNIT, 27, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
         
         // Activate all intakes 2nd run
