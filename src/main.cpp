@@ -1082,7 +1082,7 @@ void opcontrol() {
              */
             if (current_ring_color != color && current_ring_color != "none") {
                 if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
-                    hook_intake.move(0);
+                    hook_intake.move(-127);
                     wait_ticks = 10; // The next step is waiting a bit before the intake runs again. If we don't wait a bit, the intake
                                      // will stop for so little time it will not throw the ring off.
                 }            
