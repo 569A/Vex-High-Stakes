@@ -1,7 +1,7 @@
 #include "customdevices/filtered_inertial.h"
 
 double FilteredInertial::get_rotation() const {
-    return pros::Imu::get_rotation() * rotation_scalar;
+    return ((pros::Imu::get_rotation() + imu2.get_rotation()) / 2) * rotation_scalar;
 }
 
 void FilteredInertial::update_compensation_factor() {

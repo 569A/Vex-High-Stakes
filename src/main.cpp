@@ -56,7 +56,7 @@ lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
 
 
 // Inertial sensor
-FilteredInertial imu(5, 1.0039, -0.0008);
+FilteredInertial imu(5, 6, 1.0039, -0.0008);  // Averaged IMU ports 5 and 6
 
 // // Horizontal tracking wheel encoder
 // pros::Rotation horizontal_encoder(-3);
