@@ -549,7 +549,7 @@ void autonomous() {
         // chassis.setPose(0, 0, 0);
         // chassis.turnToHeading(90, 10000);
         // return;
-        chassis.setPose(-60.1, 0, 90);
+        chassis.setPose(-59.4, 0, 90);
         // turn to face heading 90 with a very long timeout
         // arm_motor.move_absolute(630, 100);
         // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
