@@ -816,6 +816,8 @@ void autonomous() {
         // #9 Go for blue ring mogo to push into corner
         chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
         chassis.moveToPose(55.3, 26.3, -63, 4500, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
+        // Move back a bit to make sure we have it - trig, x + 4.455, y - 2.270
+        chassis.moveToPose(59.755, 24.03, -63, 1750, {.forwards = false, .maxSpeed = 50, .minSpeed = 20, .earlyExitRange = 1}, false);
         clamp_mogo();
 
         // #10 Place mogo in corner 
