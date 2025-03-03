@@ -193,6 +193,7 @@ void on_right_button() {
  */
 void initialize() {
     mogo_piston.set_value(1);
+    imu.set_data_rate(5);
 	pros::lcd::initialize();
     pros::lcd::set_text(1, "Color Red selected");
     pros::lcd::set_text(2, "Skills mode disabled");
