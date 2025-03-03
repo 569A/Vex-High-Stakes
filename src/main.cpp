@@ -733,8 +733,8 @@ void autonomous() {
         chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
 
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-2 * TILE_UNIT, -61, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, -60, 2000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-2 * TILE_UNIT, -60, 2000);
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
         chassis.turnToPoint(-58, -62, 2000, {.forwards = false, .earlyExitRange = 4});
@@ -780,8 +780,8 @@ void autonomous() {
 
         
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, 61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(- 2 * TILE_UNIT, 61, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, 60, 2000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(- 2 * TILE_UNIT, 60, 2000);
 
         // chassis.turnToHeading(90, 1000, {}, false);
         chassis.turnToPoint(-58, 62, 2000, {.forwards = false, .earlyExitRange = 3});
