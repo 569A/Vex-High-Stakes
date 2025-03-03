@@ -724,13 +724,13 @@ void autonomous() {
         chassis.turnToPoint(0, -55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, -55, 10000);        
         // Ring 3
-        chassis.turnToPoint(-TILE_UNIT, -2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-TILE_UNIT, -2 * TILE_UNIT, 3000);
+        chassis.turnToPoint(-TILE_UNIT, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, -46, 3000);
 
         // Rings 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, -2 * TILE_UNIT, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, -2 * TILE_UNIT, 4000, {.maxSpeed= 93});
+        chassis.turnToPoint(-57, -46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
 
         // Ring 6
         chassis.turnToPoint(-2 * TILE_UNIT, -61, 2000, {.minSpeed = 20, .earlyExitRange = 4});
@@ -770,13 +770,13 @@ void autonomous() {
         chassis.moveToPoint(0, 55, 10000);
         
         // Ring 3
-        chassis.turnToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000);
+        chassis.turnToPoint(-TILE_UNIT, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, 46, 3000);
 
         // Ring 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
-        chassis.turnToPoint(-57, TILE_UNIT, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, TILE_UNIT, 4000);
+        chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-57, 46, 4000);
 
         
         // Ring 6
