@@ -203,6 +203,7 @@ void initialize() {
 	pros::lcd::register_btn1_cb(on_center_button);
     pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+    pros::delay(400);
     chassis.calibrate();
     pros::Task screen_task([&]() {
     while (true) {
