@@ -203,7 +203,7 @@ void initialize() {
 	pros::lcd::register_btn1_cb(on_center_button);
     pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-    pros::delay(400);
+    pros::delay(1400);
     chassis.calibrate();
     pros::Task screen_task([&]() {
     while (true) {
@@ -390,6 +390,7 @@ ASSET(skills_ring_sweep_1_txt);
 ASSET(skills_ring_sweep_2_txt);
 ASSET(skills_ring_load_2_txt);
 ASSET(text_txt);
+ASSET(blue_neg_txt);
 
 const float TILE_UNIT = 23.62205;
 
@@ -518,6 +519,14 @@ void autonomous() {
     }
 
     if (auton == "blue_neg") {
+        chassis.setPose(59.05, 35.43, -90);
+        chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
+        chassis.follow(blue_neg_txt, 10.5, 10000);
+        // auto_load_ring();
+        // auto_load_ring();
+        return;
+
         // Blue Neg
         chassis.setPose(55, 38.5, 45);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
