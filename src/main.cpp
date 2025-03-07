@@ -880,7 +880,7 @@ void autonomous() {
 
 
         // Wait until ready to load
-        while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
+        while (hook_intake.get_position() - 35 < hook_intake.get_target_position() && hook_intake.get_position() + 35 > hook_intake.get_target_position()) {
             pros::delay(20);
         }
 
