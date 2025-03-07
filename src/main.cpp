@@ -5,6 +5,7 @@
 #include "liblvgl/llemu.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/adi.hpp"
+#include "pros/distance.hpp"
 #include "pros/misc.h"
 #include "pros/motor_group.hpp"
 #include "pros/rtos.hpp"
@@ -35,8 +36,8 @@ pros::Controller master(pros::E_CONTROLLER_MASTER);
 
 // Input curve for throttle input during driver control
 lemlib::ExpoDriveCurve throttle_curve(3, // joystick deadband out of 127
-                      
-					                 14, // minimum output where drivetrain will move out of 127
+                     
+                                     14, // minimum output where drivetrain will move out of 127
                                      1.019 // expo curve gain
 );
 
@@ -49,14 +50,18 @@ lemlib::ExpoDriveCurve steer_curve(3, // joystick deadband out of 127
 lemlib::Drivetrain drivetrain(&left_motor_group, // left motor group
                               &right_motor_group, // right motor group
                               12.625, // 12.625 inch track width
-                              lemlib::Omniwheel::NEW_325, 
+                              lemlib::Omniwheel::NEW_325,
                               480, // drivetrain rpm is 480
                               8 // horizontal drift is 8 (for now),
 );
 
 
 // Inertial sensor
-FilteredInertial imu(5, 6, 1.0039, -0.0008);  // Averaged IMU ports 5 and 6
+FilteredInertial imu(5, 6, 1, -0.0008);  // Not in use - Special inertial functions disabled for now (issue seems to be more hardware problem than a need for software fix)
+
+// Distance localization - After odometry drifts, we can use distance sensors w/ the field walls to correct our location.
+pros::Distance back_localizer(1);
+pros::Distance left_localizer(4);
 
 // // Horizontal tracking wheel encoder
 // pros::Rotation horizontal_encoder(-3);
@@ -128,8 +133,8 @@ lemlib::ControllerSettings angular_controller(2.9, // proportional gain (kP) 1.9
 lemlib::Chassis chassis(drivetrain, // drivetrain settings
                         lateral_controller, // lateral PID settings
                         angular_controller, // angular PID settings
-                        sensors, // odometry sensors						
-                        &throttle_curve, 
+                        sensors, // odometry sensors                        
+                        &throttle_curve,
                         &steer_curve
 );
 
@@ -159,7 +164,7 @@ void on_left_button() {
     }
 }
 void on_center_button() {
-	skills_mode = !skills_mode;
+    skills_mode = !skills_mode;
     if (skills_mode) {
         pros::lcd::set_text(2, "Skills mode enabled");
     } else {
@@ -194,13 +199,13 @@ void on_right_button() {
 void initialize() {
     mogo_piston.set_value(1);
     imu.set_data_rate(5);
-	pros::lcd::initialize();
+    pros::lcd::initialize();
     pros::lcd::set_text(1, "Color Red selected");
     pros::lcd::set_text(2, "Skills mode disabled");
     pros::lcd::set_text(3, "Blue Pos selected");
 
     pros::lcd::register_btn0_cb(on_left_button);
-	pros::lcd::register_btn1_cb(on_center_button);
+    pros::lcd::register_btn1_cb(on_center_button);
     pros::lcd::register_btn2_cb(on_right_button);
     arm_motor.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     pros::delay(1400);
@@ -211,7 +216,7 @@ void initialize() {
         pros::lcd::print(5, "X: %f", chassis.getPose().x); // x
         pros::lcd::print(6, "Y: %f", chassis.getPose().y); // y
         pros::lcd::print(7, "Theta: %f", chassis.getPose().theta); // heading
-        pros::lcd::print(4, "Arm current: %f", arm_motor.get_current_draw()); 
+        pros::lcd::print(4, "Arm current: %f", arm_motor.get_current_draw());
         // delay to save resources
         pros::delay(50);
     }
@@ -256,7 +261,7 @@ void initialize() {
                 master.print(0, 1, "l_kD: %f", chassis.lateralPID.getKD());
                 master.print(0, 2, "a_kP: %f", chassis.angularPID.getKP());
                 master.print(0, 3, "a_kD: %f", chassis.angularPID.getKD());
-                
+               
                 pros::delay(20);
             }
         });
@@ -296,7 +301,8 @@ bool auto_load_ring() {
     int ring_loaded_timeout_ticks = 300;
     flex_wheel_intake.move(-127);
     hook_intake.move(0);
-    while (optical.get_proximity() < 200) {
+    while (optical.get_proximity() < 100) { 
+        // Note for future: Proximity threshold used to be 200, but if the ring is on the left side of intake (furthest from the optical sensor's location), the proximity reading is around 110. This is why loading of rings had some issues.
         ring_load_timeout_ticks--;
         if (ring_load_timeout_ticks < 0) {
             return false;
@@ -304,7 +310,7 @@ bool auto_load_ring() {
         pros::delay(20);
     }
     hook_intake.move(127);
-    while (optical.get_proximity() > 200) {
+    while (optical.get_proximity() > 100) {
         ring_loaded_timeout_ticks--;
         if (ring_loaded_timeout_ticks < 0) {
             return false;
@@ -351,7 +357,7 @@ D affects how the robot should speed/slow down based on how fast it is approachi
 The problem is the mogo adds 3 lbs to the robot which throws off a perfectly tuned PID for the robot
 if it lifts a mogo. The added weight will make the bot undershoot its targets, and go for them
 very slowly. Having separate PIDs, one for with the mogo, and one without, fixes this issue.
- */ 
+ */
 void swap_mogo_pid() {
     // chassis.lateralPID.reset();
     // chassis.angularPID.reset();
@@ -383,6 +389,56 @@ void unclamp_mogo() {
     swap_robot_pid();
 }
 
+// Skills distance sensor wall reset - walls are at +/- 70.4375 inches (measured w/ tape measure)
+/**
+
+    Explanation: 
+
+    Wheeled odometry works by checking every 10 milliseconds the change in the tracking wheel's position and 
+the heading position, then (in simple terms), sums it with the previous changes to get the robot's absolute
+coordinates. However, this system is not perfect, and errors will build up over time. This is usually fine
+for match autonomous, but in skills, this becomes a big problem, as we will miss mogo grabs and lose many points.
+
+    Additionally, we  do not have a tracking wheel in the horizontal direction (perpendicular to the drive wheels),
+so any slip to the sides will not be trackable.
+
+    We chose to use traction wheels to prevent it mostly, but the robot will never be perfectly accurate. Even with
+a vertical tracking wheel (parallel to drive wheels), the wheel may slip a bit. It is definitely better than using 
+purely motor encoders, but it is not perfect.
+
+    This is why we use distance sensors to reset the position. The field walls are pretty
+much guaranteed to be in the same spot every time. We use them as a reference point to determine
+where exactly the bot is, so we can reset before important moments in the run.
+
+    For example, grabbing the third mogo missed a lot because the odometry drifted by then. Even though we got
+the first 29 points consistently, the tracking needed to be better to push beyond that.
+
+
+ */
+void reset_y_pos(float wall, pros::Distance& localizer, float sensor_offset) { // Reset in the y axis
+    // Wall - the absolute position of the wall, Localizer - the distance sensor to use (we have two, one on the left and one on the back), Sensor offset - distance of the sensor from the center of our bot (which is the point we track)
+    float robot_y = wall;
+    if (wall < 0) {
+        // We pretend we are right at the wall, then we offset it by however much the distance sensor tells us we are off from it.
+        robot_y = robot_y + (localizer.get_distance() * 0.0393701) + sensor_offset; 
+        // Then we compensate for how the sensor is not at the very center of the bot, to determine the bot's actual position.
+    } else if (wall >= 0) {
+        robot_y = robot_y - (localizer.get_distance() * 0.0393701) - sensor_offset;
+    }
+    chassis.setPose(chassis.getPose().x, robot_y, chassis.getPose().theta);
+}
+
+void reset_x_pos(float wall, pros::Distance& localizer, float sensor_offset) { // Reset in the x axis
+    float robot_x = wall;
+    if (wall < 0) {
+        robot_x = robot_x + (localizer.get_distance() * 0.0393701) + sensor_offset;
+    } else if (wall >= 0) {
+        robot_x = robot_x - (localizer.get_distance() * 0.0393701) - sensor_offset;
+    }
+    chassis.setPose(robot_x, chassis.getPose().y, chassis.getPose().theta);}
+
+
+
 
 ASSET(red_neg_txt);
 ASSET(testloop_txt);
@@ -407,6 +463,10 @@ const float TILE_UNIT = 23.62205;
  * from where it left off.
  */
 void autonomous() {
+    // chassis.setPose(0, 0, 0);
+    // reset_x_pos(-70.4375, left_localizer, 7.25);
+    // reset_y_pos(-70.4375, back_localizer, 5.25);
+    // return;
 
     // PID Tuner - tune PID from controller
     if (pid_tuner) {
@@ -487,7 +547,7 @@ void autonomous() {
         left_motor_group.move(50);
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
-        return;       
+        return;      
     }
 
     if (auton == "red_pos") {
@@ -550,7 +610,7 @@ void autonomous() {
 
 
     if (auton == "skills") {
-        // Skills 
+        // Skills
         // pros::delay(200);
         // // hook_intake.set_zero_position(-1576);
         // // hook_intake.move_absolute(0, 600);
@@ -558,7 +618,6 @@ void autonomous() {
         // chassis.setPose(0, 0, 0);
         // chassis.turnToHeading(90, 10000);
         // return;
-        chassis.setPose(-59.4, 0, 90);
         // turn to face heading 90 with a very long timeout
         // arm_motor.move_absolute(630, 100);
         // while (!(arm_motor.get_position() < arm_motor.get_target_position() + 10 && arm_motor.get_position() > arm_motor.get_target_position() - 10)) {
@@ -580,7 +639,7 @@ void autonomous() {
                 }
                 ticks_since_intake++;
                 if (distance.get() < 200) {
-                    if (hook_intake.get_current_draw() > 2500 && ticks_since_intake > 12 && arm_motor.get_position() < 100) {
+                    if (hook_intake.get_current_draw() > 2700 && ticks_since_intake > 12 && arm_motor.get_position() < 100) {
                         hook_intake.move_relative(-400, 200);
                         wait_ticks = 10;
                     }
@@ -599,8 +658,10 @@ void autonomous() {
         pros::delay(500);
         hook_intake.move_absolute(400, 200);
         pros::delay(600);
-        hook_intake.move_relative(-400, 200);
-        pros::delay(100);
+        // hook_intake.move_relative(-400, 200);
+        // pros::delay(100);
+
+        chassis.setPose(-60.1, 0, 90);
 
         // #2 Get mogo
         chassis.moveToPoint(-2 * TILE_UNIT, 0, 100000, {}, false);
@@ -625,7 +686,7 @@ void autonomous() {
 
         // Ring Sweep 1-2 on each side of ladder
         // chassis.follow(skills_ring_sweep_1_txt, 10, 10000, true, false);
-        
+       
 
         // // Prepare next stage (load 2 rings for wall stake)
         // chassis.turnToHeading(180, 10000, {});
@@ -647,7 +708,7 @@ void autonomous() {
         // hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200); // Hooks in loading position
         // chassis.turnToHeading(-90, 10000);
         // arm_motor.move_absolute(767, 100); // Arm in loading position
-        
+       
         // // Arm load ring
         // while (optical.get_proximity() < 200) { // Wait until a ring is seen
         //     pros::delay(20);
@@ -672,7 +733,7 @@ void autonomous() {
         // //         while (true) {
         // //             if (optical.get_proximity() > 220) {
         // //                 confidence_tick--;
-        // //             } 
+        // //             }
         // //             hook_intake.move(-100);
         // //             pros::delay(40);
         // //         }
@@ -746,8 +807,8 @@ void autonomous() {
         chassis.moveToPoint(-2 * TILE_UNIT, -60, 2000);
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
-        chassis.turnToPoint(-58, -62, 2000, {.forwards = false, .earlyExitRange = 4});
-        chassis.moveToPoint(-58, -62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
+        chassis.turnToPoint(-56.5, -59, 2000, {.forwards = false, .earlyExitRange = 4});
+        chassis.moveToPoint(-56.5, -59, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);
 
@@ -764,7 +825,7 @@ void autonomous() {
         // #5 Get mogo 2
         chassis.moveToPose(-2 * TILE_UNIT, 27, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
-        
+       
         // Activate all intakes 2nd run
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
@@ -773,11 +834,11 @@ void autonomous() {
         // Ring 1 by ladder
         chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 3000);
-        
+       
         // Ring 2 - Maybe use this for high stake?
         chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, 55, 10000);
-        
+       
         // Ring 3
         chassis.turnToPoint(-TILE_UNIT, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-TILE_UNIT, 46, 3000);
@@ -787,24 +848,36 @@ void autonomous() {
         chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-57, 46, 4000);
 
-        
+       
         // Ring 6
         chassis.turnToPoint(-2 * TILE_UNIT, 60, 2000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(- 2 * TILE_UNIT, 60, 2000);
 
         // chassis.turnToHeading(90, 1000, {}, false);
-        chassis.turnToPoint(-58, 62, 2000, {.forwards = false, .earlyExitRange = 3});
-        chassis.moveToPoint(-58, 62, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 3}, false);
+        chassis.turnToPoint(-56.5, 59, 2000, {.forwards = false, .earlyExitRange = 3});
+        chassis.moveToPoint(-56.5, 59, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);        
         // Drop mogo 2
         unclamp_mogo();
-        
+       
         // Prep for ring loading
-        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);       
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);      
+
+        chassis.moveToPoint(-6, 2 * TILE_UNIT, 5000);
+        chassis.turnToHeading(90, 4000, {.earlyExitRange = 1}, false);
+        
+        /**
+        Critical point - Odometry is nearly perfect most of the time up to here. 
+        But, now, we need to load two rings and clasp a mogo, which takes extra precision.
+        The odometry usually messes this up.
+        Because of this, we do a reset with our distance sensor.
+        */
+        reset_y_pos(70.4375, left_localizer, 7.25);
 
         // Begin motion to next ring
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
+
 
         // Wait until ready to load
         while (hook_intake.get_position() - 25 < hook_intake.get_target_position() && hook_intake.get_position() + 25 > hook_intake.get_target_position()) {
@@ -813,41 +886,73 @@ void autonomous() {
 
         // Load ring #1
         bool got_ring = auto_load_ring();
-        
+       
         // Load ring #2 - only if 1st one was successful. If not, skip, don't mess it up further
         if (got_ring) {
             // Turn and begin motion to next ring
             chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
             chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
             got_ring = auto_load_ring();
-        } 
+        }
 
         // #9 Go for blue ring mogo to push into corner
-        chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
-        chassis.moveToPose(55.3, 26.3, -63, 4500, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
+        // chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
+        // chassis.turnToPoint(41.718, 33.991, 5000, {.forwards = false});
+        chassis.turnToHeading(-60, 10000);
+        chassis.moveToPoint(41.718, 33.991, 5000, {.forwards = false});
+
+        // chassis.moveToPose(55.3, 26.3, -63, 4000, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         // Move back a bit to make sure we have it - trig, x + 4.455, y - 2.270
-        chassis.moveToPose(59.755, 24.03, -63, 1750, {.forwards = false, .maxSpeed = 50, .minSpeed = 20, .earlyExitRange = 1}, false);
+        chassis.moveToPose(59.755, 24.03, -63, 4750, {.forwards = false, .maxSpeed = 50, .minSpeed = 20, .earlyExitRange = 1}, false);
         clamp_mogo();
 
-        // #10 Place mogo in corner 
+        // #10 Place mogo in corner
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
-        chassis.turnToHeading(237, 10000);
+        chassis.turnToHeading(237, 10000, {}, false); // 237
         // Reverse flex wheel intake so that we don't accidently intake a blue ring or get something stuck inside
         flex_wheel_intake.move(127);
-
-        chassis.moveToPoint(59, 56, 4000, {.forwards = false}, false);
-        // Release mogo
         unclamp_mogo();
-        // Prep for mogo grab
-        chassis.moveToPoint(2 * TILE_UNIT, 2 * TILE_UNIT, 10000);
-        // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 1);
+
+        chassis.moveToPoint(59, 59, 4000, {.forwards = false}, false);
+        // // Wall reset pose
+        // // Release mogo
+        // // Prep for mogo grab
+        // chassis.moveToPoint(2 * TILE_UNIT, 1 * TILE_UNIT, 10000, {}, false);
+        // mogo_piston.set_value(1);
+        // chassis.turnToHeading(-90, 10000, {}, false);
+
+        // // #4 Wall reset pose
+        // // Stop hook intake incase we did not get all 6 rings and the hooks are still running
+        // hook_intake.move(0);
+        // // Give flex wheel intake a break
+        // flex_wheel_intake.move(0);
+
+        // left_motor_group.move(-40);
+        // right_motor_group.move(-40);
+        // pros::delay(1300);
+        // left_motor_group.move(0);
+        // right_motor_group.move(0);
+        // chassis.setPose(64.5, 26, chassis.getPose().theta);
+        // pros::delay(100);
+
         // pros::delay(100);
         // auto_load_ring();
 
-        // #11 Fill mogo 4
-        chassis.turnToHeading(0, 10000);
+        // #11 Grab & Fill mogo 4
+        chassis.moveToPoint(2 * TILE_UNIT, 1 * TILE_UNIT, 10000, {}, false);
+        // mogo_piston.set_value(0);
+        // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
+        chassis.turnToHeading(-90, 10000, {.earlyExitRange = 1}, false);
+        
+        /**
+        Another Critical point - Missing the mogo means not putting it in the corner, and also not scoring any
+        rings on it. If this failed, we would lose around 11 points. (5 pts for corner + 6 pts for scoring 4 rings)
+        */
+        reset_x_pos(70.4375, back_localizer,5.25);
+
+        chassis.turnToPoint(2 * TILE_UNIT, 4, 50000);
         chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
-        chassis.moveToPose(2 * TILE_UNIT, -5.5, 0, 5000, {.forwards = false, .maxSpeed = 50, .minSpeed = 10}, false);
+        chassis.moveToPose(2 * TILE_UNIT, -6, 0, 5000, {.forwards = false, .maxSpeed = 70, .minSpeed = 10}, false);
         clamp_mogo();
         pros::delay(200);
 
@@ -856,7 +961,7 @@ void autonomous() {
         hook_intake.move(127);
 
         // Score two more rings near the corner
-        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(2 * TILE_UNIT, -57, 10000, {}, false);
 
         // Another two rings ?...
@@ -869,13 +974,13 @@ void autonomous() {
         hook_intake.move_relative(-300, 200);
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
         pros::delay(200);
-        chassis.moveToPoint(59, -56, 5000, {.forwards = false, .earlyExitRange = 3}, false);
+        chassis.moveToPoint(57, -59, 5000, {.forwards = false, .earlyExitRange = 3}, false);
         // Right now, there is a theoretical max of 45 points
-        // We need 50 at minimum        
+        // We need 55 at minimum        
 
     }
 
-    // Angular PID test 
+    // Angular PID test
     // chassis.turnToHeading(45, 100000, {}, false);
     // chassis.turnToHeading(90, 100000, {}, false);
     // chassis.turnToHeading(135, 100000, {}, false);
@@ -934,7 +1039,7 @@ void autonomous() {
  */
 void opcontrol() {
 
-	optical.disable_gesture();
+    optical.disable_gesture();
 
     bool digital_x_was_pressed = false;
     bool digital_up_was_pressed = false;
@@ -969,7 +1074,7 @@ void opcontrol() {
     bool doinker_down = false;
 
     bool next_ring_must_reverse = false;
-    
+   
     if (skills_mode) {
         mogo_piston.set_value(0);
         arm_motor.set_zero_position(0);
@@ -986,9 +1091,9 @@ void opcontrol() {
     }
     flex_wheel_intake.move_velocity(-500);
     optical.set_integration_time(4);
-	while (true) {
-		optical.set_led_pwm(100);
-		// Tank drive
+    while (true) {
+        optical.set_led_pwm(100);
+        // Tank drive
         int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightY = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
@@ -1002,8 +1107,8 @@ void opcontrol() {
         }
 
 
-		// Intake control
-		pros::lcd::set_text(0, "Optical: " + std::to_string(optical.get_proximity()));
+        // Intake control
+        pros::lcd::set_text(0, "Optical: " + std::to_string(optical.get_proximity()));
         pros::lcd::set_text(1, "Intake: " + std::to_string(hook_intake.get_position()));
         pros::lcd::set_text(2, "Arm: " + std::to_string(arm_motor.get_position()));
         pros::lcd::set_text(3, "Intake Current: " + std::to_string(hook_intake.get_current_draw()));
@@ -1018,7 +1123,7 @@ void opcontrol() {
         }    
 
         /**
-        The intake control logic is different based on what we are trying to do. For example, here, in state 0 (resting position) 
+        The intake control logic is different based on what we are trying to do. For example, here, in state 0 (resting position)
         we try to score rings on mogos and color sort appropriately.
         In state 1 (intaking rings to score on wall stakes), the intake is stopped and activates to pull the ring in once the driver pushes a button.
         In state 2 (ready to score on wall stakes), the intake is stopped and the rings should be ready to flip onto the stake.
@@ -1050,7 +1155,7 @@ void opcontrol() {
                 if (optical.get_hue() > 0 && optical.get_hue() < 23) {
                     current_ring_color = "red";
                 }
-                
+               
                 if (optical.get_hue() > 175 && optical.get_hue() < 235 ) {
                     current_ring_color = "blue";
                 }
@@ -1120,7 +1225,7 @@ void opcontrol() {
                 should_run_intake = false; // Override running the intake forward
             }
             if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
-                hook_intake.move(0); 
+                hook_intake.move(0);
                 should_run_intake = false; // Override running the intake forward
             } else if (next_ring_must_reverse) {
                 if (hook_intake.get_current_draw() > 2350 && ticks_since_intake > 30) {
@@ -1136,7 +1241,7 @@ void opcontrol() {
                 ready_to_score = true;
                 // We just need to move the intake so that one of the hooks is in the right spot to reverse intake a ring for wall stake scoring.
                 // This function (see above) allows us to do this.
-                hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 600); 
+                hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 600);
                 ticks_since_intake = 0;
                 get_arm_ready_to_score = true;
                 last_target = last_target + 2955;
@@ -1190,7 +1295,7 @@ void opcontrol() {
         }
 
         /**
-        Mogo mech - This is pretty simple, just turn it on at the press of one button, off at the other. 
+        Mogo mech - This is pretty simple, just turn it on at the press of one button, off at the other.
         Maybe due to physical constraints, we will need to start with the mogo closed, so keep in mind for future.
         We also keep track of whether the mogo is clamped or not, to maybe in the future not score rings, but ready them in the intake
         if we don't even have a mogo.
@@ -1215,7 +1320,7 @@ void opcontrol() {
         }
 
         /**
-        Arm control - The highest arm position is not set right yet, it undershoots what it should be, but 
+        Arm control - The highest arm position is not set right yet, it undershoots what it should be, but
         it functions as it should. Pressing the up arrow on the controller moves the arm up a bit so that it
         can collect rings on the back of the intake. Pressing the up arrow again moves it to the very top position
         where the arm moves the intake to the same height as the wall stakes and can score rings on them. (see above macro code)
@@ -1229,7 +1334,7 @@ void opcontrol() {
                 // hook_intake.move_relative(-700, 125);
                 arm_motor.move_absolute(2560, 100);
                 arm_state++;
-            } 
+            }
             digital_up_was_pressed = true;
         } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
             digital_up_was_pressed = false;
@@ -1252,5 +1357,5 @@ void opcontrol() {
 
 
         pros::delay(20);
-	}
+    }
 }
