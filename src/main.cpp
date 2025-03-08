@@ -1285,7 +1285,7 @@ void opcontrol() {
                 digital_l1_was_pressed = false;
             }
         } else if (arm_state == 2) {
-            flex_wheel_intake.move_velocity(0);
+            flex_wheel_intake.move_velocity(100);
             ready_to_score = false;
             /**
             High stake scoring - we don't want to have to manually reverse the intake for scoring on wall stakes
