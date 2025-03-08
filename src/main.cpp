@@ -900,6 +900,7 @@ void autonomous() {
         reset_y_pos(70.4375, left_localizer, 7.25);
 
         // Begin motion to next ring
+        chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 2000, {.earlyExitRange = 3});
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
 
 
