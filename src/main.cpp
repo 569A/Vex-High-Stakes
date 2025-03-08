@@ -301,7 +301,7 @@ bool auto_load_ring() {
     int ring_loaded_timeout_ticks = 300;
     flex_wheel_intake.move(-127);
     hook_intake.move(0);
-    while (optical.get_proximity() < 100) { 
+    while (optical.get_proximity() < 100) {
         // Note for future: Proximity threshold used to be 200, but if the ring is on the left side of intake (furthest from the optical sensor's location), the proximity reading is around 110. This is why loading of rings had some issues.
         ring_load_timeout_ticks--;
         if (ring_load_timeout_ticks < 0) {
@@ -392,9 +392,9 @@ void unclamp_mogo() {
 // Skills distance sensor wall reset - walls are at +/- 70.4375 inches (measured w/ tape measure)
 /**
 
-    Explanation: 
+    Explanation:
 
-    Wheeled odometry works by checking every 10 milliseconds the change in the tracking wheel's position and 
+    Wheeled odometry works by checking every 10 milliseconds the change in the tracking wheel's position and
 the heading position, then (in simple terms), sums it with the previous changes to get the robot's absolute
 coordinates. However, this system is not perfect, and errors will build up over time. This is usually fine
 for match autonomous, but in skills, this becomes a big problem, as we will miss mogo grabs and lose many points.
@@ -403,7 +403,7 @@ for match autonomous, but in skills, this becomes a big problem, as we will miss
 so any slip to the sides will not be trackable.
 
     We chose to use traction wheels to prevent it mostly, but the robot will never be perfectly accurate. Even with
-a vertical tracking wheel (parallel to drive wheels), the wheel may slip a bit. It is definitely better than using 
+a vertical tracking wheel (parallel to drive wheels), the wheel may slip a bit. It is definitely better than using
 purely motor encoders, but it is not perfect.
 
     This is why we use distance sensors to reset the position. The field walls are pretty
@@ -420,7 +420,7 @@ void reset_y_pos(float wall, pros::Distance& localizer, float sensor_offset) { /
     float robot_y = wall;
     if (wall < 0) {
         // We pretend we are right at the wall, then we offset it by however much the distance sensor tells us we are off from it.
-        robot_y = robot_y + (localizer.get_distance() * 0.0393701) + sensor_offset; 
+        robot_y = robot_y + (localizer.get_distance() * 0.0393701) + sensor_offset;
         // Then we compensate for how the sensor is not at the very center of the bot, to determine the bot's actual position.
     } else if (wall >= 0) {
         robot_y = robot_y - (localizer.get_distance() * 0.0393701) - sensor_offset;
@@ -672,9 +672,7 @@ void autonomous() {
         clamp_mogo();
 
         // Activate all intakes
-        flex_wheel_intake.move(-127);
-        hook_intake.move(127);
-        intake_task_running = true;
+
 
         pros::delay(200);
 
@@ -683,6 +681,9 @@ void autonomous() {
         // Ring 1
         chassis.turnToHeading(90, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-TILE_UNIT, -TILE_UNIT, 10000, {.minSpeed = 40, .earlyExitRange = 2});
+        flex_wheel_intake.move(-127);
+        hook_intake.move(127);
+        intake_task_running = true;
 
         // Ring Sweep 1-2 on each side of ladder
         // chassis.follow(skills_ring_sweep_1_txt, 10, 10000, true, false);
@@ -820,21 +821,24 @@ void autonomous() {
         flex_wheel_intake.move(0);
 
         chassis.moveToPoint(-2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
+        // Correct inertial drift
+        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
         chassis.moveToPose(-2 * TILE_UNIT, 27, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
        
+
+        // Ring 1 by ladder
+        chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 3000);
+
         // Activate all intakes 2nd run
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
         intake_task_running = true;
 
-        // Ring 1 by ladder
-        chassis.turnToHeading(90, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 3000);
-       
         // Ring 2 - Maybe use this for high stake?
         chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(0, 55, 10000);
@@ -865,10 +869,12 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);      
 
         chassis.moveToPoint(-6, 2 * TILE_UNIT, 5000);
+        // Correct inertial drift
+        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
         chassis.turnToHeading(90, 4000, {.earlyExitRange = 1}, false);
-        
+       
         /**
-        Critical point - Odometry is nearly perfect most of the time up to here. 
+        Critical point - Odometry is nearly perfect most of the time up to here.
         But, now, we need to load two rings and clasp a mogo, which takes extra precision.
         The odometry usually messes this up.
         Because of this, we do a reset with our distance sensor.
@@ -879,10 +885,10 @@ void autonomous() {
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 5000, {.maxSpeed = 85, .earlyExitRange = 3});
 
 
-        // Wait until ready to load
-        while (hook_intake.get_position() - 35 < hook_intake.get_target_position() && hook_intake.get_position() + 35 > hook_intake.get_target_position()) {
-            pros::delay(20);
-        }
+        // // Wait until ready to load
+        // while (hook_intake.get_position() - 35 < hook_intake.get_target_position() && hook_intake.get_position() + 35 > hook_intake.get_target_position()) {
+        //     pros::delay(20);
+        // }
 
         // Load ring #1
         bool got_ring = auto_load_ring();
@@ -903,7 +909,7 @@ void autonomous() {
 
         // chassis.moveToPose(55.3, 26.3, -63, 4000, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         // Move back a bit to make sure we have it - trig, x + 4.455, y - 2.270
-        chassis.moveToPose(59.755, 24.03, -63, 4750, {.forwards = false, .maxSpeed = 50, .minSpeed = 20, .earlyExitRange = 1}, false);
+        chassis.moveToPose(59.755, 24.03, -60, 4750, {.forwards = false, .maxSpeed = 70, .minSpeed = 30, .earlyExitRange = 1}, false);
         clamp_mogo();
 
         // #10 Place mogo in corner
@@ -940,10 +946,14 @@ void autonomous() {
 
         // #11 Grab & Fill mogo 4
         chassis.moveToPoint(2 * TILE_UNIT, 1 * TILE_UNIT, 10000, {}, false);
+        // Correct inertial drift
+        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.75);
+
         // mogo_piston.set_value(0);
         // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
         chassis.turnToHeading(-90, 10000, {.earlyExitRange = 1}, false);
-        
+        pros::delay(300);
+       
         /**
         Another Critical point - Missing the mogo means not putting it in the corner, and also not scoring any
         rings on it. If this failed, we would lose around 11 points. (5 pts for corner + 6 pts for scoring 4 rings)
@@ -952,7 +962,7 @@ void autonomous() {
 
         chassis.turnToPoint(2 * TILE_UNIT, 4, 50000);
         chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
-        chassis.moveToPose(2 * TILE_UNIT, -6, 0, 5000, {.forwards = false, .maxSpeed = 70, .minSpeed = 10}, false);
+        chassis.moveToPose(2 * TILE_UNIT, -7, 0, 5000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10}, false);
         clamp_mogo();
         pros::delay(200);
 
