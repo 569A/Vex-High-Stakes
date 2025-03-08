@@ -579,10 +579,28 @@ void autonomous() {
     }
 
     if (auton == "blue_neg") {
-        chassis.setPose(59.05, 35.43, -90);
-        chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
-        chassis.follow(blue_neg_txt, 10.5, 10000);
+        // chassis.setPose(59.05, 35.43, -90);
+        // chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        // chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
+        chassis.setPose(2 * TILE_UNIT + 4.75, TILE_UNIT + 15.5, 60);
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15});
+
+        clamp_mogo();
+        pros::delay(350);
+
+        chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 5});
+        // chassis.follow(blue_neg_txt, 10.5, 10000);
+        chassis.moveToPoint(11, 38, 10000, {.maxSpeed = 80});
+        // Activate all intakes
+        flex_wheel_intake.move(-127);
+        hook_intake.move(127);
+        chassis.moveToPoint(10, 47, 10000);
+
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
+        chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .maxSpeed = 70});
         // auto_load_ring();
         // auto_load_ring();
         return;
