@@ -922,9 +922,10 @@ void autonomous() {
 
         // #9 Go for blue ring mogo to push into corner
         // chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
-        // chassis.turnToPoint(41.718, 33.991, 5000, {.forwards = false});
-        chassis.turnToHeading(-60, 10000);
+        chassis.turnToPoint(41.718, 33.991, 5000, {.forwards = false});
         chassis.moveToPoint(41.718, 33.991, 5000, {.forwards = false});
+
+        chassis.turnToHeading(-60, 10000);
 
         // chassis.moveToPose(55.3, 26.3, -63, 4000, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         // Move back a bit to make sure we have it - trig, x + 4.455, y - 2.270
@@ -933,7 +934,10 @@ void autonomous() {
 
         // #10 Place mogo in corner
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
-        chassis.turnToHeading(237, 10000, {}, false); // 237
+        // chassis.turnToHeading(237, 10000, {}, false); // 237
+
+        chassis.turnToPoint(59, 59, 4000, {.forwards = false}, false);
+
         // Reverse flex wheel intake so that we don't accidently intake a blue ring or get something stuck inside
         flex_wheel_intake.move(127);
         unclamp_mogo();
@@ -980,7 +984,7 @@ void autonomous() {
         reset_x_pos(70.4375, back_localizer,5.25);
 
         chassis.turnToPoint(2 * TILE_UNIT, 4, 50000);
-        chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 100, .earlyExitRange = 4});
+        chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 80});
         chassis.moveToPose(2 * TILE_UNIT, -7, 0, 5000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10}, false);
         clamp_mogo();
         pros::delay(200);
