@@ -321,6 +321,33 @@ bool auto_load_ring() {
     return true;
 }
 
+// Same thing but for wall stake
+bool auto_load_ring_wall_stake() {
+    int ring_load_timeout_ticks = 300;
+    int ring_loaded_timeout_ticks = 300;
+    flex_wheel_intake.move(-127);
+    hook_intake.move(0);
+    while (optical.get_proximity() < 100) {
+        // Note for future: Proximity threshold used to be 200, but if the ring is on the left side of intake (furthest from the optical sensor's location), the proximity reading is around 110. This is why loading of rings had some issues.
+        ring_load_timeout_ticks--;
+        if (ring_load_timeout_ticks < 0) {
+            return false;
+        }
+        pros::delay(20);
+    }
+    pros::delay(100);
+    hook_intake.move(-100);
+    while (optical.get_proximity() > 100) {
+        ring_loaded_timeout_ticks--;
+        if (ring_loaded_timeout_ticks < 0) {
+            return false;
+        }
+        pros::delay(20);
+    }
+    hook_intake.move(0);
+    return true;
+}
+
 // Auto load a ring
 void driver_load_ring() {
             pros::Task auton_intake_manager([&]() {
@@ -882,6 +909,8 @@ void autonomous() {
         pros::delay(600);        
         // Drop mogo 2
         unclamp_mogo();
+
+        pros::delay(100);
        
         // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);      
@@ -974,7 +1003,7 @@ void autonomous() {
 
         // mogo_piston.set_value(0);
         // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
-        chassis.turnToHeading(-90, 10000, {.earlyExitRange = 1}, false);
+        chassis.turnToHeading(-90, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .earlyExitRange = 1}, false);
         pros::delay(300);
        
         /**
@@ -983,31 +1012,62 @@ void autonomous() {
         */
         reset_x_pos(70.4375, back_localizer,5.25);
 
-        chassis.turnToPoint(2 * TILE_UNIT, 4, 50000);
-        chassis.moveToPoint(2 * TILE_UNIT, 4, 5000, {.forwards = false, .maxSpeed = 80});
-        chassis.moveToPose(2 * TILE_UNIT, -7, 0, 5000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10}, false);
+        if (chassis.getPose().x > (2 * TILE_UNIT)) {
+            chassis.moveToPoint(2 * TILE_UNIT, chassis.getPose().y, 3000, {.maxSpeed = 80, .minSpeed = 15, .earlyExitRange = 1});
+        } else {
+            chassis.moveToPoint(2 * TILE_UNIT, chassis.getPose().y, 3000, {.forwards = false, .maxSpeed = 80, .minSpeed = 15, .earlyExitRange = 1});
+        }
+        chassis.turnToHeading(0, 4000);
+        chassis.moveToPoint(2 * TILE_UNIT, -7, 5000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10}, false);
         clamp_mogo();
         pros::delay(200);
 
+        // Score two more rings near the corner
+        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(2 * TILE_UNIT, -57, 10000);
         // Score loaded rings & allow intaking of rings again
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
-
-        // Score two more rings near the corner
-        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(2 * TILE_UNIT, -57, 10000, {}, false);
 
         // Another two rings ?...
         // chassis.turnToPoint(24, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         // chassis.moveToPoint(24, -48, 10000);
 
         // # 12 Drop mogo 4 in corner
-        chassis.turnToHeading(-65, 10000, {.earlyExitRange = 3}, false);
-        pros::delay(400);
-        hook_intake.move_relative(-300, 200);
+        // chassis.turnToHeading(-65, 10000, {.earlyExitRange = 3}, false);
+        chassis.turnToPoint(57, -59, 4000, {.forwards = false}, false);
+        pros::delay(500);
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
+        pros::delay(100);
+        arm_motor.move_absolute(767, 100);
         pros::delay(200);
-        chassis.moveToPoint(57, -59, 5000, {.forwards = false, .earlyExitRange = 3}, false);
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200);
+        chassis.moveToPoint(57, -59, 3000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false);
+        pros::delay(200);
+
+
+        // #13 Wall stake time - loading
+        chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 5000, {.maxSpeed = 70, .minSpeed = 10});
+        auto_load_ring_wall_stake(); // Load 1st ring
+        chassis.turnToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000);
+        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000, {.maxSpeed = 70, .minSpeed = 10});
+        auto_load_ring_wall_stake(); // Load 2nd ring
+        
+        // #14 Wall stake - scoring
+        chassis.turnToPoint(0, -50, 4000, {.earlyExitRange = 4});
+        chassis.moveToPoint(0, -50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
+        arm_motor.move_absolute(2400, 100);
+
+        chassis.turnToHeading(180, 10000, {}, false);
+
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        pros::delay(700);
+        hook_intake.move_relative(-1200, 200); // Score on wall stake
+        
+
+    
+
         // Right now, there is a theoretical max of 45 points
         // We need 55 at minimum        
 
