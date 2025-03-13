@@ -1105,6 +1105,7 @@ void autonomous() {
         right_motor_group.move(50);
         pros::delay(700);
         hook_intake.move_relative(-2600, 200); // Score on wall stake
+        pros::delay(2000);
 
         arm_motor.move_absolute(0, 100);
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);
@@ -1140,7 +1141,7 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200);
        
         // #15 Wall stake time - loading
-        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, {.forwards = false}, false);
+        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, false);
         chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 10000, {}, false);
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.maxSpeed = 70, .minSpeed = 10});
         auto_load_ring_wall_stake();
