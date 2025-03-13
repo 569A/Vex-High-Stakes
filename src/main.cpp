@@ -1181,7 +1181,7 @@ void autonomous() {
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200);
        
         // #15 Wall stake time - loading
-        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, false);
+        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, {}, false);
         chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 10000, {}, false);
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.maxSpeed = 70, .minSpeed = 10});
         auto_load_ring_wall_stake();
