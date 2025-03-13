@@ -973,6 +973,7 @@ void autonomous() {
 
         chassis.turnToPoint(39.709, 18.513, 2000, {.forwards = false});
         chassis.moveToPoint(39.709, 18.513, 2000, {.forwards = false});
+        mogo_piston.set_value(1);
         chassis.swingToHeading(-140, DriveSide::RIGHT, 2000);
 
         // chassis.turnToHeading(-57, 10000);
@@ -983,7 +984,7 @@ void autonomous() {
         // chassis.swingToHeading(-170, DriveSide::RIGHT, 2000);
         // clamp_mogo();
 
-        // #10 Place mogo in corner
+        // #10 Drop mogo 3
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
         // chassis.turnToHeading(237, 10000, {}, false); // 237
 
@@ -991,7 +992,6 @@ void autonomous() {
 
         // Reverse flex wheel intake so that we don't accidently intake a blue ring or get something stuck inside
         flex_wheel_intake.move(127);
-        unclamp_mogo();
 
         // chassis.moveToPoint(58.5, 55, 3000, {.forwards = false, .minSpeed = 80, .earlyExitRange = 5}, false);
         chassis.moveToPoint(60, 57, 2000, {.forwards = false, .maxSpeed = 100, .minSpeed = 80}, false);
@@ -1031,6 +1031,7 @@ void autonomous() {
         // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
         chassis.turnToHeading(-90, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .earlyExitRange = 1}, false);
         pros::delay(300);
+        mogo_piston.set_value(0);
        
         /**
         Another Critical point - Missing the mogo means not putting it in the corner, and also not scoring any
@@ -1094,7 +1095,6 @@ void autonomous() {
         right_motor_group.move(50);
         pros::delay(700);
         hook_intake.move_relative(-2600, 200); // Score on wall stake
-        pros::delay(2000);
 
         arm_motor.move_absolute(0, 100);
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);
@@ -1117,7 +1117,7 @@ void autonomous() {
         hook_intake.move_relative(3600, 200);
 
    
-        return;
+        pros::delay(2000);
         // int wait_hook;
         // while (hook_intake.get_position() - 20 < hook_intake.get_target_position() && hook_intake.get_position() + 20 > hook_intake.get_target_position()) {
         //     wait_hook++;
@@ -1148,7 +1148,7 @@ void autonomous() {
         pros::delay(700);
         hook_intake.move_relative(-1600, 200); // Score on wall stake
 
-        // Right now, there is a theoretical max of 45 points
+        // Right now, there is a theoretical max of 53 points
         // We need 55 at minimum        
 
     }
