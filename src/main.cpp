@@ -113,7 +113,7 @@ lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(3.75, // proportional gain (kP) 1.9 // 2.8
+lemlib::ControllerSettings angular_controller(3.5, // proportional gain (kP) 1.9 // 2.8
                                               0, // integral gain (kI)
                                               31, // derivative gain (kD) 30 // 27
                                               0, // anti windup
@@ -415,7 +415,7 @@ void swap_robot_pid() {
 
     chassis.lateralPID.setKP(5.875);
     chassis.lateralPID.setKD(82);
-    chassis.angularPID.setKP(3.75);
+    chassis.angularPID.setKP(3.5);
     chassis.angularPID.setKD(31);
 }
 
