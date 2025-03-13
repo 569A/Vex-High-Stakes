@@ -113,9 +113,9 @@ lemlib::ControllerSettings lateral_controller(5.875, // proportional gain (kP) 4
 );
 
 // angular PID controller
-lemlib::ControllerSettings angular_controller(2.9, // proportional gain (kP) 1.9 // 2.8
+lemlib::ControllerSettings angular_controller(3.75, // proportional gain (kP) 1.9 // 2.8
                                               0, // integral gain (kI)
-                                              28, // derivative gain (kD) 30 // 27
+                                              31, // derivative gain (kD) 30 // 27
                                               0, // anti windup
                                             //   0, // small error range, in degrees
                                             //     0, // small error range timeout, in milliseconds
@@ -375,6 +375,11 @@ void driver_load_ring() {
             });
 }
 
+void move_relative(float dist, float exit, float min) {
+    float angle = chassis.getPose().theta / 180.0 * M_PI;
+    chassis.moveToPoint(chassis.getPose().x + std::sin(angle) * dist, chassis.getPose().y + std::cos(angle) * dist, 10000, {.minSpeed = min, .earlyExitRange = exit});
+}
+
 /**
 Swap PID for mogo -
 PID handles how the robot moves. P is proportional D is derivative
@@ -402,8 +407,8 @@ void swap_robot_pid() {
 
     chassis.lateralPID.setKP(5.875);
     chassis.lateralPID.setKD(82);
-    chassis.angularPID.setKP(2.885);
-    chassis.angularPID.setKD(28);
+    chassis.angularPID.setKP(3.75);
+    chassis.angularPID.setKD(31);
 }
 
 void clamp_mogo() {
@@ -611,23 +616,26 @@ void autonomous() {
         // chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
         chassis.setPose(2 * TILE_UNIT + 4.75, TILE_UNIT + 15.5, 60);
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15});
-
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .earlyExitRange = 1});
+        pros::delay(100);
         clamp_mogo();
         pros::delay(350);
 
         chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 5});
         // chassis.follow(blue_neg_txt, 10.5, 10000);
-        chassis.moveToPoint(11, 38, 10000, {.maxSpeed = 80});
+        chassis.moveToPoint(11.5, 38, 10000, {.maxSpeed = 80});
         // Activate all intakes
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
-        chassis.moveToPoint(10, 47, 10000);
+        chassis.moveToPoint(10.25, 47, 10000);
 
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
         chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
-        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .maxSpeed = 70});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 80});
+
+        chassis.moveToPose(59.906, 53.54, 0, 10000);
+        chassis.swingToHeading(45, DriveSide::RIGHT, 10000, {}, false);
         // auto_load_ring();
         // auto_load_ring();
         return;
@@ -654,7 +662,8 @@ void autonomous() {
     }
 
 
-    if (auton == "skills") {
+    if (true) {
+        hook_intake.set_brake_mode(pros::MotorBrake::hold);
         // Skills
         // pros::delay(200);
         // // hook_intake.set_zero_position(-1576);
@@ -684,7 +693,7 @@ void autonomous() {
                 }
                 ticks_since_intake++;
                 if (distance.get() < 200) {
-                    if (hook_intake.get_current_draw() > 2700 && ticks_since_intake > 12 && arm_motor.get_position() < 100) {
+                    if (hook_intake.get_current_draw() > 2600 && ticks_since_intake > 12 && arm_motor.get_position() < 100) {
                         hook_intake.move_relative(-400, 200);
                         wait_ticks = 10;
                     }
@@ -699,14 +708,14 @@ void autonomous() {
         arm_motor.set_zero_position(0);
         hook_intake.set_zero_position(0);
         // #1 Score on alliance stake
-        arm_motor.move_absolute(140, 100);
+        arm_motor.move_absolute(340, 100);
         pros::delay(500);
         hook_intake.move_absolute(400, 200);
         pros::delay(600);
         // hook_intake.move_relative(-400, 200);
         // pros::delay(100);
 
-        chassis.setPose(-60.1, 0, 90);
+        chassis.setPose(-61.2, 0, 90);
 
         // #2 Get mogo
         chassis.moveToPoint(-2 * TILE_UNIT, 0, 100000, {}, false);
@@ -837,8 +846,8 @@ void autonomous() {
 
 
         // Ring 2 - Maybe use this for high stake?
-        chassis.turnToPoint(0, -55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(0, -55, 10000);        
+        chassis.turnToPoint(0, -53.5, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(0, -53.5, 10000);        
         // Ring 3
         chassis.turnToPoint(-TILE_UNIT, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-TILE_UNIT, -46, 3000);
@@ -846,15 +855,16 @@ void autonomous() {
         // Rings 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
         chassis.turnToPoint(-57, -46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, -46, 4000, {.maxSpeed= 93});
+        chassis.moveToPoint(-57, -46, 4000, {.maxSpeed = 65});
 
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, -60, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-2 * TILE_UNIT, -60, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, -59, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
+        chassis.moveToPoint(-2 * TILE_UNIT, -59, 2000);
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
-        chassis.turnToPoint(-56.5, -59, 2000, {.forwards = false, .earlyExitRange = 4});
-        chassis.moveToPoint(-56.5, -59, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
+        chassis.turnToPoint(-56.5, -61.5, 2000, {.forwards = false, .maxSpeed = 80, .earlyExitRange = 4});
+        // chassis.turnToHeading(45, 2000);
+        chassis.moveToPoint(-56.5, -61.5, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);
 
@@ -865,9 +875,11 @@ void autonomous() {
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
+        move_relative(10, 5, 100);
+
         chassis.moveToPoint(-2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
         // Correct inertial drift
-        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
+        // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
@@ -885,8 +897,8 @@ void autonomous() {
         intake_task_running = true;
 
         // Ring 2 - Maybe use this for high stake?
-        chassis.turnToPoint(0, 55, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(0, 55, 10000);
+        chassis.turnToPoint(0, 53.5, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(0, 53.5, 10000);
        
         // Ring 3
         chassis.turnToPoint(-TILE_UNIT, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
@@ -895,16 +907,17 @@ void autonomous() {
         // Ring 4-5 (cluster of 3 rings, this is the horizontal 2)
         // can just combine into one motion because they are on the same path
         chassis.turnToPoint(-57, 46, 4000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-57, 46, 4000);
+        chassis.moveToPoint(-57, 46, 4000, {.maxSpeed = 65});
 
        
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, 60, 2000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(- 2 * TILE_UNIT, 60, 2000);
+        chassis.turnToPoint(-2 * TILE_UNIT, 59, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
+        chassis.moveToPoint(- 2 * TILE_UNIT, 59, 2000);
 
         // chassis.turnToHeading(90, 1000, {}, false);
-        chassis.turnToPoint(-56.5, 59, 2000, {.forwards = false, .earlyExitRange = 3});
-        chassis.moveToPoint(-56.5, 59, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
+        chassis.turnToPoint(-56.5, 61.5, 2000, {.forwards = false, .earlyExitRange = 3});
+        // chassis.turnToHeading(135, 2000);
+        chassis.moveToPoint(-56.5, 61.5, 2000, {.forwards = false, .maxSpeed = 70, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
         pros::delay(600);        
         // Drop mogo 2
@@ -914,10 +927,11 @@ void autonomous() {
        
         // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);      
+        move_relative(9, 5, 100);
 
         chassis.moveToPoint(-6, 2 * TILE_UNIT, 5000);
         // Correct inertial drift
-        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
+        // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.5);
         chassis.turnToHeading(90, 4000, {.earlyExitRange = 1}, false);
        
         /**
@@ -938,40 +952,50 @@ void autonomous() {
         //     pros::delay(20);
         // }
 
-        // Load ring #1
+        // // Load ring #1
         bool got_ring = auto_load_ring();
        
         // Load ring #2 - only if 1st one was successful. If not, skip, don't mess it up further
-        if (got_ring) {
-            // Turn and begin motion to next ring
-            chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
-            chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
-            got_ring = auto_load_ring();
-        }
+        // if (got_ring) {
+        //     // Turn and begin motion to next ring
+        //     chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 2000, {.maxSpeed = 100, .earlyExitRange = 4});
+        //     chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 3000, {.maxSpeed = 100, .earlyExitRange = 3}, false);
+        //     got_ring = auto_load_ring();
+        // }
 
         // #9 Go for blue ring mogo to push into corner
         // chassis.turnToHeading(-90, 10000, {.earlyExitRange = 3}); // -50 before
-        chassis.turnToPoint(41.718, 33.991, 5000, {.forwards = false});
-        chassis.moveToPoint(41.718, 33.991, 5000, {.forwards = false});
+        // chassis.turnToPoint(41.718, 36.3, 5000, {.forwards = false});
+        // chassis.moveToPoint(41.718, 36.3, 5000, {.forwards = false});
 
-        chassis.turnToHeading(-60, 10000);
+        // chassis.turnToPoint(56.909, 11, 10000);
+        // chassis.setPose(TILE_UNIT, 2 * TILE_UNIT, 90);
+
+        chassis.turnToPoint(39.709, 18.513, 2000, {.forwards = false});
+        chassis.moveToPoint(39.709, 18.513, 2000, {.forwards = false});
+        chassis.swingToHeading(-140, DriveSide::RIGHT, 2000);
+
+        // chassis.turnToHeading(-57, 10000);
 
         // chassis.moveToPose(55.3, 26.3, -63, 4000, {.forwards = false, .lead = 0.7, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false); // 53, 27
         // Move back a bit to make sure we have it - trig, x + 4.455, y - 2.270
-        chassis.moveToPose(59.755, 24.03, -60, 4750, {.forwards = false, .maxSpeed = 70, .minSpeed = 30, .earlyExitRange = 1}, false);
-        clamp_mogo();
+        // chassis.moveToPoint(59.755, 24.03, 4850, {.forwards = false, .maxSpeed = 90, .minSpeed = 30, .earlyExitRange = 1}, false);
+        // chassis.swingToHeading(-170, DriveSide::RIGHT, 2000);
+        // clamp_mogo();
 
         // #10 Place mogo in corner
         // 202.89 for directly to corner. Turn a bit over to make a curve when dropping mogo off (avoid getting stuck in rings)
         // chassis.turnToHeading(237, 10000, {}, false); // 237
 
-        chassis.turnToPoint(59, 59, 4000, {.forwards = false}, false);
+        // chassis.turnToPoint(59, 59, 4000, {.forwards = false}, false);
 
         // Reverse flex wheel intake so that we don't accidently intake a blue ring or get something stuck inside
         flex_wheel_intake.move(127);
         unclamp_mogo();
 
-        chassis.moveToPoint(59, 59, 4000, {.forwards = false}, false);
+        // chassis.moveToPoint(58.5, 55, 3000, {.forwards = false, .minSpeed = 80, .earlyExitRange = 5}, false);
+        chassis.moveToPoint(60, 57, 2000, {.forwards = false, .maxSpeed = 100, .minSpeed = 80}, false);
+
         // // Wall reset pose
         // // Release mogo
         // // Prep for mogo grab
@@ -996,10 +1020,12 @@ void autonomous() {
         // pros::delay(100);
         // auto_load_ring();
 
+        move_relative(4, 2, 10);
+
         // #11 Grab & Fill mogo 4
         chassis.moveToPoint(2 * TILE_UNIT, 1 * TILE_UNIT, 10000, {}, false);
         // Correct inertial drift
-        chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.75);
+        // chassis.setPose(chassis.getPose().x, chassis.getPose().y, chassis.getPose().theta - 0.75);
 
         // mogo_piston.set_value(0);
         // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
@@ -1023,8 +1049,13 @@ void autonomous() {
         pros::delay(200);
 
         // Score two more rings near the corner
-        chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(2 * TILE_UNIT, -57, 10000);
+        // chassis.turnToPoint(2 * TILE_UNIT - 2, -2 * TILE_UNIT, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 20, .earlyExitRange = 4});
+        chassis.turnToHeading(250, 1000, {.earlyExitRange = 4});
+        // chassis.moveToPoint(2 * TILE_UNIT - 2, -2 * TILE_UNIT, 10000);
+        // chassis.moveToPoint(2 * TILE_UNIT - 7, -2 * TILE_UNIT + 1, 2000);
+        // chassis.turnToPoint(2 * TILE_UNIT, -2 * TILE_UNIT - 12, 2000);
+        chassis.moveToPoint(2 * TILE_UNIT, -2 * TILE_UNIT - 12, 2000);
+
         // Score loaded rings & allow intaking of rings again
         flex_wheel_intake.move(-127);
         hook_intake.move(127);
@@ -1034,39 +1065,88 @@ void autonomous() {
         // chassis.moveToPoint(24, -48, 10000);
 
         // # 12 Drop mogo 4 in corner
-        // chassis.turnToHeading(-65, 10000, {.earlyExitRange = 3}, false);
-        chassis.turnToPoint(57, -59, 4000, {.forwards = false}, false);
+        chassis.turnToHeading(-65, 10000, {.direction = AngularDirection:: CCW_COUNTERCLOCKWISE, .earlyExitRange = 3}, false);
+        // chassis.turnToPoint(57, -59, 4000, {.forwards = false}, false);
         pros::delay(500);
         unclamp_mogo(); // Drop before going into corner so it doesn't jam a ring and get stuck
         pros::delay(100);
         arm_motor.move_absolute(767, 100);
         pros::delay(200);
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200);
-        chassis.moveToPoint(57, -59, 3000, {.forwards = false, .maxSpeed = 80, .minSpeed = 10, .earlyExitRange = 1}, false);
+        chassis.moveToPoint(57.5, -60, 3000, {.forwards = false, .minSpeed = 120, .earlyExitRange = 1}, false);
         pros::delay(200);
 
-
         // #13 Wall stake time - loading
-        chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 5000, {.maxSpeed = 70, .minSpeed = 10});
-        auto_load_ring_wall_stake(); // Load 1st ring
-        chassis.turnToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000);
-        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000, {.maxSpeed = 70, .minSpeed = 10});
+        // chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 5000, {.maxSpeed = 70, .minSpeed = 10});
+        // auto_load_ring_wall_stake(); // Load 1st ring
+        // chassis.turnToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000);
+        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT + 1, 3000, {.maxSpeed = 70, .minSpeed = 10});
         auto_load_ring_wall_stake(); // Load 2nd ring
-        
+       
         // #14 Wall stake - scoring
         chassis.turnToPoint(0, -50, 4000, {.earlyExitRange = 4});
-        chassis.moveToPoint(0, -50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
         arm_motor.move_absolute(2400, 100);
+        chassis.moveToPoint(0, -50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
 
         chassis.turnToHeading(180, 10000, {}, false);
 
         left_motor_group.move(50);
         right_motor_group.move(50);
         pros::delay(700);
-        hook_intake.move_relative(-1200, 200); // Score on wall stake
-        
+        hook_intake.move_relative(-2600, 200); // Score on wall stake
+        pros::delay(2000);
 
-    
+        arm_motor.move_absolute(0, 100);
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);
+        chassis.moveToPoint(chassis.getPose().x, chassis.getPose().y + 10, 1000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 4}, false);
+        chassis.turnToPoint(TILE_UNIT, -2 * TILE_UNIT, 5000, {.direction = AngularDirection::CW_CLOCKWISE});
+        chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 5000, {.maxSpeed = 70, .minSpeed = 10});
+        auto_load_ring();
+        chassis.turnToHeading(0, 10000, {}, false);
+       
+        reset_y_pos(-70.4375, back_localizer, 5.25);
+
+        chassis.turnToPoint(2 * TILE_UNIT, 0, 10000, {.direction = AngularDirection::CW_CLOCKWISE});
+        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.turnToHeading(-90, 10000, {}, false);
+
+        chassis.moveToPoint(64, 0, 5000, {.forwards = false, .maxSpeed = 80});
+        pros::delay(700);
+        arm_motor.move_absolute(300, 100);
+        pros::delay(700);
+        hook_intake.move_relative(3600, 200);
+
+   
+        return;
+        // int wait_hook;
+        // while (hook_intake.get_position() - 20 < hook_intake.get_target_position() && hook_intake.get_position() + 20 > hook_intake.get_target_position()) {
+        //     wait_hook++;
+        //     if (wait_hook > 200) {
+        //         break;
+        //     }
+        //     pros::delay(30);
+        // }
+        arm_motor.move_absolute(767, 100);
+        hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score() - 3385, 200);
+       
+        // #15 Wall stake time - loading
+        chassis.moveToPoint(2 * TILE_UNIT, 0, 10000, {.forwards = false}, false);
+        chassis.turnToPoint(TILE_UNIT, TILE_UNIT, 10000, {}, false);
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.maxSpeed = 70, .minSpeed = 10});
+        auto_load_ring_wall_stake();
+
+       
+        // #14 Wall stake - scoring
+        chassis.turnToPoint(0, 50, 4000, {.earlyExitRange = 4});
+        chassis.moveToPoint(0, 50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
+        arm_motor.move_absolute(2400, 100);
+
+        chassis.turnToHeading(0, 10000, {}, false);
+
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        pros::delay(700);
+        hook_intake.move_relative(-1600, 200); // Score on wall stake
 
         // Right now, there is a theoretical max of 45 points
         // We need 55 at minimum        
