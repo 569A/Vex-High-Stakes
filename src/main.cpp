@@ -569,6 +569,14 @@ void autonomous() {
         chassis.moveToPose(-59.906, 53.54, 0, 10000);
         chassis.swingToHeading(-45, DriveSide::LEFT, 10000, {}, false);
 
+        pros::delay(700);
+
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 4000, {.forwards = false});
+        chassis.turnToHeading(180, 4000, {}, false);
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+
         return;
         // EXPERIMENTAL - Solo Auton WP (WIP)
         // chassis.setPose(-58.618, 12.733, 180);
@@ -670,6 +678,14 @@ void autonomous() {
 
         chassis.moveToPose(59.906, 53.54, 0, 10000);
         chassis.swingToHeading(45, DriveSide::RIGHT, 10000, {}, false);
+      
+        pros::delay(700);
+
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 4000, {.forwards = false});
+        chassis.turnToHeading(180, 4000, {}, false);
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
         // auto_load_ring();
         // auto_load_ring();
         return;
