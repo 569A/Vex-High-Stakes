@@ -1004,7 +1004,7 @@ void autonomous() {
         flex_wheel_intake.move(127);
 
         // chassis.moveToPoint(58.5, 55, 3000, {.forwards = false, .minSpeed = 80, .earlyExitRange = 5}, false);
-        chassis.moveToPoint(60, 57, 2000, {.forwards = false, .maxSpeed = 100, .minSpeed = 80}, false);
+        chassis.moveToPoint(60, 57, 2000, {.forwards = false, .maxSpeed = 90, .minSpeed = 70}, false);
 
         // // Wall reset pose
         // // Release mogo
