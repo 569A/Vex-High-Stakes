@@ -547,8 +547,8 @@ void autonomous() {
     }
     if (auton == "red_neg") {
         chassis.setPose(-2 * TILE_UNIT - 4.75, TILE_UNIT + 15.5, 60);
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .minSpeed = 1, .earlyExitRange = 1});
         pros::delay(100);
         clamp_mogo();
         pros::delay(350);
