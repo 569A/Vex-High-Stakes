@@ -375,9 +375,17 @@ void driver_load_ring() {
             });
 }
 
-void move_relative(float dist, float exit, float min) {
+/** 
+This allows forward/backwards movement relative to the robot's current pose. This is for convenience if we 
+don't want to find the absolute points with math every time.
+
+Within the code, it is used in skills. After dropping a mogo off, we use relative movement
+to ensure the robot leaves the corner straight and does not turn while doing so (prevent vibrations
+and horizontal drift)
+*/
+void move_relative(float dist, float exit, float max, float min) {
     float angle = chassis.getPose().theta / 180.0 * M_PI;
-    chassis.moveToPoint(chassis.getPose().x + std::sin(angle) * dist, chassis.getPose().y + std::cos(angle) * dist, 10000, {.minSpeed = min, .earlyExitRange = exit});
+    chassis.moveToPoint(chassis.getPose().x + std::sin(angle) * dist, chassis.getPose().y + std::cos(angle) * dist, 10000, {.maxSpeed = max, .minSpeed = min, .earlyExitRange = exit});
 }
 
 /**
@@ -875,7 +883,7 @@ void autonomous() {
         // Give flex wheel intake a break
         flex_wheel_intake.move(0);
 
-        move_relative(10, 5, 100);
+        move_relative(10, 5, 120, 100);
 
         chassis.moveToPoint(-2 * TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
         // Correct inertial drift
@@ -927,7 +935,7 @@ void autonomous() {
        
         // Prep for ring loading
         hook_intake.move_absolute(get_intake_closest_to_ready_mogo_score(), 200);      
-        move_relative(9, 5, 100);
+        move_relative(9, 5, 120, 100);
 
         chassis.moveToPoint(-6, 2 * TILE_UNIT, 5000);
         // Correct inertial drift
@@ -1020,7 +1028,7 @@ void autonomous() {
         // pros::delay(100);
         // auto_load_ring();
 
-        move_relative(4, 2, 10);
+        move_relative(4, 2, 65, 10); // Go slow to avoid catching the mogo and dragging it out of the corner
 
         // #11 Grab & Fill mogo 4
         chassis.moveToPoint(2 * TILE_UNIT, 1 * TILE_UNIT, 10000, {}, false);
