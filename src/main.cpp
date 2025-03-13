@@ -546,6 +546,30 @@ void autonomous() {
         return;
     }
     if (auton == "red_neg") {
+        chassis.setPose(-2 * TILE_UNIT - 4.75, TILE_UNIT + 15.5, 60);
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .minSpeed = 1, .earlyExitRange = 1});
+        pros::delay(100);
+        clamp_mogo();
+        pros::delay(350);
+
+        chassis.turnToPoint(-16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 5});
+        // chassis.follow(blue_neg_txt, 10.5, 10000);
+        chassis.moveToPoint(-11.5, 38, 10000, {.maxSpeed = 80});
+        // Activate all intakes
+        flex_wheel_intake.move(-127);
+        hook_intake.move(127);
+        chassis.moveToPoint(-10.25, 47, 10000);
+
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
+        chassis.turnToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
+        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 80});
+
+        chassis.moveToPose(-59.906, 53.54, 0, 10000);
+        chassis.swingToHeading(-45, DriveSide::LEFT, 10000, {}, false);
+
+        return;
         // EXPERIMENTAL - Solo Auton WP (WIP)
         // chassis.setPose(-58.618, 12.733, 180);
         // flex_wheel_intake.move(120);
