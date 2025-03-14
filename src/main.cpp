@@ -555,7 +555,7 @@ void autonomous() {
     if (auton == "blue_pos_alliance") {
         chassis.setPose(2.5 * TILE_UNIT, -0.5 * TILE_UNIT, 180);
         chassis.moveToPoint(2.5 * TILE_UNIT, 5, 5000, {.forwards = false, .minSpeed = 70});
-        chassis.moveToPoint(2.5 * TILE_UNIT, 0, 5000, {.forwards = false, .maxSpeed = 35, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.moveToPoint(2.5 * TILE_UNIT, 0, 5000, {.maxSpeed = 35, .minSpeed = 1, .earlyExitRange = 1});
         chassis.turnToHeading(270, 10000);
         chassis.moveToPoint(64, 0, 5000, {.forwards = false, .maxSpeed = 80});
         arm_motor.move_absolute(300, 100);
@@ -566,7 +566,7 @@ void autonomous() {
         flex_wheel_intake.move(127);
         chassis.moveToPoint(40.049, -13.332, 5000, {.minSpeed = 70});
         chassis.turnToHeading(60, 3000);
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.maxSpeed = 90}, false);
+        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT, 10000, {.maxSpeed = 90}, false);
         pros::delay(50);
         clamp_mogo();
         chassis.turnToPoint(TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
@@ -575,7 +575,7 @@ void autonomous() {
         chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 100, .earlyExitRange = 3});
         chassis.moveToPoint(TILE_UNIT, -1 * TILE_UNIT, 10000, {.minSpeed = 127, .earlyExitRange = 3});
         chassis.turnToHeading(0, 10000);
-        chassis.moveToPoint(TILE_UNIT, -1 * TILE_UNIT + 4, 1750, {.minSpeed = 70});
+        chassis.moveToPoint(TILE_UNIT, -1 * TILE_UNIT + 4, 1750, {.minSpeed = 70}, false);
         left_motor_group.move(50);
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
