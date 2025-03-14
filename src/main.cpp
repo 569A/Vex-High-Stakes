@@ -375,8 +375,8 @@ void driver_load_ring() {
             });
 }
 
-/** 
-This allows forward/backwards movement relative to the robot's current pose. This is for convenience if we 
+/**
+This allows forward/backwards movement relative to the robot's current pose. This is for convenience if we
 don't want to find the absolute points with math every time.
 
 Within the code, it is used in skills. After dropping a mogo off, we use relative movement
@@ -490,7 +490,7 @@ ASSET(blue_neg_txt);
 
 const float TILE_UNIT = 23.62205;
 
-const float FIRST_HALF_MIN_SPEED = 30;
+const float FIRST_HALF_MIN_SPEED = 40;
 
 
 /**
@@ -657,9 +657,9 @@ void autonomous() {
         // chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         // chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
         chassis.setPose(2 * TILE_UNIT + 4.75, TILE_UNIT + 15.5, 60);
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 40, .earlyExitRange = 13});
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .earlyExitRange = 1});
-        pros::delay(100);
+        pros::delay(200);
         clamp_mogo();
         pros::delay(350);
 
@@ -674,11 +674,12 @@ void autonomous() {
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
         chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
-        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 80});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 90});
 
         chassis.moveToPose(59.906, 53.54, 0, 10000);
+        move_relative(4, 1, 127, 0);
         chassis.swingToHeading(45, DriveSide::RIGHT, 10000, {}, false);
-      
+     
         pros::delay(700);
 
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 4000, {.forwards = false});
@@ -896,8 +897,8 @@ void autonomous() {
 
 
         // Ring 2 - Maybe use this for high stake?
-        chassis.turnToPoint(0, -53.5, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(0, -53.5, 10000, {.minSpeed = FIRST_HALF_MIN_SPEED});        
+        chassis.turnToPoint(0, -53, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(0, -53, 10000, {.minSpeed = FIRST_HALF_MIN_SPEED});        
         // Ring 3
         chassis.turnToPoint(-TILE_UNIT, -46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(-TILE_UNIT, -46, 3000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
@@ -908,8 +909,8 @@ void autonomous() {
         chassis.moveToPoint(-57, -46, 4000, {.maxSpeed = 65, .minSpeed = FIRST_HALF_MIN_SPEED});    
 
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, -59, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
-        chassis.moveToPoint(-2 * TILE_UNIT, -59, 2000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
+        chassis.turnToPoint(-2 * TILE_UNIT, -58.5, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
+        chassis.moveToPoint(-2 * TILE_UNIT, -58.5, 2000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
 
         // chassis.turnToHeading(90, 1000, {.minSpeed = 40, .earlyExitRange = 4}, false);
         chassis.turnToPoint(-56.5, -61.5, 2000, {.forwards = false, .maxSpeed = 80, .earlyExitRange = 4});
@@ -947,8 +948,8 @@ void autonomous() {
         intake_task_running = true;
 
         // Ring 2 - Maybe use this for high stake?
-        chassis.turnToPoint(0, 53.5, 10000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(0, 53.5, 10000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
+        chassis.turnToPoint(0, 53, 10000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(0, 53, 10000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
        
         // Ring 3
         chassis.turnToPoint(-TILE_UNIT, 46, 3000, {.minSpeed = 20, .earlyExitRange = 4});
@@ -961,8 +962,8 @@ void autonomous() {
 
        
         // Ring 6
-        chassis.turnToPoint(-2 * TILE_UNIT, 59, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
-        chassis.moveToPoint(- 2 * TILE_UNIT, 59, 2000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
+        chassis.turnToPoint(-2 * TILE_UNIT, 58.5, 2000, {.maxSpeed = 80, .earlyExitRange = 4});
+        chassis.moveToPoint(- 2 * TILE_UNIT, 58.5, 2000, {.minSpeed = FIRST_HALF_MIN_SPEED});    
 
         // chassis.turnToHeading(90, 1000, {}, false);
         chassis.turnToPoint(-56.5, 61.5, 2000, {.forwards = false, .earlyExitRange = 3});
