@@ -28,6 +28,9 @@ pros::adi::DigitalOut mogo_piston('A');
 // Doinker
 pros::adi::DigitalOut doinker('B');
 
+// Hang
+pros::adi::DigitalOut hang('C');
+
 // Arm motor
 pros::Motor arm_motor(10, pros::MotorGearset::red);
 
@@ -185,7 +188,7 @@ void on_right_button() {
     } else if (auton == "red_neg") {
         auton = "blue_pos_alliance";
         pros::lcd::set_text(3, "Blue Pos Alliance selected");
-    } else if (auton == "blue_pos_alliance") {
+    } else if (auton == "blue_pos_alliance") {        
         auton = "skills";
         pros::lcd::set_text(3, "Skills selected");
     } else if (auton == "skills") {
@@ -493,7 +496,7 @@ ASSET(blue_neg_txt);
 
 const float TILE_UNIT = 23.62205;
 
-const float FIRST_HALF_MIN_SPEED = 80;
+const float FIRST_HALF_MIN_SPEED = 50;
 const float SECOND_HALF_MIN_SPEED = 70;
 
 
@@ -657,7 +660,7 @@ void autonomous() {
         flex_wheel_intake.move(0);
         return;      
     }
-
+    
     if (auton == "red_pos") {
         // Red Pos / Blue Neg (Same setup as above, but mirrored on y axis)
         chassis.setPose(-55, -38.5, -135);
@@ -968,7 +971,7 @@ void autonomous() {
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-2 * TILE_UNIT, 6, 180, 10000, {.forwards = false, .minSpeed = FIRST_HALF_MIN_SPEED, .earlyExitRange = 3}, false);
+        chassis.moveToPose(-2 * TILE_UNIT, 6, 180, 10000, {.forwards = false, .minSpeed = 80, .earlyExitRange = 3}, false);
         chassis.moveToPose(-2 * TILE_UNIT, 27, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
        
@@ -1058,6 +1061,7 @@ void autonomous() {
         bool got_ring = auto_load_ring();
         chassis.moveToPoint(39.709, 18.513, 2000, {.forwards = false, .minSpeed = 75});
         mogo_piston.set_value(1);
+        arm_motor.move_absolute(500, 100);
         chassis.swingToHeading(-140, DriveSide::RIGHT, 2000);
 
         // chassis.turnToHeading(-57, 10000);
@@ -1114,6 +1118,7 @@ void autonomous() {
         // mogo_piston.set_value(0);
         // chassis.turnToHeading(0, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE});
         chassis.turnToHeading(-90, 10000, {.direction = AngularDirection::CCW_COUNTERCLOCKWISE, .earlyExitRange = 1}, false);
+        arm_motor.move_absolute(0, 100);
         mogo_piston.set_value(0);
        
         /**
@@ -1169,15 +1174,15 @@ void autonomous() {
         auto_load_ring_wall_stake(); // Load 2nd ring
        
         // #14 Wall stake - scoring
-        chassis.turnToPoint(0, -50, 4000, {.minSpeed = 70, .earlyExitRange = 4});
+        chassis.turnToPoint(0, -56, 4000, {.minSpeed = 70, .earlyExitRange = 4});
         arm_motor.move_absolute(2400, 100);
-        chassis.moveToPoint(0, -50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.moveToPoint(0, -56, 10000, {.maxSpeed = 110, .minSpeed = 1, .earlyExitRange = 1});
 
         chassis.turnToHeading(180, 10000, {}, false);
 
-        left_motor_group.move(50);
-        right_motor_group.move(50);
-        pros::delay(700);
+        left_motor_group.move(40);
+        right_motor_group.move(40);
+        pros::delay(600);
         hook_intake.move_relative(-2600, 200); // Score on wall stake
         pros::delay(2000);
 
@@ -1223,15 +1228,15 @@ void autonomous() {
 
        
         // #14 Wall stake - scoring
-        chassis.turnToPoint(0, 50, 4000, {.earlyExitRange = 4});
-        chassis.moveToPoint(0, 50, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.turnToPoint(0, 56, 4000, {.earlyExitRange = 4});
+        chassis.moveToPoint(0, 56, 10000, {.maxSpeed = 80, .minSpeed = 1, .earlyExitRange = 1});
         arm_motor.move_absolute(2400, 100);
 
         chassis.turnToHeading(0, 10000, {}, false);
 
-        left_motor_group.move(50);
-        right_motor_group.move(50);
-        pros::delay(700);
+        left_motor_group.move(40);
+        right_motor_group.move(40);
+        pros::delay(600);
         hook_intake.move_relative(-1600, 200); // Score on wall stake
 
         // Right now, there is a theoretical max of 53 points
@@ -1306,6 +1311,7 @@ void opcontrol() {
     bool digital_b_was_pressed = false;
     bool digital_y_was_pressed = false;
     bool digital_l1_was_pressed = false;
+    int hang_ticks = 15;
 
     bool flex_wheel_running = false;
     bool intake_running = false;
@@ -1494,6 +1500,14 @@ void opcontrol() {
                 }
             } else {
                 should_run_intake = true;
+            }
+            if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+                hang_ticks--;
+                if (hang_ticks == 0) {
+                    hang.set_value(1);
+                }
+            } else {
+                hang_ticks = 15;
             }
         } else if (arm_state == 1 && arm_motor.get_position() + 20 > arm_motor.get_target_position() && arm_motor.get_position() - 20 < arm_motor.get_target_position()) { // This contains a position check of the arm motor to make sure it is at the target position before the hook intake is moved to the right spot
             if (!ready_to_score) {      
