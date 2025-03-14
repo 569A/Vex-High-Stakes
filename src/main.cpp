@@ -183,6 +183,9 @@ void on_right_button() {
         auton = "red_neg";
         pros::lcd::set_text(3, "Red Neg selected");
     } else if (auton == "red_neg") {
+        auton = "blue_pos_alliance";
+        pros::lcd::set_text(3, "Blue Pos Alliance selected");
+    } else if (auton == "blue_pos_alliance") {
         auton = "skills";
         pros::lcd::set_text(3, "Skills selected");
     } else if (auton == "skills") {
@@ -521,7 +524,7 @@ void autonomous() {
         chassis.moveToPoint(0, 0, 10000);
         return;
     }
-    mogo_piston.set_value(0);
+    ((auton != "blue_pos_alliance") && (auton != "red_pos_alliance")) ? mogo_piston.set_value(0) : mogo_piston.set_value(1);
     // Match autons are 2 ring + ladder touch
 
     if (auton == "blue_pos") {
@@ -544,6 +547,36 @@ void autonomous() {
         right_motor_group.move(50);
         flex_wheel_intake.move(0);
         // chassis.moveToPose(53, -45, float theta, int timeout)
+        return;
+    }
+    if (auton == "blue_pos_alliance") {
+        chassis.setPose(2.5 * TILE_UNIT, -0.5 * TILE_UNIT, 180);
+        chassis.moveToPoint(2.5 * TILE_UNIT, 5, 5000, {.forwards = false, .minSpeed = 70});
+        chassis.moveToPoint(2.5 * TILE_UNIT, 0, 5000, {.forwards = false, .maxSpeed = 35, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.turnToHeading(270, 10000);
+        chassis.moveToPoint(64, 0, 5000, {.forwards = false, .maxSpeed = 80});
+        arm_motor.move_absolute(300, 100);
+        chassis.waitUntilDone();
+        pros::delay(700);
+        hook_intake.move_relative(3600, 200);
+        pros::delay(700);
+        flex_wheel_intake.move(127);
+        chassis.moveToPoint(40.049, -13.332, 5000, {.minSpeed = 70});
+        chassis.turnToHeading(60, 3000);
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.maxSpeed = 90}, false);
+        pros::delay(50);
+        clamp_mogo();
+        chassis.turnToPoint(TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
+        hook_intake.move(127);
+        flex_wheel_intake.move(-127);
+        chassis.moveToPoint(TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 100, .earlyExitRange = 3});
+        chassis.moveToPoint(TILE_UNIT, -1 * TILE_UNIT, 10000, {.minSpeed = 127, .earlyExitRange = 3});
+        chassis.turnToHeading(0, 10000);
+        chassis.moveToPoint(TILE_UNIT, -1 * TILE_UNIT + 4, 1750, {.minSpeed = 70});
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+        
         return;
     }
     if (auton == "red_neg") {
@@ -674,7 +707,7 @@ void autonomous() {
 
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
         chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 100, .earlyExitRange = 2});
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 90});
 
         chassis.moveToPose(59.906, 53.54, 0, 10000);
