@@ -189,8 +189,10 @@ void on_right_button() {
         auton = "blue_pos_alliance";
         pros::lcd::set_text(3, "Blue Pos Alliance selected");
     } else if (auton == "blue_pos_alliance") {        
+        auton = "red_pos_alliance";
+        pros::lcd::set_text(3, "Red Pos Alliance selected");
+    } else if (auton == "red_pos_alliance") {
         auton = "skills";
-        pros::lcd::set_text(3, "Skills selected");
     } else if (auton == "skills") {
         auton = "blue_pos";
         pros::lcd::set_text(3, "Blue Pos selected");
@@ -496,7 +498,8 @@ ASSET(blue_neg_txt);
 
 const float TILE_UNIT = 23.62205;
 
-const float FIRST_HALF_MIN_SPEED = 50;
+const float FIRST_HALF_MIN_SPEED = 90; // 50
+const float EARLY_EXIT = 2.5;
 const float SECOND_HALF_MIN_SPEED = 70;
 
 
@@ -535,7 +538,7 @@ void autonomous() {
         chassis.setPose(55, -38.5, 135);
         // chassis.moveToPose(41, -34, 120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028 Move x lower by this times amount y is made higher to drive more into the mogo
-        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(23.399139381, -23, 121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 95, .minSpeed = 25, .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(127, lemlib::DriveSide::LEFT, 1000);
         clamp_mogo();
         chassis.turnToPoint(24, -48, 10000, {.minSpeed = 20, .earlyExitRange = 4});
@@ -564,10 +567,13 @@ void autonomous() {
         hook_intake.move_relative(3600, 200);
         pros::delay(700);
         flex_wheel_intake.move(127);
-        chassis.moveToPoint(40.049, -13.332, 5000, {.minSpeed = 70});
+        move_relative(6, 2, 127, 10);
+        chassis.turnToPoint(40.049, -13.332, 5000, {.forwards = false, .minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(40.049, -13.332, 5000, {.forwards = false, .minSpeed = 70}, false);
+        arm_motor.move_absolute(0, 100);
         chassis.turnToHeading(60, 3000);
-        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT, 10000, {.maxSpeed = 90}, false);
-        pros::delay(50);
+        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 90}, false);
+        pros::delay(150);
         clamp_mogo();
         chassis.turnToPoint(TILE_UNIT, -2 * TILE_UNIT, 10000, {}, false);
         hook_intake.move(127);
@@ -582,11 +588,44 @@ void autonomous() {
         
         return;
     }
+    if (auton == "red_pos_alliance") {
+        chassis.setPose(-2.5 * TILE_UNIT, -0.5 * TILE_UNIT, 180);
+        chassis.moveToPoint(-2.5 * TILE_UNIT, 5, 5000, {.forwards = false, .minSpeed = 70});
+        chassis.moveToPoint(-2.5 * TILE_UNIT, 0, 5000, {.maxSpeed = 35, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.turnToHeading(90, 4000, {.minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-64.25, 0, 3000, {.forwards = false, .maxSpeed = 80});
+        arm_motor.move_absolute(300, 100);
+        chassis.waitUntilDone();
+        pros::delay(700);
+        flex_wheel_intake.move(127);
+        hook_intake.move_relative(3600, 200);
+        pros::delay(700);
+        move_relative(6, 2, 127, 10);
+        chassis.turnToPoint(-40.049, -13.332, 5000, {.forwards = false, .minSpeed = 20, .earlyExitRange = 4});
+        chassis.moveToPoint(-40.049, -13.332, 5000, {.forwards = false, .minSpeed = 70}, false);
+        arm_motor.move_absolute(0, 100);
+        chassis.turnToHeading(-60, 3000);
+        chassis.moveToPoint(-TILE_UNIT, -TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 90}, false);
+        pros::delay(150);
+        clamp_mogo();
+        chassis.turnToPoint(-TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 20, .earlyExitRange = 4}, false);
+        hook_intake.move(127);
+        flex_wheel_intake.move(-127);
+        chassis.moveToPoint(-TILE_UNIT, -2 * TILE_UNIT, 10000, {.minSpeed = 100, .earlyExitRange = 3});
+        chassis.moveToPoint(-TILE_UNIT, -1 * TILE_UNIT, 10000, {.forwards = false, .minSpeed = 127, .earlyExitRange = 3});
+        chassis.turnToHeading(0, 10000);
+        chassis.moveToPoint(-TILE_UNIT, -1 * TILE_UNIT + 4, 1750, {.minSpeed = 70}, false);
+        left_motor_group.move(50);
+        right_motor_group.move(50);
+        flex_wheel_intake.move(0);
+        
+        return;
+    }
     if (auton == "red_neg") {
-        chassis.setPose(-2 * TILE_UNIT - 4.75, TILE_UNIT + 15.5, 60);
+        chassis.setPose(-2 * TILE_UNIT - 4.75, TILE_UNIT + 15.5, -60);
         chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
-        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .minSpeed = 1, .earlyExitRange = 1});
-        pros::delay(100);
+        chassis.moveToPoint(-TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 75, .minSpeed = 15, .earlyExitRange = 1});
+        pros::delay(200);
         clamp_mogo();
         pros::delay(350);
 
@@ -600,7 +639,7 @@ void autonomous() {
 
         chassis.moveToPoint(-TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
         chassis.turnToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
-        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.maxSpeed = 40});
+        chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 100, .earlyExitRange = 2});
         chassis.moveToPoint(-TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 80});
 
         chassis.moveToPose(-59.906, 53.54, 0, 10000);
@@ -666,7 +705,7 @@ void autonomous() {
         chassis.setPose(-55, -38.5, -135);
         // chassis.moveToPose(-41, -34, -120, 2000, {.forwards = false, .minSpeed = 70});
         // tan 31 = 0.600860619028
-        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 70, .minSpeed = 10, .earlyExitRange = 0.5}, false);
+        chassis.moveToPose(-23.399139381, -23, -121, 6300, {.forwards = false, .lead = 0.8, .maxSpeed = 95, .minSpeed = 25,  .earlyExitRange = 0.5}, false);
         // chassis.swingToHeading(-127, lemlib::DriveSide::RIGHT, 10000);
         clamp_mogo();
         chassis.turnToPoint(-24, -48, 10000);
@@ -694,8 +733,9 @@ void autonomous() {
         // chassis.turnToPoint(16.396, 38.858, 10000, {.minSpeed = 20, .earlyExitRange = 4});
         // chassis.moveToPoint(16.396, 38.858, 10000, {.minSpeed = 120, .earlyExitRange = 5});
         chassis.setPose(2 * TILE_UNIT + 4.75, TILE_UNIT + 15.5, 60);
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 40, .earlyExitRange = 13});
-        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 15, .earlyExitRange = 1});
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .minSpeed = 70, .earlyExitRange = 13});
+        chassis.moveToPoint(TILE_UNIT, TILE_UNIT, 10000, {.forwards = false, .maxSpeed = 75, .minSpeed = 15, .earlyExitRange = 1});
+
         pros::delay(200);
         clamp_mogo();
         pros::delay(350);
@@ -711,7 +751,8 @@ void autonomous() {
         chassis.moveToPoint(TILE_UNIT, TILE_UNIT + 4, 3000, {.forwards = false});
         chassis.turnToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 20, .earlyExitRange = 4});
         chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT, 3000, {.minSpeed = 100, .earlyExitRange = 2});
-        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 90});
+        chassis.moveToPoint(TILE_UNIT, 2 * TILE_UNIT - 10, 3000, {.forwards = false, .minSpeed = 90}, false);
+        return;
 
         chassis.moveToPose(59.906, 53.54, 0, 10000);
         move_relative(4, 1, 127, 0);
@@ -773,13 +814,38 @@ void autonomous() {
         int wait_ticks = 0;
 
         bool intake_task_running = false;
+        bool color_sorting = false;
+        bool ring_to_be_sorted = false;
 
         pros::Task auton_intake_manager([&]() {
             while (true) {
                 if (optical.get_proximity() > 200) {
                     ticks_since_intake = 0;
+                    if (optical.get_hue() > 0 && optical.get_hue() < 23) {
+                        current_ring_color = "red";
+                    }
+                   
+                    if (optical.get_hue() > 175 && optical.get_hue() < 235 ) {
+                        current_ring_color = "blue";
+                    }
                 }
                 ticks_since_intake++;
+
+                if (color_sorting) {
+                    if (current_ring_color != color && current_ring_color != "none") {
+                        if (hook_intake.get_current_draw() > 2050 && ticks_since_intake > 15) {
+                            hook_intake.move(-127);
+                            wait_ticks = 10; // The next step is waiting a bit before the intake runs again. If we don't wait a bit, the intake
+                                            // will stop for so little time it will not throw the ring off.
+                        }             
+                    }
+                    if (wait_ticks > 0) {
+                        wait_ticks--;
+                    }
+                    if (wait_ticks == 0 && arm_motor.get_position() < 100) {
+                        hook_intake.move(127);
+                    }
+                }
                 if (distance.get() < 200) {
                     if (hook_intake.get_current_draw() > 2600 && ticks_since_intake > 12 && arm_motor.get_position() < 100) {
                         hook_intake.move_relative(-400, 200);
@@ -954,7 +1020,7 @@ void autonomous() {
         // chassis.turnToHeading(45, 2000);
         chassis.moveToPoint(-56.5, -61.5, 2000, {.forwards = false, .maxSpeed = 60, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
-        pros::delay(600);
+        pros::delay(500);
 
         // Drop mogo 1
         unclamp_mogo();
@@ -971,7 +1037,7 @@ void autonomous() {
         chassis.turnToHeading(180, 10000);
 
         // #5 Get mogo 2
-        chassis.moveToPose(-2 * TILE_UNIT, 6, 180, 10000, {.forwards = false, .minSpeed = 80, .earlyExitRange = 3}, false);
+        chassis.moveToPose(-2 * TILE_UNIT, 6, 180, 10000, {.forwards = false, .minSpeed = 100, .earlyExitRange = 3}, false); // 90
         chassis.moveToPose(-2 * TILE_UNIT, 27, 180, 10000, {.forwards = false, .lead = 0.1, .maxSpeed = 50, .minSpeed = 30, .earlyExitRange = 2.7}, false);
         clamp_mogo();
        
@@ -1008,7 +1074,7 @@ void autonomous() {
         // chassis.turnToHeading(135, 2000);
         chassis.moveToPoint(-56.5, 61.5, 2000, {.forwards = false, .maxSpeed = 60, .earlyExitRange = 2}, false);
         // Pause a bit in case 6th ring not scored yet
-        pros::delay(600);        
+        pros::delay(500);        
         // Drop mogo 2
         unclamp_mogo();
 
@@ -1170,13 +1236,13 @@ void autonomous() {
         // auto_load_ring_wall_stake(); // Load 1st ring
         // chassis.turnToPoint(TILE_UNIT, -TILE_UNIT + 3, 3000);
         move_relative(4, 2, 50, 10);
-        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT + 1, 3000, {.maxSpeed = 90, .minSpeed = 50});
+        chassis.moveToPoint(TILE_UNIT, -TILE_UNIT + 1, 3000, {.maxSpeed = 90, .minSpeed = 60});
         auto_load_ring_wall_stake(); // Load 2nd ring
        
         // #14 Wall stake - scoring
         chassis.turnToPoint(0, -56, 4000, {.minSpeed = 70, .earlyExitRange = 4});
         arm_motor.move_absolute(2400, 100);
-        chassis.moveToPoint(0, -56, 10000, {.maxSpeed = 110, .minSpeed = 1, .earlyExitRange = 1});
+        chassis.moveToPoint(0, -56, 10000, {.maxSpeed = 110, .minSpeed = 30, .earlyExitRange = 1});
 
         chassis.turnToHeading(180, 10000, {}, false);
 
